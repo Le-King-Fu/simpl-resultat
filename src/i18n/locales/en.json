@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "Simpl'Result"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "import": "Import",
+    "transactions": "Transactions",
+    "categories": "Categories",
+    "adjustments": "Adjustments",
+    "budget": "Budget",
+    "reports": "Reports"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "balance": "Balance",
+    "income": "Income",
+    "expenses": "Expenses",
+    "noData": "No data available. Start by importing your bank statements."
+  },
+  "import": {
+    "title": "Import Statements",
+    "dropzone": "Drag your CSV files here or click to select",
+    "source": "Source",
+    "file": "File",
+    "status": "Status",
+    "date": "Date"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "date": "Date",
+    "description": "Description",
+    "amount": "Amount",
+    "category": "Category",
+    "supplier": "Supplier",
+    "noTransactions": "No transactions found."
+  },
+  "categories": {
+    "title": "Categories",
+    "name": "Name",
+    "type": "Type",
+    "parent": "Parent Category",
+    "color": "Color",
+    "expense": "Expense",
+    "income": "Income",
+    "transfer": "Transfer",
+    "keywords": "Keywords"
+  },
+  "adjustments": {
+    "title": "Adjustments",
+    "name": "Name",
+    "date": "Date",
+    "description": "Description",
+    "amount": "Amount",
+    "recurring": "Recurring"
+  },
+  "budget": {
+    "title": "Budget",
+    "month": "Month",
+    "year": "Year",
+    "planned": "Planned",
+    "actual": "Actual",
+    "difference": "Difference",
+    "template": "Template"
+  },
+  "reports": {
+    "title": "Reports",
+    "period": "Period",
+    "byCategory": "By Category",
+    "byMonth": "By Month",
+    "trends": "Trends",
+    "export": "Export"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "noResults": "No results",
+    "confirm": "Confirm",
+    "language": "Language",
+    "total": "Total"
+  }
+}

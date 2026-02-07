@@ -1,0 +1,117 @@
+[
+  {
+    "name": "Logement",
+    "type": "expense",
+    "color": "#4A90A4",
+    "icon": "Home",
+    "children": [
+      { "name": "Loyer", "type": "expense" },
+      { "name": "Charges", "type": "expense" },
+      { "name": "Assurance habitation", "type": "expense" },
+      { "name": "Énergie", "type": "expense" },
+      { "name": "Internet/Téléphone", "type": "expense" }
+    ]
+  },
+  {
+    "name": "Transport",
+    "type": "expense",
+    "color": "#C17767",
+    "icon": "Car",
+    "children": [
+      { "name": "Carburant", "type": "expense" },
+      { "name": "Transports en commun", "type": "expense" },
+      { "name": "Assurance auto", "type": "expense" },
+      { "name": "Entretien véhicule", "type": "expense" },
+      { "name": "Stationnement", "type": "expense" }
+    ]
+  },
+  {
+    "name": "Alimentation",
+    "type": "expense",
+    "color": "#22c55e",
+    "icon": "ShoppingCart",
+    "children": [
+      { "name": "Courses", "type": "expense" },
+      { "name": "Restaurants", "type": "expense" },
+      { "name": "Livraison repas", "type": "expense" }
+    ]
+  },
+  {
+    "name": "Santé",
+    "type": "expense",
+    "color": "#ef4444",
+    "icon": "Heart",
+    "children": [
+      { "name": "Médecin", "type": "expense" },
+      { "name": "Pharmacie", "type": "expense" },
+      { "name": "Mutuelle", "type": "expense" }
+    ]
+  },
+  {
+    "name": "Loisirs",
+    "type": "expense",
+    "color": "#a855f7",
+    "icon": "Gamepad2",
+    "children": [
+      { "name": "Sorties", "type": "expense" },
+      { "name": "Sport", "type": "expense" },
+      { "name": "Culture", "type": "expense" },
+      { "name": "Vacances", "type": "expense" },
+      { "name": "Abonnements", "type": "expense" }
+    ]
+  },
+  {
+    "name": "Shopping",
+    "type": "expense",
+    "color": "#f59e0b",
+    "icon": "ShoppingBag",
+    "children": [
+      { "name": "Vêtements", "type": "expense" },
+      { "name": "Électronique", "type": "expense" },
+      { "name": "Maison/Déco", "type": "expense" }
+    ]
+  },
+  {
+    "name": "Services",
+    "type": "expense",
+    "color": "#6366f1",
+    "icon": "Wrench",
+    "children": [
+      { "name": "Banque", "type": "expense" },
+      { "name": "Impôts", "type": "expense" },
+      { "name": "Abonnements numériques", "type": "expense" }
+    ]
+  },
+  {
+    "name": "Transferts",
+    "type": "transfer",
+    "color": "#64748b",
+    "icon": "ArrowLeftRight",
+    "children": [
+      { "name": "Épargne", "type": "transfer" },
+      { "name": "Virement interne", "type": "transfer" }
+    ]
+  },
+  {
+    "name": "Revenus",
+    "type": "income",
+    "color": "#22c55e",
+    "icon": "Banknote",
+    "children": [
+      { "name": "Salaire", "type": "income" },
+      { "name": "Freelance", "type": "income" },
+      { "name": "Aides/Allocations", "type": "income" },
+      { "name": "Remboursements", "type": "income" },
+      { "name": "Autres revenus", "type": "income" }
+    ]
+  },
+  {
+    "name": "Autres",
+    "type": "expense",
+    "color": "#9ca3af",
+    "icon": "MoreHorizontal",
+    "children": [
+      { "name": "Non catégorisé", "type": "expense" }
+    ]
+  }
+]

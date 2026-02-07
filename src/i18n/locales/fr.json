@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "Simpl'Résultat"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "import": "Importer",
+    "transactions": "Transactions",
+    "categories": "Catégories",
+    "adjustments": "Ajustements",
+    "budget": "Budget",
+    "reports": "Rapports"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "balance": "Solde",
+    "income": "Revenus",
+    "expenses": "Dépenses",
+    "noData": "Aucune donnée disponible. Commencez par importer vos relevés bancaires."
+  },
+  "import": {
+    "title": "Importer des relevés",
+    "dropzone": "Glissez vos fichiers CSV ici ou cliquez pour sélectionner",
+    "source": "Source",
+    "file": "Fichier",
+    "status": "Statut",
+    "date": "Date"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "date": "Date",
+    "description": "Description",
+    "amount": "Montant",
+    "category": "Catégorie",
+    "supplier": "Fournisseur",
+    "noTransactions": "Aucune transaction trouvée."
+  },
+  "categories": {
+    "title": "Catégories",
+    "name": "Nom",
+    "type": "Type",
+    "parent": "Catégorie parente",
+    "color": "Couleur",
+    "expense": "Dépense",
+    "income": "Revenu",
+    "transfer": "Transfert",
+    "keywords": "Mots-clés"
+  },
+  "adjustments": {
+    "title": "Ajustements",
+    "name": "Nom",
+    "date": "Date",
+    "description": "Description",
+    "amount": "Montant",
+    "recurring": "Récurrent"
+  },
+  "budget": {
+    "title": "Budget",
+    "month": "Mois",
+    "year": "Année",
+    "planned": "Prévu",
+    "actual": "Réel",
+    "difference": "Écart",
+    "template": "Modèle"
+  },
+  "reports": {
+    "title": "Rapports",
+    "period": "Période",
+    "byCategory": "Par catégorie",
+    "byMonth": "Par mois",
+    "trends": "Tendances",
+    "export": "Exporter"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "loading": "Chargement...",
+    "noResults": "Aucun résultat",
+    "confirm": "Confirmer",
+    "language": "Langue",
+    "total": "Total"
+  }
+}

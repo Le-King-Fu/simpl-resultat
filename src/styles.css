@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  /* Bleu (Primary) */
+  --color-bleu-50: #EDF4F7;
+  --color-bleu-100: #D4E5EB;
+  --color-bleu-200: #A9CBD7;
+  --color-bleu-300: #7EB1C3;
+  --color-bleu-400: #5A9DB3;
+  --color-bleu-500: #4A90A4;
+  --color-bleu-600: #3D7789;
+  --color-bleu-700: #305E6D;
+  --color-bleu-800: #234552;
+  --color-bleu-900: #162C36;
+
+  /* Creme (Background) */
+  --color-creme-50: #FFFDFB;
+  --color-creme-100: #FFF8F0;
+  --color-creme-200: #FFF1E1;
+  --color-creme-300: #FFE9D1;
+  --color-creme-400: #FFE0C0;
+  --color-creme-500: #F5D4AE;
+  --color-creme-600: #D4B48E;
+  --color-creme-700: #B3946E;
+  --color-creme-800: #8A7254;
+  --color-creme-900: #61503A;
+
+  /* Terracotta (Accent) */
+  --color-terracotta-50: #FDF2EF;
+  --color-terracotta-100: #F9E0DA;
+  --color-terracotta-200: #F0C1B5;
+  --color-terracotta-300: #E4A291;
+  --color-terracotta-400: #D5897A;
+  --color-terracotta-500: #C17767;
+  --color-terracotta-600: #A46054;
+  --color-terracotta-700: #874A41;
+  --color-terracotta-800: #6A3A33;
+  --color-terracotta-900: #4D2A25;
+}
+
+/* Light mode (default) */
+:root {
+  --background: var(--color-creme-100);
+  --foreground: #1a1a2e;
+  --card: #FFFFFF;
+  --card-foreground: #1a1a2e;
+  --primary: var(--color-bleu-500);
+  --primary-foreground: #FFFFFF;
+  --accent: var(--color-terracotta-500);
+  --accent-foreground: #FFFFFF;
+  --muted: var(--color-creme-200);
+  --muted-foreground: #6b7280;
+  --border: var(--color-creme-300);
+  --sidebar-bg: var(--color-bleu-800);
+  --sidebar-fg: var(--color-creme-100);
+  --sidebar-hover: var(--color-bleu-700);
+  --sidebar-active: var(--color-bleu-600);
+  --positive: #22c55e;
+  --negative: #ef4444;
+}
+
+/* Dark mode */
+.dark {
+  --background: #1a1a2e;
+  --foreground: var(--color-creme-100);
+  --card: #16213e;
+  --card-foreground: var(--color-creme-100);
+  --primary: var(--color-bleu-400);
+  --primary-foreground: #1a1a2e;
+  --accent: var(--color-terracotta-400);
+  --accent-foreground: #1a1a2e;
+  --muted: #16213e;
+  --muted-foreground: #9ca3af;
+  --border: #2a2a4a;
+  --sidebar-bg: #0f0f23;
+  --sidebar-fg: var(--color-creme-200);
+  --sidebar-hover: #16213e;
+  --sidebar-active: #1a2744;
+  --positive: #4ade80;
+  --negative: #f87171;
+}
+
+/* Base styles */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
