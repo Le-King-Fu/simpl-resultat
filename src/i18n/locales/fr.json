@@ -129,7 +129,33 @@
     "amount": "Montant",
     "category": "Catégorie",
     "supplier": "Fournisseur",
-    "noTransactions": "Aucune transaction trouvée."
+    "noTransactions": "Aucune transaction trouvée.",
+    "filters": {
+      "search": "Rechercher",
+      "searchPlaceholder": "Rechercher par description...",
+      "allCategories": "Toutes les catégories",
+      "allSources": "Toutes les sources",
+      "uncategorized": "Non catégorisées",
+      "dateFrom": "Du",
+      "dateTo": "Au"
+    },
+    "summary": {
+      "count": "Transactions",
+      "income": "Revenus",
+      "expenses": "Dépenses"
+    },
+    "table": {
+      "noCategory": "— Sans catégorie —"
+    },
+    "pagination": {
+      "showing": "Affichage",
+      "of": "sur",
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "notes": {
+      "placeholder": "Ajouter une note..."
+    }
   },
   "categories": {
     "title": "Catégories",

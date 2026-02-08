@@ -129,7 +129,33 @@
     "amount": "Amount",
     "category": "Category",
     "supplier": "Supplier",
-    "noTransactions": "No transactions found."
+    "noTransactions": "No transactions found.",
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Search by description...",
+      "allCategories": "All categories",
+      "allSources": "All sources",
+      "uncategorized": "Uncategorized",
+      "dateFrom": "From",
+      "dateTo": "To"
+    },
+    "summary": {
+      "count": "Transactions",
+      "income": "Income",
+      "expenses": "Expenses"
+    },
+    "table": {
+      "noCategory": "— No category —"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "notes": {
+      "placeholder": "Add a note..."
+    }
   },
   "categories": {
     "title": "Categories",

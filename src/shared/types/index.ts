@@ -210,3 +210,40 @@ export type ImportWizardStep =
   | "confirm"
   | "importing"
   | "report";
+
+// --- Transaction Page Types ---
+
+export interface TransactionRow {
+  id: number;
+  date: string;
+  description: string;
+  amount: number;
+  category_id: number | null;
+  category_name: string | null;
+  category_color: string | null;
+  source_name: string | null;
+  notes: string | null;
+  is_manually_categorized: boolean;
+}
+
+export interface TransactionFilters {
+  search: string;
+  categoryId: number | null;
+  sourceId: number | null;
+  dateFrom: string | null;
+  dateTo: string | null;
+  uncategorizedOnly: boolean;
+}
+
+export interface TransactionSort {
+  column: "date" | "description" | "amount" | "category_name";
+  direction: "asc" | "desc";
+}
+
+export interface TransactionPageResult {
+  rows: TransactionRow[];
+  totalCount: number;
+  totalAmount: number;
+  incomeTotal: number;
+  expenseTotal: number;
+}
