@@ -90,7 +90,14 @@ export default function FilePreviewTable({
                     : "—"}
                 </td>
                 <td className="px-3 py-2 text-xs text-[var(--muted-foreground)] max-w-xs truncate">
-                  {row.raw.join(" | ")}
+                  <span className="inline-flex gap-0">
+                    {row.raw.map((cell, i) => (
+                      <span key={i}>
+                        {i > 0 && <span className="text-[var(--border)] mx-0.5">{'·'}</span>}
+                        {cell}
+                      </span>
+                    ))}
+                  </span>
                 </td>
               </tr>
             ))}
