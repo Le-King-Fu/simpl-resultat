@@ -1,14 +1,16 @@
 import { useTranslation } from "react-i18next";
-import { Hash, TrendingUp, TrendingDown } from "lucide-react";
+import { Hash, TrendingUp, TrendingDown, Scale } from "lucide-react";
 
 interface TransactionSummaryBarProps {
   totalCount: number;
+  totalAmount: number;
   incomeTotal: number;
   expenseTotal: number;
 }
 
 export default function TransactionSummaryBar({
   totalCount,
+  totalAmount,
   incomeTotal,
   expenseTotal,
 }: TransactionSummaryBarProps) {
@@ -33,11 +35,20 @@ export default function TransactionSummaryBar({
     {
       icon: TrendingDown,
       label: t("transactions.summary.expenses"),
-      value: expenseTotal.toLocaleString(undefined, {
+      value: Math.abs(expenseTotal).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }),
       color: "text-[var(--negative)]",
+    },
+    {
+      icon: Scale,
+      label: t("transactions.summary.balance"),
+      value: totalAmount.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+      color: totalAmount >= 0 ? "text-[var(--positive)]" : "text-[var(--negative)]",
     },
   ];
 

@@ -142,7 +142,8 @@
     "summary": {
       "count": "Transactions",
       "income": "Revenus",
-      "expenses": "Dépenses"
+      "expenses": "Dépenses",
+      "balance": "Solde"
     },
     "table": {
       "noCategory": "— Sans catégorie —"

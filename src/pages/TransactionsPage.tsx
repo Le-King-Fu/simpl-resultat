@@ -23,6 +23,7 @@ export default function TransactionsPage() {
 
       <TransactionSummaryBar
         totalCount={state.totalCount}
+        totalAmount={state.totalAmount}
         incomeTotal={state.incomeTotal}
         expenseTotal={state.expenseTotal}
       />
