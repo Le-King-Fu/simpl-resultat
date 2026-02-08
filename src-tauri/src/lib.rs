@@ -1,3 +1,4 @@
+mod commands;
 mod database;
 
 use tauri_plugin_sql::{Migration, MigrationKind};
@@ -13,11 +14,20 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_sql::Builder::default()
                 .add_migrations("sqlite:simpl_resultat.db", migrations)
                 .build(),
         )
+        .invoke_handler(tauri::generate_handler![
+            commands::scan_import_folder,
+            commands::read_file_content,
+            commands::hash_file,
+            commands::detect_encoding,
+            commands::get_file_preview,
+            commands::pick_folder,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

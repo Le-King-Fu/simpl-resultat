@@ -127,3 +127,86 @@ export interface NavItem {
   icon: string;
   labelKey: string;
 }
+
+// --- Import Wizard Types ---
+
+export interface ScannedFile {
+  filename: string;
+  file_path: string;
+  size_bytes: number;
+  modified_at: string;
+}
+
+export interface ScannedSource {
+  folder_name: string;
+  folder_path: string;
+  files: ScannedFile[];
+}
+
+export interface ColumnMapping {
+  date: number;
+  description: number;
+  amount?: number;
+  debitAmount?: number;
+  creditAmount?: number;
+}
+
+export type AmountMode = "single" | "debit_credit";
+export type SignConvention = "negative_expense" | "positive_expense";
+
+export interface SourceConfig {
+  name: string;
+  delimiter: string;
+  encoding: string;
+  dateFormat: string;
+  skipLines: number;
+  columnMapping: ColumnMapping;
+  amountMode: AmountMode;
+  signConvention: SignConvention;
+  hasHeader: boolean;
+}
+
+export interface ParsedRow {
+  rowIndex: number;
+  raw: string[];
+  parsed: {
+    date: string;
+    description: string;
+    amount: number;
+  } | null;
+  error?: string;
+}
+
+export interface DuplicateRow {
+  rowIndex: number;
+  date: string;
+  description: string;
+  amount: number;
+  existingTransactionId: number;
+}
+
+export interface DuplicateCheckResult {
+  fileAlreadyImported: boolean;
+  existingFileId?: number;
+  duplicateRows: DuplicateRow[];
+  newRows: ParsedRow[];
+}
+
+export interface ImportReport {
+  totalRows: number;
+  importedCount: number;
+  skippedDuplicates: number;
+  errorCount: number;
+  categorizedCount: number;
+  uncategorizedCount: number;
+  errors: Array<{ rowIndex: number; message: string }>;
+}
+
+export type ImportWizardStep =
+  | "source-list"
+  | "source-config"
+  | "file-preview"
+  | "duplicate-check"
+  | "confirm"
+  | "importing"
+  | "report";

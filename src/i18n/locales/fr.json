@@ -24,7 +24,103 @@
     "source": "Source",
     "file": "Fichier",
     "status": "Statut",
-    "date": "Date"
+    "date": "Date",
+    "folder": {
+      "label": "Dossier d'import",
+      "notConfigured": "Aucun dossier configuré",
+      "browse": "Parcourir",
+      "refresh": "Actualiser"
+    },
+    "sources": {
+      "title": "Sources d'import",
+      "empty": "Aucune source trouvée. Créez des sous-dossiers dans votre dossier d'import avec des fichiers CSV.",
+      "new": "nouveau",
+      "fileCount_one": "{{count}} fichier",
+      "fileCount_other": "{{count}} fichiers",
+      "fileCount": "{{count}} fichier(s)"
+    },
+    "config": {
+      "title": "Configuration de la source",
+      "sourceName": "Nom de la source",
+      "delimiter": "Délimiteur",
+      "semicolon": "Point-virgule",
+      "comma": "Virgule",
+      "tab": "Tabulation",
+      "encoding": "Encodage",
+      "dateFormat": "Format de date",
+      "skipLines": "Lignes à ignorer",
+      "hasHeader": "La première ligne contient les en-têtes",
+      "signConvention": "Convention de signe",
+      "negativeExpense": "Dépenses négatives",
+      "positiveExpense": "Dépenses positives",
+      "columnMapping": "Mapping des colonnes",
+      "dateColumn": "Colonne date",
+      "descriptionColumn": "Colonne description",
+      "amountColumn": "Colonne montant",
+      "amountMode": "Mode montant",
+      "singleAmount": "Montant unique",
+      "debitCredit": "Débit / Crédit séparés",
+      "debitColumn": "Colonne débit",
+      "creditColumn": "Colonne crédit",
+      "selectFiles": "Fichiers à importer",
+      "selectAll": "Tout sélectionner"
+    },
+    "preview": {
+      "title": "Aperçu des données",
+      "noData": "Aucune donnée à afficher",
+      "rowCount": "{{count}} ligne(s)",
+      "errorCount": "{{count}} erreur(s)",
+      "date": "Date",
+      "description": "Description",
+      "amount": "Montant",
+      "raw": "Données brutes",
+      "moreRows": "... et {{count}} ligne(s) supplémentaire(s)"
+    },
+    "duplicates": {
+      "title": "Détection des doublons",
+      "fileAlreadyImported": "Ce fichier a déjà été importé",
+      "fileAlreadyImportedDesc": "Un fichier avec le même contenu existe déjà dans la base de données.",
+      "rowsFound": "{{count}} doublon(s) détecté(s)",
+      "rowsFoundDesc": "Ces lignes correspondent à des transactions déjà existantes.",
+      "noneFound": "Aucun doublon détecté",
+      "skip": "Ignorer les doublons",
+      "includeAll": "Tout importer",
+      "summary": "Total : {{total}} lignes — {{new}} nouvelles — {{duplicates}} doublon(s)"
+    },
+    "confirm": {
+      "title": "Confirmation de l'import",
+      "source": "Source",
+      "files": "Fichiers",
+      "settings": "Paramètres",
+      "rowsToImport": "Lignes à importer",
+      "rowsSummary": "{{count}} ligne(s) à importer, {{skipped}} doublon(s) ignoré(s)"
+    },
+    "progress": {
+      "title": "Import en cours",
+      "importing": "Import en cours...",
+      "rows": "lignes"
+    },
+    "report": {
+      "title": "Rapport d'import",
+      "totalRows": "Total lignes",
+      "imported": "Importées",
+      "skippedDuplicates": "Doublons ignorés",
+      "errors": "Erreurs",
+      "categorized": "Catégorisées",
+      "uncategorized": "Non catégorisées",
+      "errorDetails": "Détail des erreurs",
+      "row": "Ligne",
+      "errorMessage": "Message d'erreur",
+      "done": "Terminé"
+    },
+    "wizard": {
+      "back": "Retour",
+      "next": "Suivant",
+      "preview": "Aperçu",
+      "checkDuplicates": "Vérifier les doublons",
+      "confirm": "Confirmer",
+      "import": "Importer"
+    }
   },
   "transactions": {
     "title": "Transactions",

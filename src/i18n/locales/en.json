@@ -24,7 +24,103 @@
     "source": "Source",
     "file": "File",
     "status": "Status",
-    "date": "Date"
+    "date": "Date",
+    "folder": {
+      "label": "Import folder",
+      "notConfigured": "No folder configured",
+      "browse": "Browse",
+      "refresh": "Refresh"
+    },
+    "sources": {
+      "title": "Import Sources",
+      "empty": "No sources found. Create subfolders in your import folder with CSV files.",
+      "new": "new",
+      "fileCount_one": "{{count}} file",
+      "fileCount_other": "{{count}} files",
+      "fileCount": "{{count}} file(s)"
+    },
+    "config": {
+      "title": "Source Configuration",
+      "sourceName": "Source name",
+      "delimiter": "Delimiter",
+      "semicolon": "Semicolon",
+      "comma": "Comma",
+      "tab": "Tab",
+      "encoding": "Encoding",
+      "dateFormat": "Date format",
+      "skipLines": "Lines to skip",
+      "hasHeader": "First row contains headers",
+      "signConvention": "Sign convention",
+      "negativeExpense": "Negative expenses",
+      "positiveExpense": "Positive expenses",
+      "columnMapping": "Column mapping",
+      "dateColumn": "Date column",
+      "descriptionColumn": "Description column",
+      "amountColumn": "Amount column",
+      "amountMode": "Amount mode",
+      "singleAmount": "Single amount",
+      "debitCredit": "Separate debit / credit",
+      "debitColumn": "Debit column",
+      "creditColumn": "Credit column",
+      "selectFiles": "Files to import",
+      "selectAll": "Select all"
+    },
+    "preview": {
+      "title": "Data Preview",
+      "noData": "No data to display",
+      "rowCount": "{{count}} row(s)",
+      "errorCount": "{{count}} error(s)",
+      "date": "Date",
+      "description": "Description",
+      "amount": "Amount",
+      "raw": "Raw data",
+      "moreRows": "... and {{count}} more row(s)"
+    },
+    "duplicates": {
+      "title": "Duplicate Detection",
+      "fileAlreadyImported": "This file has already been imported",
+      "fileAlreadyImportedDesc": "A file with the same content already exists in the database.",
+      "rowsFound": "{{count}} duplicate(s) found",
+      "rowsFoundDesc": "These rows match existing transactions.",
+      "noneFound": "No duplicates found",
+      "skip": "Skip duplicates",
+      "includeAll": "Import all",
+      "summary": "Total: {{total}} rows — {{new}} new — {{duplicates}} duplicate(s)"
+    },
+    "confirm": {
+      "title": "Import Confirmation",
+      "source": "Source",
+      "files": "Files",
+      "settings": "Settings",
+      "rowsToImport": "Rows to import",
+      "rowsSummary": "{{count}} row(s) to import, {{skipped}} duplicate(s) skipped"
+    },
+    "progress": {
+      "title": "Import in Progress",
+      "importing": "Importing...",
+      "rows": "rows"
+    },
+    "report": {
+      "title": "Import Report",
+      "totalRows": "Total rows",
+      "imported": "Imported",
+      "skippedDuplicates": "Skipped duplicates",
+      "errors": "Errors",
+      "categorized": "Categorized",
+      "uncategorized": "Uncategorized",
+      "errorDetails": "Error details",
+      "row": "Row",
+      "errorMessage": "Error message",
+      "done": "Done"
+    },
+    "wizard": {
+      "back": "Back",
+      "next": "Next",
+      "preview": "Preview",
+      "checkDuplicates": "Check duplicates",
+      "confirm": "Confirm",
+      "import": "Import"
+    }
   },
   "transactions": {
     "title": "Transactions",
