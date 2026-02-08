@@ -16,35 +16,22 @@ export async function insertBatch(
   const db = await getDb();
   let insertedCount = 0;
 
-  // Process in batches of 500
-  const batchSize = 500;
-  for (let i = 0; i < transactions.length; i += batchSize) {
-    const batch = transactions.slice(i, i + batchSize);
-
-    await db.execute("BEGIN TRANSACTION", []);
-    try {
-      for (const tx of batch) {
-        await db.execute(
-          `INSERT INTO transactions (date, description, amount, source_id, file_id, original_description, category_id, supplier_id)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [
-            tx.date,
-            tx.description,
-            tx.amount,
-            tx.source_id,
-            tx.file_id,
-            tx.original_description,
-            tx.category_id ?? null,
-            tx.supplier_id ?? null,
-          ]
-        );
-        insertedCount++;
-      }
-      await db.execute("COMMIT", []);
-    } catch (e) {
-      await db.execute("ROLLBACK", []);
-      throw e;
-    }
+  for (const tx of transactions) {
+    await db.execute(
+      `INSERT INTO transactions (date, description, amount, source_id, file_id, original_description, category_id, supplier_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        tx.date,
+        tx.description,
+        tx.amount,
+        tx.source_id,
+        tx.file_id,
+        tx.original_description,
+        tx.category_id ?? null,
+        tx.supplier_id ?? null,
+      ]
+    );
+    insertedCount++;
   }
 
   return insertedCount;
