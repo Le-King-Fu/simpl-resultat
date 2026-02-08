@@ -104,6 +104,7 @@ export default function SourceConfigPanel({
             <option value="YYYY-MM-DD">YYYY-MM-DD</option>
             <option value="DD-MM-YYYY">DD-MM-YYYY</option>
             <option value="DD.MM.YYYY">DD.MM.YYYY</option>
+            <option value="YYYYMMDD">YYYYMMDD</option>
           </select>
         </div>
       </div>

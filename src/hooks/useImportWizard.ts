@@ -244,6 +244,11 @@ export function useImportWizard() {
       const existing = await getSourceByName(source.folder_name);
       dispatch({ type: "SET_EXISTING_SOURCE", payload: existing });
 
+      let activeDelimiter = defaultConfig.delimiter;
+      let activeEncoding = "utf-8";
+      let activeSkipLines = 0;
+      const activeHasHeader = true;
+
       if (existing) {
         // Restore config from DB
         const mapping = JSON.parse(existing.column_mapping) as ColumnMapping;
@@ -260,12 +265,14 @@ export function useImportWizard() {
           hasHeader: true,
         };
         dispatch({ type: "SET_SOURCE_CONFIG", payload: config });
+        activeDelimiter = existing.delimiter;
+        activeEncoding = existing.encoding;
+        activeSkipLines = existing.skip_lines;
       } else {
         // Auto-detect encoding for first file
-        let encoding = "utf-8";
         if (source.files.length > 0) {
           try {
-            encoding = await invoke<string>("detect_encoding", {
+            activeEncoding = await invoke<string>("detect_encoding", {
               filePath: source.files[0].file_path,
             });
           } catch {
@@ -278,14 +285,20 @@ export function useImportWizard() {
           payload: {
             ...defaultConfig,
             name: source.folder_name,
-            encoding,
+            encoding: activeEncoding,
           },
         });
       }
 
       // Load preview headers from first file
       if (source.files.length > 0) {
-        await loadHeaders(source.files[0].file_path, existing);
+        await loadHeadersWithConfig(
+          source.files[0].file_path,
+          activeDelimiter,
+          activeEncoding,
+          activeSkipLines,
+          activeHasHeader
+        );
       }
 
       dispatch({ type: "SET_STEP", payload: "source-config" });
@@ -293,36 +306,60 @@ export function useImportWizard() {
     [] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
-  const loadHeaders = async (
-    filePath: string,
-    existing: ImportSource | null
-  ) => {
-    try {
-      const encoding = existing?.encoding || "utf-8";
-      const preview = await invoke<string>("get_file_preview", {
-        filePath,
-        encoding,
-        maxLines: 5,
-      });
-      const delimiter = existing?.delimiter || ";";
-      const parsed = Papa.parse(preview, { delimiter });
-      if (parsed.data.length > 0) {
-        dispatch({
-          type: "SET_PARSED_PREVIEW",
-          payload: {
-            rows: [],
-            headers: (parsed.data[0] as string[]).map((h) => h.trim()),
-          },
+  const loadHeadersWithConfig = useCallback(
+    async (filePath: string, delimiter: string, encoding: string, skipLines: number, hasHeader: boolean) => {
+      try {
+        const preview = await invoke<string>("get_file_preview", {
+          filePath,
+          encoding,
+          maxLines: skipLines + 5,
         });
+        const parsed = Papa.parse(preview, { delimiter, skipEmptyLines: true });
+        const data = parsed.data as string[][];
+        const headerRow = hasHeader && data.length > skipLines ? skipLines : -1;
+        if (headerRow >= 0 && data[headerRow]) {
+          dispatch({
+            type: "SET_PARSED_PREVIEW",
+            payload: {
+              rows: [],
+              headers: data[headerRow].map((h) => h.trim()),
+            },
+          });
+        } else if (data.length > 0) {
+          // No header row — generate column indices as headers
+          const firstDataRow = data[skipLines] || data[0];
+          dispatch({
+            type: "SET_PARSED_PREVIEW",
+            payload: {
+              rows: [],
+              headers: firstDataRow.map((_, i) => `Col ${i}`),
+            },
+          });
+        }
+      } catch {
+        // ignore preview errors
       }
-    } catch {
-      // ignore preview errors
-    }
-  };
+    },
+    []
+  );
 
-  const updateConfig = useCallback((config: SourceConfig) => {
-    dispatch({ type: "SET_SOURCE_CONFIG", payload: config });
-  }, []);
+  const updateConfig = useCallback(
+    (config: SourceConfig) => {
+      dispatch({ type: "SET_SOURCE_CONFIG", payload: config });
+
+      // Reload headers when delimiter, encoding, skipLines, or hasHeader changes
+      if (state.selectedFiles.length > 0) {
+        loadHeadersWithConfig(
+          state.selectedFiles[0].file_path,
+          config.delimiter,
+          config.encoding,
+          config.skipLines,
+          config.hasHeader
+        );
+      }
+    },
+    [state.selectedFiles, loadHeadersWithConfig]
+  );
 
   const toggleFile = useCallback(
     (file: ScannedFile) => {

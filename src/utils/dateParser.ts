@@ -1,12 +1,29 @@
 /**
  * Parse a date string with a given format and return ISO YYYY-MM-DD.
- * Supported formats: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD, DD-MM-YYYY, DD.MM.YYYY
+ * Supported formats: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD, DD-MM-YYYY, DD.MM.YYYY, YYYYMMDD
  */
 export function parseDate(raw: string, format: string): string {
   if (!raw || typeof raw !== "string") return "";
 
   const cleaned = raw.trim();
   let day: string, month: string, year: string;
+
+  // Handle compact format YYYYMMDD (no separator)
+  if (format === "YYYYMMDD") {
+    const digits = cleaned.replace(/\D/g, "");
+    if (digits.length !== 8) return "";
+    year = digits.substring(0, 4);
+    month = digits.substring(4, 6);
+    day = digits.substring(6, 8);
+
+    const y = parseInt(year, 10);
+    const m = parseInt(month, 10);
+    const d = parseInt(day, 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return "";
+    if (m < 1 || m > 12 || d < 1 || d > 31) return "";
+
+    return `${year}-${month}-${day}`;
+  }
 
   // Extract parts based on separator
   const parts = cleaned.split(/[/\-\.]/);
