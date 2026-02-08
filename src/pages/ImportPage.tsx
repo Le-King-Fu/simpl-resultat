@@ -35,9 +35,9 @@ export default function ImportPage() {
 
       {/* Error banner */}
       {state.error && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 flex items-center gap-2">
-          <AlertCircle size={16} className="text-red-500 shrink-0" />
-          <p className="text-sm text-red-700 dark:text-red-300">
+        <div className="mb-4 p-3 rounded-xl bg-[var(--card)] border-2 border-[var(--negative)] flex items-center gap-2">
+          <AlertCircle size={16} className="text-[var(--negative)] shrink-0" />
+          <p className="text-sm text-[var(--foreground)]">
             {state.error}
           </p>
         </div>

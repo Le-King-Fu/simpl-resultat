@@ -30,19 +30,19 @@ export default function ImportReportPanel({
       icon: CheckCircle,
       label: t("import.report.imported"),
       value: report.importedCount,
-      color: "text-emerald-500",
+      color: "text-[var(--positive)]",
     },
     {
       icon: AlertTriangle,
       label: t("import.report.skippedDuplicates"),
       value: report.skippedDuplicates,
-      color: "text-amber-500",
+      color: "text-[var(--accent)]",
     },
     {
       icon: XCircle,
       label: t("import.report.errors"),
       value: report.errorCount,
-      color: "text-red-500",
+      color: "text-[var(--negative)]",
     },
     {
       icon: Tag,
@@ -85,7 +85,7 @@ export default function ImportReportPanel({
       {/* Errors list */}
       {report.errors.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold mb-2 text-red-500">
+          <h3 className="text-sm font-semibold mb-2 text-[var(--negative)]">
             {t("import.report.errorDetails")}
           </h3>
           <div className="max-h-48 overflow-y-auto rounded-xl border border-[var(--border)]">
@@ -104,7 +104,7 @@ export default function ImportReportPanel({
                 {report.errors.map((err, i) => (
                   <tr key={i}>
                     <td className="px-3 py-2">{err.rowIndex + 1}</td>
-                    <td className="px-3 py-2 text-red-500">{err.message}</td>
+                    <td className="px-3 py-2 text-[var(--negative)]">{err.message}</td>
                   </tr>
                 ))}
               </tbody>

@@ -32,7 +32,7 @@ export default function FilePreviewTable({
             {t("import.preview.rowCount", { count: rows.length })}
           </span>
           {errorCount > 0 && (
-            <span className="flex items-center gap-1 text-red-500">
+            <span className="flex items-center gap-1 text-[var(--negative)]">
               <AlertCircle size={14} />
               {t("import.preview.errorCount", { count: errorCount })}
             </span>
@@ -67,7 +67,7 @@ export default function FilePreviewTable({
                 key={row.rowIndex}
                 className={
                   row.error
-                    ? "bg-red-50 dark:bg-red-950/20"
+                    ? "bg-[color-mix(in_srgb,var(--negative)_10%,var(--card))]"
                     : "hover:bg-[var(--muted)]"
                 }
               >
@@ -76,7 +76,7 @@ export default function FilePreviewTable({
                 </td>
                 <td className="px-3 py-2">
                   {row.parsed?.date || (
-                    <span className="text-red-500 text-xs">
+                    <span className="text-[var(--negative)] text-xs">
                       {row.error || "—"}
                     </span>
                   )}

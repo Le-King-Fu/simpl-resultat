@@ -25,13 +25,13 @@ export default function DuplicateCheckPanel({
 
       {/* File-level duplicate */}
       {result.fileAlreadyImported && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-          <FileWarning size={20} className="text-amber-500 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-[var(--card)] border-2 border-[var(--accent)]">
+          <FileWarning size={20} className="text-[var(--accent)] shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+            <p className="text-sm font-medium text-[var(--foreground)]">
               {t("import.duplicates.fileAlreadyImported")}
             </p>
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+            <p className="text-xs text-[var(--muted-foreground)] mt-1">
               {t("import.duplicates.fileAlreadyImportedDesc")}
             </p>
           </div>
@@ -41,18 +41,18 @@ export default function DuplicateCheckPanel({
       {/* Row-level duplicates */}
       {result.duplicateRows.length > 0 ? (
         <div>
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 mb-4">
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-[var(--card)] border-2 border-[var(--accent)] mb-4">
             <AlertTriangle
               size={20}
-              className="text-amber-500 shrink-0 mt-0.5"
+              className="text-[var(--accent)] shrink-0 mt-0.5"
             />
             <div>
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-medium text-[var(--foreground)]">
                 {t("import.duplicates.rowsFound", {
                   count: result.duplicateRows.length,
                 })}
               </p>
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+              <p className="text-xs text-[var(--muted-foreground)] mt-1">
                 {t("import.duplicates.rowsFoundDesc")}
               </p>
             </div>
@@ -105,7 +105,7 @@ export default function DuplicateCheckPanel({
                 {result.duplicateRows.map((row) => (
                   <tr
                     key={row.rowIndex}
-                    className="bg-amber-50/50 dark:bg-amber-950/10"
+                    className="bg-[var(--muted)]"
                   >
                     <td className="px-3 py-2 text-[var(--muted-foreground)]">
                       {row.rowIndex + 1}
@@ -125,9 +125,9 @@ export default function DuplicateCheckPanel({
         </div>
       ) : (
         !result.fileAlreadyImported && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
-            <CheckCircle size={20} className="text-emerald-500" />
-            <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--card)] border-2 border-[var(--positive)]">
+            <CheckCircle size={20} className="text-[var(--positive)]" />
+            <p className="text-sm font-medium text-[var(--foreground)]">
               {t("import.duplicates.noneFound")}
             </p>
           </div>
