@@ -1,33 +1,52 @@
 import { useTranslation } from "react-i18next";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
+import { useDashboard } from "../hooks/useDashboard";
+import PeriodSelector from "../components/dashboard/PeriodSelector";
+import CategoryPieChart from "../components/dashboard/CategoryPieChart";
+import RecentTransactionsList from "../components/dashboard/RecentTransactionsList";
+
+const fmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const { state, setPeriod } = useDashboard();
+  const { summary, categoryBreakdown, recentTransactions, period, isLoading } = state;
+
+  const balance = summary.totalAmount;
+  const balanceColor =
+    balance > 0
+      ? "text-[var(--positive)]"
+      : balance < 0
+        ? "text-[var(--negative)]"
+        : "text-[var(--primary)]";
 
   const cards = [
     {
       labelKey: "dashboard.balance",
-      value: "0,00 €",
+      value: fmt.format(balance),
       icon: Wallet,
-      color: "text-[var(--primary)]",
+      color: balanceColor,
     },
     {
       labelKey: "dashboard.income",
-      value: "0,00 €",
+      value: fmt.format(summary.incomeTotal),
       icon: TrendingUp,
       color: "text-[var(--positive)]",
     },
     {
       labelKey: "dashboard.expenses",
-      value: "0,00 €",
+      value: fmt.format(Math.abs(summary.expenseTotal)),
       icon: TrendingDown,
       color: "text-[var(--negative)]",
     },
   ];
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">{t("dashboard.title")}</h1>
+    <div className={isLoading ? "opacity-50 pointer-events-none" : ""}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+        <PeriodSelector value={period} onChange={setPeriod} />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {cards.map((card) => (
@@ -46,8 +65,9 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="bg-[var(--card)] rounded-xl p-8 border border-[var(--border)] text-center text-[var(--muted-foreground)]">
-        <p>{t("dashboard.noData")}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <CategoryPieChart data={categoryBreakdown} />
+        <RecentTransactionsList transactions={recentTransactions} />
       </div>
     </div>
   );

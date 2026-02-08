@@ -16,7 +16,16 @@
     "balance": "Solde",
     "income": "Revenus",
     "expenses": "Dépenses",
-    "noData": "Aucune donnée disponible. Commencez par importer vos relevés bancaires."
+    "noData": "Aucune donnée disponible. Commencez par importer vos relevés bancaires.",
+    "expensesByCategory": "Dépenses par catégorie",
+    "recentTransactions": "Transactions récentes",
+    "period": {
+      "month": "Ce mois",
+      "3months": "3 mois",
+      "6months": "6 mois",
+      "12months": "12 mois",
+      "all": "Tout"
+    }
   },
   "import": {
     "title": "Importer des relevés",

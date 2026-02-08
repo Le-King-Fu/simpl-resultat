@@ -16,7 +16,16 @@
     "balance": "Balance",
     "income": "Income",
     "expenses": "Expenses",
-    "noData": "No data available. Start by importing your bank statements."
+    "noData": "No data available. Start by importing your bank statements.",
+    "expensesByCategory": "Expenses by Category",
+    "recentTransactions": "Recent Transactions",
+    "period": {
+      "month": "This month",
+      "3months": "3 months",
+      "6months": "6 months",
+      "12months": "12 months",
+      "all": "All"
+    }
   },
   "import": {
     "title": "Import Statements",

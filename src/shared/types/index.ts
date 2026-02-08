@@ -202,6 +202,33 @@ export interface ImportReport {
   errors: Array<{ rowIndex: number; message: string }>;
 }
 
+// --- Dashboard Types ---
+
+export type DashboardPeriod = "month" | "3months" | "6months" | "12months" | "all";
+
+export interface DashboardSummary {
+  totalCount: number;
+  totalAmount: number;
+  incomeTotal: number;
+  expenseTotal: number;
+}
+
+export interface CategoryBreakdownItem {
+  category_id: number | null;
+  category_name: string;
+  category_color: string;
+  total: number;
+}
+
+export interface RecentTransaction {
+  id: number;
+  date: string;
+  description: string;
+  amount: number;
+  category_name: string | null;
+  category_color: string | null;
+}
+
 export type ImportWizardStep =
   | "source-list"
   | "source-config"
