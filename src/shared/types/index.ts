@@ -211,6 +211,29 @@ export type ImportWizardStep =
   | "importing"
   | "report";
 
+// --- Category Page Types ---
+
+export interface CategoryTreeNode {
+  id: number;
+  name: string;
+  parent_id: number | null;
+  color: string | null;
+  icon: string | null;
+  type: "expense" | "income" | "transfer";
+  is_active: boolean;
+  sort_order: number;
+  keyword_count: number;
+  children: CategoryTreeNode[];
+}
+
+export interface CategoryFormData {
+  name: string;
+  type: "expense" | "income" | "transfer";
+  color: string;
+  parent_id: number | null;
+  sort_order: number;
+}
+
 // --- Transaction Page Types ---
 
 export interface TransactionRow {

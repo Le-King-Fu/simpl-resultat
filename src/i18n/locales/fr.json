@@ -166,7 +166,19 @@
     "expense": "Dépense",
     "income": "Revenu",
     "transfer": "Transfert",
-    "keywords": "Mots-clés"
+    "keywords": "Mots-clés",
+    "addCategory": "Ajouter une catégorie",
+    "editCategory": "Modifier la catégorie",
+    "deleteCategory": "Supprimer la catégorie",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette catégorie ? Ses sous-catégories seront également supprimées.",
+    "deleteBlocked": "Impossible de supprimer : cette catégorie est utilisée par {{count}} transaction(s).",
+    "noParent": "Aucun parent (niveau supérieur)",
+    "sortOrder": "Ordre de tri",
+    "selectCategory": "Sélectionnez une catégorie pour voir les détails",
+    "keywordCount": "Mots-clés",
+    "keywordText": "Mot-clé...",
+    "priority": "Priorité",
+    "customColor": "Couleur personnalisée"
   },
   "adjustments": {
     "title": "Ajustements",

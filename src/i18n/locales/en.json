@@ -166,7 +166,19 @@
     "expense": "Expense",
     "income": "Income",
     "transfer": "Transfer",
-    "keywords": "Keywords"
+    "keywords": "Keywords",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "deleteCategory": "Delete Category",
+    "deleteConfirm": "Are you sure you want to delete this category? Its children will also be deleted.",
+    "deleteBlocked": "Cannot delete: this category is used by {{count}} transaction(s).",
+    "noParent": "No parent (top-level)",
+    "sortOrder": "Sort Order",
+    "selectCategory": "Select a category to view details",
+    "keywordCount": "Keywords",
+    "keywordText": "Keyword...",
+    "priority": "Priority",
+    "customColor": "Custom color"
   },
   "adjustments": {
     "title": "Adjustments",
