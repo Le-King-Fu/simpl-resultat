@@ -13,6 +13,7 @@ import {
   updateTransactionNotes,
   getAllCategories,
   getAllImportSources,
+  autoCategorizeTransactions,
 } from "../services/transactionService";
 
 interface TransactionsState {
@@ -28,6 +29,7 @@ interface TransactionsState {
   categories: Category[];
   sources: ImportSource[];
   isLoading: boolean;
+  isAutoCategorizing: boolean;
   error: string | null;
 }
 
@@ -41,7 +43,8 @@ type TransactionsAction =
   | { type: "SET_CATEGORIES"; payload: Category[] }
   | { type: "SET_SOURCES"; payload: ImportSource[] }
   | { type: "UPDATE_ROW_CATEGORY"; payload: { txId: number; categoryId: number | null; categoryName: string | null; categoryColor: string | null } }
-  | { type: "UPDATE_ROW_NOTES"; payload: { txId: number; notes: string } };
+  | { type: "UPDATE_ROW_NOTES"; payload: { txId: number; notes: string } }
+  | { type: "SET_AUTO_CATEGORIZING"; payload: boolean };
 
 const initialFilters: TransactionFilters = {
   search: "",
@@ -65,6 +68,7 @@ const initialState: TransactionsState = {
   categories: [],
   sources: [],
   isLoading: false,
+  isAutoCategorizing: false,
   error: null,
 };
 
@@ -120,6 +124,8 @@ function reducer(state: TransactionsState, action: TransactionsAction): Transact
           r.id === action.payload.txId ? { ...r, notes: action.payload.notes } : r
         ),
       };
+    case "SET_AUTO_CATEGORIZING":
+      return { ...state, isAutoCategorizing: action.payload };
     default:
       return state;
   }
@@ -268,6 +274,25 @@ export function useTransactions() {
     [state.sort, state.page, state.pageSize, fetchData]
   );
 
+  const autoCategorize = useCallback(async () => {
+    dispatch({ type: "SET_AUTO_CATEGORIZING", payload: true });
+    try {
+      const count = await autoCategorizeTransactions();
+      if (count > 0) {
+        fetchData(debouncedFiltersRef.current, state.sort, state.page, state.pageSize);
+      }
+      return count;
+    } catch (e) {
+      dispatch({
+        type: "SET_ERROR",
+        payload: e instanceof Error ? e.message : String(e),
+      });
+      return 0;
+    } finally {
+      dispatch({ type: "SET_AUTO_CATEGORIZING", payload: false });
+    }
+  }, [state.sort, state.page, state.pageSize, fetchData]);
+
   return {
     state,
     setFilter,
@@ -275,5 +300,6 @@ export function useTransactions() {
     setPage,
     updateCategory,
     saveNotes,
+    autoCategorize,
   };
 }

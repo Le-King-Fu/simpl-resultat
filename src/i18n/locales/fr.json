@@ -165,7 +165,10 @@
     },
     "notes": {
       "placeholder": "Ajouter une note..."
-    }
+    },
+    "autoCategorize": "Auto-catégoriser",
+    "autoCategorizeResult": "{{count}} transaction(s) catégorisée(s)",
+    "autoCategorizeNone": "Aucune correspondance trouvée"
   },
   "categories": {
     "title": "Catégories",

@@ -165,7 +165,10 @@
     },
     "notes": {
       "placeholder": "Add a note..."
-    }
+    },
+    "autoCategorize": "Auto-categorize",
+    "autoCategorizeResult": "{{count}} transaction(s) categorized",
+    "autoCategorizeNone": "No new matches found"
   },
   "categories": {
     "title": "Categories",

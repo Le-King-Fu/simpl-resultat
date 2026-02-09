@@ -37,7 +37,8 @@ export async function categorizeDescription(
 
   for (const kw of keywords) {
     const normalizedKeyword = normalizeDescription(kw.keyword);
-    if (normalized.includes(normalizedKeyword)) {
+    const escaped = normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (new RegExp(`\\b${escaped}\\b`).test(normalized)) {
       return {
         category_id: kw.category_id,
         supplier_id: kw.supplier_id ?? null,
@@ -64,7 +65,8 @@ export async function categorizeBatch(
     const normalized = normalizeDescription(desc);
     for (const kw of keywords) {
       const normalizedKeyword = normalizeDescription(kw.keyword);
-      if (normalized.includes(normalizedKeyword)) {
+      const escaped = normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (new RegExp(`\\b${escaped}\\b`).test(normalized)) {
         return {
           category_id: kw.category_id,
           supplier_id: kw.supplier_id ?? null,

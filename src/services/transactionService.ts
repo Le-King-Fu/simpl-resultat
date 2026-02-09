@@ -1,4 +1,5 @@
 import { getDb } from "./db";
+import { categorizeBatch } from "./categorizationService";
 import type {
   Transaction,
   TransactionRow,
@@ -232,4 +233,29 @@ export async function getAllImportSources(): Promise<ImportSource[]> {
   return db.select<ImportSource[]>(
     `SELECT * FROM import_sources ORDER BY name`
   );
+}
+
+export async function autoCategorizeTransactions(): Promise<number> {
+  const db = await getDb();
+  const uncategorized = await db.select<Array<{ id: number; description: string }>>(
+    `SELECT id, description FROM transactions WHERE category_id IS NULL AND is_manually_categorized = 0`
+  );
+
+  if (uncategorized.length === 0) return 0;
+
+  const results = await categorizeBatch(uncategorized.map((tx) => tx.description));
+
+  let count = 0;
+  for (let i = 0; i < uncategorized.length; i++) {
+    const result = results[i];
+    if (result.category_id !== null) {
+      await db.execute(
+        `UPDATE transactions SET category_id = $1, supplier_id = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3`,
+        [result.category_id, result.supplier_id, uncategorized[i].id]
+      );
+      count++;
+    }
+  }
+
+  return count;
 }
