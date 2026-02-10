@@ -535,7 +535,7 @@ export function useImportWizard() {
         const hash = await invoke<string>("hash_file", {
           filePath: state.selectedFiles[0].file_path,
         });
-        const existing = await existsByHash(sourceId, hash);
+        const existing = await existsByHash(hash);
         if (existing) {
           fileAlreadyImported = true;
           existingFileId = existing.id;

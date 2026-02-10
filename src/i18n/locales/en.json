@@ -122,6 +122,18 @@
       "errorMessage": "Error message",
       "done": "Done"
     },
+    "history": {
+      "title": "Import History",
+      "empty": "No imports yet.",
+      "deleteAll": "Delete All",
+      "deleteConfirm": "Delete this import and its {{count}} transaction(s)?",
+      "deleteAllConfirm": "Delete ALL imports and their transactions? This cannot be undone.",
+      "source": "Source",
+      "filename": "File",
+      "date": "Date",
+      "rows": "Rows",
+      "status": "Status"
+    },
     "wizard": {
       "back": "Back",
       "next": "Next",

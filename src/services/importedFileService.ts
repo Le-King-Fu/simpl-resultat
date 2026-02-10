@@ -1,5 +1,5 @@
 import { getDb } from "./db";
-import type { ImportedFile } from "../shared/types";
+import type { ImportedFile, ImportedFileWithSource } from "../shared/types";
 
 export async function getFilesBySourceId(
   sourceId: number
@@ -12,13 +12,12 @@ export async function getFilesBySourceId(
 }
 
 export async function existsByHash(
-  sourceId: number,
   fileHash: string
 ): Promise<ImportedFile | null> {
   const db = await getDb();
   const rows = await db.select<ImportedFile[]>(
-    "SELECT * FROM imported_files WHERE source_id = $1 AND file_hash = $2",
-    [sourceId, fileHash]
+    "SELECT * FROM imported_files WHERE file_hash = $1",
+    [fileHash]
   );
   return rows.length > 0 ? rows[0] : null;
 }
@@ -71,4 +70,33 @@ export async function updateFileStatus(
     `UPDATE imported_files SET status = $1, row_count = COALESCE($2, row_count), notes = COALESCE($3, notes) WHERE id = $4`,
     [status, rowCount ?? null, notes ?? null, id]
   );
+}
+
+export async function getAllImportedFiles(): Promise<ImportedFileWithSource[]> {
+  const db = await getDb();
+  return db.select<ImportedFileWithSource[]>(
+    `SELECT f.*, s.name AS source_name
+     FROM imported_files f
+     JOIN import_sources s ON s.id = f.source_id
+     ORDER BY f.import_date DESC`
+  );
+}
+
+export async function deleteImportWithTransactions(
+  fileId: number
+): Promise<number> {
+  const db = await getDb();
+  const result = await db.execute(
+    "DELETE FROM transactions WHERE file_id = $1",
+    [fileId]
+  );
+  await db.execute("DELETE FROM imported_files WHERE id = $1", [fileId]);
+  return result.rowsAffected;
+}
+
+export async function deleteAllImportsWithTransactions(): Promise<number> {
+  const db = await getDb();
+  const result = await db.execute("DELETE FROM transactions");
+  await db.execute("DELETE FROM imported_files");
+  return result.rowsAffected;
 }

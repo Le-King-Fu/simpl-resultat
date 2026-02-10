@@ -122,6 +122,18 @@
       "errorMessage": "Message d'erreur",
       "done": "Terminé"
     },
+    "history": {
+      "title": "Historique des imports",
+      "empty": "Aucun import pour le moment.",
+      "deleteAll": "Tout supprimer",
+      "deleteConfirm": "Supprimer cet import et ses {{count}} transaction(s) ?",
+      "deleteAllConfirm": "Supprimer TOUS les imports et leurs transactions ? Cette action est irréversible.",
+      "source": "Source",
+      "filename": "Fichier",
+      "date": "Date",
+      "rows": "Lignes",
+      "status": "Statut"
+    },
     "wizard": {
       "back": "Retour",
       "next": "Suivant",

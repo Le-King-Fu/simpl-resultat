@@ -22,6 +22,10 @@ export interface ImportedFile {
   notes?: string;
 }
 
+export interface ImportedFileWithSource extends ImportedFile {
+  source_name: string;
+}
+
 export interface Category {
   id: number;
   name: string;

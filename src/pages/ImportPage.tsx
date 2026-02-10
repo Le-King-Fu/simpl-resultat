@@ -9,6 +9,7 @@ import ImportConfirmation from "../components/import/ImportConfirmation";
 import ImportProgress from "../components/import/ImportProgress";
 import ImportReportPanel from "../components/import/ImportReportPanel";
 import WizardNavigation from "../components/import/WizardNavigation";
+import ImportHistoryPanel from "../components/import/ImportHistoryPanel";
 import { AlertCircle } from "lucide-react";
 
 export default function ImportPage() {
@@ -53,12 +54,15 @@ export default function ImportPage() {
 
       {/* Wizard steps */}
       {state.step === "source-list" && (
-        <SourceList
-          sources={state.scannedSources}
-          configuredSourceNames={state.configuredSourceNames}
-          importedFileHashes={state.importedFilesBySource}
-          onSelectSource={selectSource}
-        />
+        <>
+          <SourceList
+            sources={state.scannedSources}
+            configuredSourceNames={state.configuredSourceNames}
+            importedFileHashes={state.importedFilesBySource}
+            onSelectSource={selectSource}
+          />
+          <ImportHistoryPanel onChanged={refreshFolder} />
+        </>
       )}
 
       {state.step === "source-config" && state.selectedSource && (
