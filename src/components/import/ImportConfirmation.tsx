@@ -7,7 +7,7 @@ interface ImportConfirmationProps {
   config: SourceConfig;
   selectedFiles: ScannedFile[];
   duplicateResult: DuplicateCheckResult;
-  skipDuplicates: boolean;
+  excludedCount: number;
 }
 
 export default function ImportConfirmation({
@@ -15,13 +15,12 @@ export default function ImportConfirmation({
   config,
   selectedFiles,
   duplicateResult,
-  skipDuplicates,
+  excludedCount,
 }: ImportConfirmationProps) {
   const { t } = useTranslation();
 
-  const rowsToImport = skipDuplicates
-    ? duplicateResult.newRows.length
-    : duplicateResult.newRows.length + duplicateResult.duplicateRows.length;
+  const rowsToImport =
+    duplicateResult.newRows.length + duplicateResult.duplicateRows.length - excludedCount;
 
   return (
     <div className="space-y-6">
@@ -87,7 +86,7 @@ export default function ImportConfirmation({
             <p className="text-sm text-[var(--muted-foreground)]">
               {t("import.confirm.rowsSummary", {
                 count: rowsToImport,
-                skipped: skipDuplicates ? duplicateResult.duplicateRows.length : 0,
+                skipped: excludedCount,
               })}
             </p>
           </div>

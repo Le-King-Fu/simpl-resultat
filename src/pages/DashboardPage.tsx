@@ -5,7 +5,7 @@ import PeriodSelector from "../components/dashboard/PeriodSelector";
 import CategoryPieChart from "../components/dashboard/CategoryPieChart";
 import RecentTransactionsList from "../components/dashboard/RecentTransactionsList";
 
-const fmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+const fmt = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
 
 export default function DashboardPage() {
   const { t } = useTranslation();

@@ -17,7 +17,7 @@ export default function RecentTransactionsList({ transactions }: RecentTransacti
     );
   }
 
-  const fmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+  const fmt = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
 
   return (
     <div className="bg-[var(--card)] rounded-xl p-6 border border-[var(--border)]">

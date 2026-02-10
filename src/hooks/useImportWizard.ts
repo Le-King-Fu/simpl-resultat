@@ -47,7 +47,7 @@ interface WizardState {
   parsedPreview: ParsedRow[];
   previewHeaders: string[];
   duplicateResult: DuplicateCheckResult | null;
-  skipDuplicates: boolean;
+  excludedDuplicateIndices: Set<number>;
   importReport: ImportReport | null;
   importProgress: { current: number; total: number; file: string };
   isLoading: boolean;
@@ -68,7 +68,8 @@ type WizardAction =
   | { type: "SET_EXISTING_SOURCE"; payload: ImportSource | null }
   | { type: "SET_PARSED_PREVIEW"; payload: { rows: ParsedRow[]; headers: string[] } }
   | { type: "SET_DUPLICATE_RESULT"; payload: DuplicateCheckResult }
-  | { type: "SET_SKIP_DUPLICATES"; payload: boolean }
+  | { type: "TOGGLE_DUPLICATE_ROW"; payload: number }
+  | { type: "SET_SKIP_ALL_DUPLICATES"; payload: boolean }
   | { type: "SET_IMPORT_REPORT"; payload: ImportReport }
   | { type: "SET_IMPORT_PROGRESS"; payload: { current: number; total: number; file: string } }
   | { type: "SET_CONFIGURED_SOURCES"; payload: { names: Set<string>; files: Map<string, Set<string>> } }
@@ -97,7 +98,7 @@ const initialState: WizardState = {
   parsedPreview: [],
   previewHeaders: [],
   duplicateResult: null,
-  skipDuplicates: true,
+  excludedDuplicateIndices: new Set(),
   importReport: null,
   importProgress: { current: 0, total: 0, file: "" },
   isLoading: false,
@@ -134,9 +135,28 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
         isLoading: false,
       };
     case "SET_DUPLICATE_RESULT":
-      return { ...state, duplicateResult: action.payload, isLoading: false };
-    case "SET_SKIP_DUPLICATES":
-      return { ...state, skipDuplicates: action.payload };
+      return {
+        ...state,
+        duplicateResult: action.payload,
+        excludedDuplicateIndices: new Set(action.payload.duplicateRows.map((d) => d.rowIndex)),
+        isLoading: false,
+      };
+    case "TOGGLE_DUPLICATE_ROW": {
+      const next = new Set(state.excludedDuplicateIndices);
+      if (next.has(action.payload)) {
+        next.delete(action.payload);
+      } else {
+        next.add(action.payload);
+      }
+      return { ...state, excludedDuplicateIndices: next };
+    }
+    case "SET_SKIP_ALL_DUPLICATES":
+      return {
+        ...state,
+        excludedDuplicateIndices: action.payload
+          ? new Set(state.duplicateResult?.duplicateRows.map((d) => d.rowIndex) ?? [])
+          : new Set(),
+      };
     case "SET_IMPORT_REPORT":
       return { ...state, importReport: action.payload, isLoading: false };
     case "SET_IMPORT_PROGRESS":
@@ -621,19 +641,17 @@ export function useImportWizard() {
       if (!dbSource) throw new Error("Source not found in database");
       const sourceId = dbSource.id;
 
-      // Determine rows to import
-      const rowsToImport = state.skipDuplicates
-        ? state.duplicateResult.newRows
-        : [
-            ...state.duplicateResult.newRows,
-            ...state.parsedPreview.filter(
-              (r) =>
-                r.parsed &&
-                state.duplicateResult!.duplicateRows.some(
-                  (d) => d.rowIndex === r.rowIndex
-                )
-            ),
-          ];
+      // Determine rows to import: new rows + non-excluded duplicates
+      const includedDuplicates = state.duplicateResult.duplicateRows
+        .filter((d) => !state.excludedDuplicateIndices.has(d.rowIndex));
+      const rowsToImport = [
+        ...state.duplicateResult.newRows,
+        ...state.parsedPreview.filter(
+          (r) =>
+            r.parsed &&
+            includedDuplicates.some((d) => d.rowIndex === r.rowIndex)
+        ),
+      ];
 
       const validRows = rowsToImport.filter((r) => r.parsed);
       const totalRows = validRows.length;
@@ -687,10 +705,15 @@ export function useImportWizard() {
         };
       });
 
-      // Insert in batches
+      // Insert with progress
       let importedCount = 0;
       try {
-        importedCount = await insertBatch(transactions);
+        importedCount = await insertBatch(transactions, (inserted) => {
+          dispatch({
+            type: "SET_IMPORT_PROGRESS",
+            payload: { current: inserted, total: totalRows, file: state.selectedFiles[0]?.filename || "" },
+          });
+        });
 
         dispatch({
           type: "SET_IMPORT_PROGRESS",
@@ -713,9 +736,7 @@ export function useImportWizard() {
       const report: ImportReport = {
         totalRows: state.parsedPreview.length,
         importedCount,
-        skippedDuplicates: state.skipDuplicates
-          ? state.duplicateResult.duplicateRows.length
-          : 0,
+        skippedDuplicates: state.excludedDuplicateIndices.size,
         errorCount: errors.length,
         categorizedCount,
         uncategorizedCount,
@@ -737,7 +758,7 @@ export function useImportWizard() {
   }, [
     state.duplicateResult,
     state.sourceConfig,
-    state.skipDuplicates,
+    state.excludedDuplicateIndices,
     state.parsedPreview,
     state.selectedFiles,
     loadConfiguredSources,
@@ -764,7 +785,9 @@ export function useImportWizard() {
     executeImport,
     goToStep,
     reset,
-    setSkipDuplicates: (v: boolean) =>
-      dispatch({ type: "SET_SKIP_DUPLICATES", payload: v }),
+    toggleDuplicateRow: (index: number) =>
+      dispatch({ type: "TOGGLE_DUPLICATE_ROW", payload: index }),
+    setSkipAllDuplicates: (skipAll: boolean) =>
+      dispatch({ type: "SET_SKIP_ALL_DUPLICATES", payload: skipAll }),
   };
 }

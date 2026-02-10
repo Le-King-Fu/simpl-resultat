@@ -10,8 +10,8 @@ import {
 } from "recharts";
 import type { CategoryBreakdownItem } from "../../shared/types";
 
-const eurFormatter = (value: number) =>
-  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value);
+const cadFormatter = (value: number) =>
+  new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(value);
 
 interface CategoryBarChartProps {
   data: CategoryBreakdownItem[];
@@ -34,7 +34,7 @@ export default function CategoryBarChart({ data }: CategoryBarChartProps) {
         <BarChart data={data} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
           <XAxis
             type="number"
-            tickFormatter={(v) => eurFormatter(v)}
+            tickFormatter={(v) => cadFormatter(v)}
             tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
             stroke="var(--border)"
           />
@@ -46,7 +46,7 @@ export default function CategoryBarChart({ data }: CategoryBarChartProps) {
             stroke="var(--border)"
           />
           <Tooltip
-            formatter={(value: number | undefined) => eurFormatter(value ?? 0)}
+            formatter={(value: number | undefined) => cadFormatter(value ?? 0)}
             contentStyle={{
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",

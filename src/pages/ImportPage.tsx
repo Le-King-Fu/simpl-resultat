@@ -27,7 +27,8 @@ export default function ImportPage() {
     executeImport,
     goToStep,
     reset,
-    setSkipDuplicates,
+    toggleDuplicateRow,
+    setSkipAllDuplicates,
   } = useImportWizard();
 
   return (
@@ -116,9 +117,10 @@ export default function ImportPage() {
         <div className="space-y-6">
           <DuplicateCheckPanel
             result={state.duplicateResult}
-            skipDuplicates={state.skipDuplicates}
-            onSkipDuplicates={() => setSkipDuplicates(true)}
-            onIncludeAll={() => setSkipDuplicates(false)}
+            excludedIndices={state.excludedDuplicateIndices}
+            onToggleRow={toggleDuplicateRow}
+            onSkipAll={() => setSkipAllDuplicates(true)}
+            onIncludeAll={() => setSkipAllDuplicates(false)}
           />
           <WizardNavigation
             onBack={() => goToStep("file-preview")}
@@ -136,7 +138,7 @@ export default function ImportPage() {
             config={state.sourceConfig}
             selectedFiles={state.selectedFiles}
             duplicateResult={state.duplicateResult}
-            skipDuplicates={state.skipDuplicates}
+            excludedCount={state.excludedDuplicateIndices.size}
           />
           <WizardNavigation
             onBack={() => goToStep("duplicate-check")}

@@ -95,7 +95,9 @@
       "skip": "Ignorer les doublons",
       "includeAll": "Tout importer",
       "summary": "Total : {{total}} lignes — {{new}} nouvelles — {{duplicates}} doublon(s)",
-      "withinBatch": "Doublon entre fichiers importés"
+      "withinBatch": "Doublon entre fichiers importés",
+      "sourceDb": "Existant",
+      "sourceBatch": "Entre fichiers"
     },
     "confirm": {
       "title": "Confirmation de l'import",

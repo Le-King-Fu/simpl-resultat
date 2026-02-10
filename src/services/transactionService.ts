@@ -20,7 +20,8 @@ export async function insertBatch(
     original_description: string;
     category_id?: number | null;
     supplier_id?: number | null;
-  }>
+  }>,
+  onProgress?: (inserted: number) => void
 ): Promise<number> {
   const db = await getDb();
   let insertedCount = 0;
@@ -41,6 +42,13 @@ export async function insertBatch(
       ]
     );
     insertedCount++;
+    if (onProgress && insertedCount % 10 === 0) {
+      onProgress(insertedCount);
+    }
+  }
+
+  if (onProgress && insertedCount % 10 !== 0) {
+    onProgress(insertedCount);
   }
 
   return insertedCount;

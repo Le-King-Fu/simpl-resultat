@@ -10,8 +10,8 @@ import {
 } from "recharts";
 import type { MonthlyTrendItem } from "../../shared/types";
 
-const eurFormatter = (value: number) =>
-  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value);
+const cadFormatter = (value: number) =>
+  new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(value);
 
 function formatMonth(month: string): string {
   const [year, m] = month.split("-");
@@ -56,13 +56,13 @@ export default function MonthlyTrendsChart({ data }: MonthlyTrendsChartProps) {
             stroke="var(--border)"
           />
           <YAxis
-            tickFormatter={(v) => eurFormatter(v)}
+            tickFormatter={(v) => cadFormatter(v)}
             tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
             stroke="var(--border)"
             width={80}
           />
           <Tooltip
-            formatter={(value: number | undefined) => eurFormatter(value ?? 0)}
+            formatter={(value: number | undefined) => cadFormatter(value ?? 0)}
             labelFormatter={(label) => formatMonth(String(label))}
             contentStyle={{
               backgroundColor: "var(--card)",

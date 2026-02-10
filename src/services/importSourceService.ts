@@ -107,3 +107,8 @@ export async function updateSource(
     values
   );
 }
+
+export async function deleteSource(id: number): Promise<void> {
+  const db = await getDb();
+  await db.execute("DELETE FROM import_sources WHERE id = $1", [id]);
+}

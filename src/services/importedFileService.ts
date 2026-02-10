@@ -86,11 +86,31 @@ export async function deleteImportWithTransactions(
   fileId: number
 ): Promise<number> {
   const db = await getDb();
+
+  // Look up the source_id before deleting
+  const files = await db.select<ImportedFile[]>(
+    "SELECT source_id FROM imported_files WHERE id = $1",
+    [fileId]
+  );
+  const sourceId = files.length > 0 ? files[0].source_id : null;
+
   const result = await db.execute(
     "DELETE FROM transactions WHERE file_id = $1",
     [fileId]
   );
   await db.execute("DELETE FROM imported_files WHERE id = $1", [fileId]);
+
+  // Clean up orphaned source if no files remain
+  if (sourceId) {
+    const remaining = await db.select<Array<{ cnt: number }>>(
+      "SELECT COUNT(*) AS cnt FROM imported_files WHERE source_id = $1",
+      [sourceId]
+    );
+    if (remaining[0]?.cnt === 0) {
+      await db.execute("DELETE FROM import_sources WHERE id = $1", [sourceId]);
+    }
+  }
+
   return result.rowsAffected;
 }
 
@@ -98,5 +118,6 @@ export async function deleteAllImportsWithTransactions(): Promise<number> {
   const db = await getDb();
   const result = await db.execute("DELETE FROM transactions");
   await db.execute("DELETE FROM imported_files");
+  await db.execute("DELETE FROM import_sources");
   return result.rowsAffected;
 }

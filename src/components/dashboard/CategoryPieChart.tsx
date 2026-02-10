@@ -41,7 +41,7 @@ export default function CategoryPieChart({ data }: CategoryPieChartProps) {
           </Pie>
           <Tooltip
             formatter={(value) =>
-              new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(Number(value))
+              new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(Number(value))
             }
           />
         </PieChart>

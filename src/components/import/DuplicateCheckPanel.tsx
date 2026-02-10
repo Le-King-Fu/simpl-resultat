@@ -4,18 +4,24 @@ import type { DuplicateCheckResult } from "../../shared/types";
 
 interface DuplicateCheckPanelProps {
   result: DuplicateCheckResult;
-  onSkipDuplicates: () => void;
+  excludedIndices: Set<number>;
+  onToggleRow: (index: number) => void;
+  onSkipAll: () => void;
   onIncludeAll: () => void;
-  skipDuplicates: boolean;
 }
 
 export default function DuplicateCheckPanel({
   result,
-  onSkipDuplicates,
+  excludedIndices,
+  onToggleRow,
+  onSkipAll,
   onIncludeAll,
-  skipDuplicates,
 }: DuplicateCheckPanelProps) {
   const { t } = useTranslation();
+
+  const allExcluded = result.duplicateRows.length > 0 &&
+    result.duplicateRows.every((d) => excludedIndices.has(d.rowIndex));
+  const noneExcluded = result.duplicateRows.every((d) => !excludedIndices.has(d.rowIndex));
 
   return (
     <div className="space-y-6">
@@ -58,28 +64,30 @@ export default function DuplicateCheckPanel({
             </div>
           </div>
 
-          {/* Duplicate action */}
+          {/* Bulk actions */}
           <div className="flex gap-4 mb-4">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="radio"
-                name="duplicateAction"
-                checked={skipDuplicates}
-                onChange={onSkipDuplicates}
-                className="accent-[var(--primary)]"
-              />
+            <button
+              type="button"
+              onClick={onSkipAll}
+              className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                allExcluded
+                  ? "bg-[var(--primary)] text-white border-[var(--primary)]"
+                  : "bg-[var(--card)] border-[var(--border)] hover:bg-[var(--muted)]"
+              }`}
+            >
               {t("import.duplicates.skip")}
-            </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="radio"
-                name="duplicateAction"
-                checked={!skipDuplicates}
-                onChange={onIncludeAll}
-                className="accent-[var(--primary)]"
-              />
+            </button>
+            <button
+              type="button"
+              onClick={onIncludeAll}
+              className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                noneExcluded
+                  ? "bg-[var(--primary)] text-white border-[var(--primary)]"
+                  : "bg-[var(--card)] border-[var(--border)] hover:bg-[var(--muted)]"
+              }`}
+            >
               {t("import.duplicates.includeAll")}
-            </label>
+            </button>
           </div>
 
           {/* Duplicate table */}
@@ -87,6 +95,14 @@ export default function DuplicateCheckPanel({
             <table className="w-full text-sm">
               <thead className="sticky top-0">
                 <tr className="bg-[var(--muted)]">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--muted-foreground)] w-10">
+                    <input
+                      type="checkbox"
+                      checked={noneExcluded}
+                      onChange={() => noneExcluded ? onSkipAll() : onIncludeAll()}
+                      className="accent-[var(--primary)]"
+                    />
+                  </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-[var(--muted-foreground)]">
                     #
                   </th>
@@ -99,26 +115,54 @@ export default function DuplicateCheckPanel({
                   <th className="px-3 py-2 text-right text-xs font-medium text-[var(--muted-foreground)]">
                     {t("import.preview.amount")}
                   </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--muted-foreground)]">
+                    {t("import.source")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
-                {result.duplicateRows.map((row) => (
-                  <tr
-                    key={row.rowIndex}
-                    className="bg-[var(--muted)]"
-                  >
-                    <td className="px-3 py-2 text-[var(--muted-foreground)]">
-                      {row.rowIndex + 1}
-                    </td>
-                    <td className="px-3 py-2">{row.date}</td>
-                    <td className="px-3 py-2 max-w-xs truncate">
-                      {row.description}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono">
-                      {row.amount.toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
+                {result.duplicateRows.map((row) => {
+                  const included = !excludedIndices.has(row.rowIndex);
+                  const isBatch = row.existingTransactionId === -1;
+                  return (
+                    <tr
+                      key={row.rowIndex}
+                      className={included ? "bg-[var(--card)]" : "bg-[var(--muted)] opacity-60"}
+                    >
+                      <td className="px-3 py-2">
+                        <input
+                          type="checkbox"
+                          checked={included}
+                          onChange={() => onToggleRow(row.rowIndex)}
+                          className="accent-[var(--primary)]"
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-[var(--muted-foreground)]">
+                        {row.rowIndex + 1}
+                      </td>
+                      <td className="px-3 py-2">{row.date}</td>
+                      <td className="px-3 py-2 max-w-xs truncate">
+                        {row.description}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono">
+                        {row.amount.toFixed(2)}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`inline-block px-2 py-0.5 text-xs rounded-full ${
+                            isBatch
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                              : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                          }`}
+                        >
+                          {isBatch
+                            ? t("import.duplicates.sourceBatch")
+                            : t("import.duplicates.sourceDb")}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -142,6 +186,11 @@ export default function DuplicateCheckPanel({
             new: result.newRows.length,
             duplicates: result.duplicateRows.length,
           })}
+          {excludedIndices.size > 0 && (
+            <span className="text-[var(--muted-foreground)]">
+              {" "}— {excludedIndices.size} {t("import.duplicates.skip").toLowerCase()}
+            </span>
+          )}
         </p>
       </div>
     </div>

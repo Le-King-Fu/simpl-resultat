@@ -95,7 +95,9 @@
       "skip": "Skip duplicates",
       "includeAll": "Import all",
       "summary": "Total: {{total}} rows — {{new}} new — {{duplicates}} duplicate(s)",
-      "withinBatch": "Duplicate within imported files"
+      "withinBatch": "Duplicate within imported files",
+      "sourceDb": "Existing",
+      "sourceBatch": "Within batch"
     },
     "confirm": {
       "title": "Import Confirmation",
