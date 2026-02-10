@@ -225,9 +225,9 @@
   "reports": {
     "title": "Rapports",
     "period": "Période",
-    "byCategory": "Par catégorie",
-    "byMonth": "Par mois",
-    "trends": "Tendances",
+    "byCategory": "Dépenses par catégorie",
+    "overTime": "Catégories dans le temps",
+    "trends": "Tendances mensuelles",
     "export": "Exporter"
   },
   "common": {

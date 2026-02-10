@@ -225,9 +225,9 @@
   "reports": {
     "title": "Reports",
     "period": "Period",
-    "byCategory": "By Category",
-    "byMonth": "By Month",
-    "trends": "Trends",
+    "byCategory": "Expenses by Category",
+    "overTime": "Category Over Time",
+    "trends": "Monthly Trends",
     "export": "Export"
   },
   "common": {

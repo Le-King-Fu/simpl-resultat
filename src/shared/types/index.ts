@@ -233,6 +233,27 @@ export interface RecentTransaction {
   category_color: string | null;
 }
 
+// --- Report Types ---
+
+export type ReportTab = "trends" | "byCategory" | "overTime";
+
+export interface MonthlyTrendItem {
+  month: string;       // "2025-01"
+  income: number;
+  expenses: number;
+}
+
+export interface CategoryOverTimeItem {
+  month: string;
+  [categoryName: string]: number | string;
+}
+
+export interface CategoryOverTimeData {
+  categories: string[];
+  data: CategoryOverTimeItem[];
+  colors: Record<string, string>;
+}
+
 export type ImportWizardStep =
   | "source-list"
   | "source-config"
