@@ -94,7 +94,8 @@
       "noneFound": "Aucun doublon détecté",
       "skip": "Ignorer les doublons",
       "includeAll": "Tout importer",
-      "summary": "Total : {{total}} lignes — {{new}} nouvelles — {{duplicates}} doublon(s)"
+      "summary": "Total : {{total}} lignes — {{new}} nouvelles — {{duplicates}} doublon(s)",
+      "withinBatch": "Doublon entre fichiers importés"
     },
     "confirm": {
       "title": "Confirmation de l'import",

@@ -34,7 +34,15 @@ export async function createSource(
   const db = await getDb();
   const result = await db.execute(
     `INSERT INTO import_sources (name, description, date_format, delimiter, encoding, column_mapping, skip_lines)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     ON CONFLICT(name) DO UPDATE SET
+       description = excluded.description,
+       date_format = excluded.date_format,
+       delimiter = excluded.delimiter,
+       encoding = excluded.encoding,
+       column_mapping = excluded.column_mapping,
+       skip_lines = excluded.skip_lines,
+       updated_at = CURRENT_TIMESTAMP`,
     [
       source.name,
       source.description || null,
@@ -45,7 +53,10 @@ export async function createSource(
       source.skip_lines,
     ]
   );
-  return result.lastInsertId as number;
+  // On conflict, lastInsertId may be 0 — look up the existing row
+  if (result.lastInsertId) return result.lastInsertId as number;
+  const existing = await getSourceByName(source.name);
+  return existing!.id;
 }
 
 export async function updateSource(

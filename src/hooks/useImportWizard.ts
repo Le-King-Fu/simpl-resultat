@@ -552,17 +552,42 @@ export function useImportWizard() {
         }))
       );
 
-      const duplicateIndices = new Set(duplicateMatches.map((d) => d.rowIndex));
+      // Detect intra-batch duplicates (rows that appear more than once within the import)
+      const dbDuplicateIndices = new Set(duplicateMatches.map((d) => d.rowIndex));
+      const seenKeys = new Set<string>();
+      const batchDuplicateIndices = new Set<number>();
+
+      for (let i = 0; i < validRows.length; i++) {
+        if (dbDuplicateIndices.has(i)) continue; // already flagged as DB duplicate
+        const r = validRows[i].parsed!;
+        const key = `${r.date}|${r.description}|${r.amount}`;
+        if (seenKeys.has(key)) {
+          batchDuplicateIndices.add(i);
+        } else {
+          seenKeys.add(key);
+        }
+      }
+
+      const duplicateIndices = new Set([...dbDuplicateIndices, ...batchDuplicateIndices]);
       const newRows = validRows.filter(
         (_, i) => !duplicateIndices.has(i)
       );
-      const duplicateRows = duplicateMatches.map((d) => ({
-        rowIndex: d.rowIndex,
-        date: d.date,
-        description: d.description,
-        amount: d.amount,
-        existingTransactionId: d.existingTransactionId,
-      }));
+      const duplicateRows = [
+        ...duplicateMatches.map((d) => ({
+          rowIndex: d.rowIndex,
+          date: d.date,
+          description: d.description,
+          amount: d.amount,
+          existingTransactionId: d.existingTransactionId,
+        })),
+        ...[...batchDuplicateIndices].map((i) => ({
+          rowIndex: i,
+          date: validRows[i].parsed!.date,
+          description: validRows[i].parsed!.description,
+          amount: validRows[i].parsed!.amount,
+          existingTransactionId: -1,
+        })),
+      ];
 
       dispatch({
         type: "SET_DUPLICATE_RESULT",

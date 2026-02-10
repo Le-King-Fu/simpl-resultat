@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 import type { TransactionFilters, Category, ImportSource } from "../../shared/types";
+import CategoryCombobox from "../shared/CategoryCombobox";
 
 interface TransactionFilterBarProps {
   filters: TransactionFilters;
@@ -16,6 +18,14 @@ export default function TransactionFilterBar({
   onFilterChange,
 }: TransactionFilterBarProps) {
   const { t } = useTranslation();
+
+  const categoryExtras = useMemo(
+    () => [
+      { value: "", label: t("transactions.filters.allCategories") },
+      { value: "uncategorized", label: t("transactions.filters.uncategorized") },
+    ],
+    [t]
+  );
 
   const activeCount = [
     filters.search,
@@ -44,34 +54,34 @@ export default function TransactionFilterBar({
         </div>
 
         {/* Category */}
-        <select
-          value={
-            filters.uncategorizedOnly
-              ? "uncategorized"
-              : filters.categoryId?.toString() ?? ""
-          }
-          onChange={(e) => {
-            const val = e.target.value;
-            if (val === "uncategorized") {
-              onFilterChange("uncategorizedOnly", true);
-              onFilterChange("categoryId", null);
-            } else {
+        <div className="min-w-[180px]">
+          <CategoryCombobox
+            categories={categories}
+            value={filters.categoryId}
+            onChange={(id) => {
               onFilterChange("uncategorizedOnly", false);
-              onFilterChange("categoryId", val ? Number(val) : null);
+              onFilterChange("categoryId", id);
+            }}
+            placeholder={t("transactions.filters.allCategories")}
+            extraOptions={categoryExtras}
+            activeExtra={
+              filters.uncategorizedOnly
+                ? "uncategorized"
+                : filters.categoryId === null
+                  ? ""
+                  : null
             }
-          }}
-          className="px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-        >
-          <option value="">{t("transactions.filters.allCategories")}</option>
-          <option value="uncategorized">
-            {t("transactions.filters.uncategorized")}
-          </option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+            onExtraSelect={(val) => {
+              if (val === "uncategorized") {
+                onFilterChange("uncategorizedOnly", true);
+                onFilterChange("categoryId", null);
+              } else {
+                onFilterChange("uncategorizedOnly", false);
+                onFilterChange("categoryId", null);
+              }
+            }}
+          />
+        </div>
 
         {/* Source */}
         <select

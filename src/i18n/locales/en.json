@@ -94,7 +94,8 @@
       "noneFound": "No duplicates found",
       "skip": "Skip duplicates",
       "includeAll": "Import all",
-      "summary": "Total: {{total}} rows — {{new}} new — {{duplicates}} duplicate(s)"
+      "summary": "Total: {{total}} rows — {{new}} new — {{duplicates}} duplicate(s)",
+      "withinBatch": "Duplicate within imported files"
     },
     "confirm": {
       "title": "Import Confirmation",

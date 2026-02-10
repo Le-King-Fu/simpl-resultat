@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronUp, ChevronDown, MessageSquare } from "lucide-react";
 import type {
@@ -6,6 +6,7 @@ import type {
   TransactionSort,
   Category,
 } from "../../shared/types";
+import CategoryCombobox from "../shared/CategoryCombobox";
 
 interface TransactionTableProps {
   rows: TransactionRow[];
@@ -43,6 +44,10 @@ export default function TransactionTable({
   const { t } = useTranslation();
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [editingNotes, setEditingNotes] = useState("");
+  const noCategoryExtra = useMemo(
+    () => [{ value: "", label: t("transactions.table.noCategory") }],
+    [t]
+  );
 
   if (rows.length === 0) {
     return (
@@ -116,25 +121,16 @@ export default function TransactionTable({
                   })}
                 </td>
                 <td className="px-3 py-2">
-                  <select
-                    value={row.category_id?.toString() ?? ""}
-                    onChange={(e) =>
-                      onCategoryChange(
-                        row.id,
-                        e.target.value ? Number(e.target.value) : null
-                      )
-                    }
-                    className="w-full px-2 py-1 text-sm rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  >
-                    <option value="">
-                      {t("transactions.table.noCategory")}
-                    </option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                  <CategoryCombobox
+                    categories={categories}
+                    value={row.category_id}
+                    onChange={(id) => onCategoryChange(row.id, id)}
+                    placeholder={t("transactions.table.noCategory")}
+                    compact
+                    extraOptions={noCategoryExtra}
+                    activeExtra={row.category_id === null ? "" : null}
+                    onExtraSelect={() => onCategoryChange(row.id, null)}
+                  />
                 </td>
                 <td className="px-3 py-2 text-center">
                   <button
