@@ -9,7 +9,8 @@
     "categories": "Catégories",
     "adjustments": "Ajustements",
     "budget": "Budget",
-    "reports": "Rapports"
+    "reports": "Rapports",
+    "settings": "Paramètres"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -232,6 +233,25 @@
     "overTime": "Catégories dans le temps",
     "trends": "Tendances mensuelles",
     "export": "Exporter"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "version": "Version {{version}}",
+    "updates": {
+      "title": "Mises à jour",
+      "checkButton": "Vérifier les mises à jour",
+      "checking": "Vérification en cours...",
+      "upToDate": "L'application est à jour",
+      "available": "Version {{version}} disponible",
+      "downloadButton": "Télécharger et installer",
+      "downloading": "Téléchargement en cours...",
+      "readyToInstall": "Mise à jour prête à installer",
+      "installButton": "Installer et redémarrer",
+      "installing": "Installation en cours...",
+      "error": "Erreur lors de la mise à jour",
+      "retryButton": "Réessayer"
+    },
+    "dataSafeNotice": "Vos données sont en sécurité — seul le programme est remplacé, votre base de données n'est pas modifiée."
   },
   "common": {
     "save": "Enregistrer",

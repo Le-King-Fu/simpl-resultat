@@ -46,4 +46,10 @@ export const NAV_ITEMS: NavItem[] = [
     icon: "BarChart3",
     labelKey: "nav.reports",
   },
+  {
+    key: "settings",
+    path: "/settings",
+    icon: "Settings",
+    labelKey: "nav.settings",
+  },
 ];

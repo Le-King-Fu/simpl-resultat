@@ -8,6 +8,7 @@ import {
   SlidersHorizontal,
   PiggyBank,
   BarChart3,
+  Settings,
   Languages,
 } from "lucide-react";
 import { NAV_ITEMS, APP_NAME } from "../../shared/constants";
@@ -20,6 +21,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   SlidersHorizontal,
   PiggyBank,
   BarChart3,
+  Settings,
 };
 
 export default function Sidebar() {

@@ -9,7 +9,8 @@
     "categories": "Categories",
     "adjustments": "Adjustments",
     "budget": "Budget",
-    "reports": "Reports"
+    "reports": "Reports",
+    "settings": "Settings"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -232,6 +233,25 @@
     "overTime": "Category Over Time",
     "trends": "Monthly Trends",
     "export": "Export"
+  },
+  "settings": {
+    "title": "Settings",
+    "version": "Version {{version}}",
+    "updates": {
+      "title": "Updates",
+      "checkButton": "Check for updates",
+      "checking": "Checking for updates...",
+      "upToDate": "App is up to date",
+      "available": "Version {{version}} available",
+      "downloadButton": "Download and install",
+      "downloading": "Downloading...",
+      "readyToInstall": "Update ready to install",
+      "installButton": "Install and restart",
+      "installing": "Installing...",
+      "error": "Update failed",
+      "retryButton": "Retry"
+    },
+    "dataSafeNotice": "Your data is safe — only the app binary is replaced, your database is not modified."
   },
   "common": {
     "save": "Save",
