@@ -1,6 +1,6 @@
 import { Fragment, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronUp, ChevronDown, MessageSquare } from "lucide-react";
+import { ChevronUp, ChevronDown, MessageSquare, Tag } from "lucide-react";
 import type {
   TransactionRow,
   TransactionSort,
@@ -15,6 +15,7 @@ interface TransactionTableProps {
   onSort: (column: TransactionSort["column"]) => void;
   onCategoryChange: (txId: number, categoryId: number | null) => void;
   onNotesChange: (txId: number, notes: string) => void;
+  onAddKeyword: (categoryId: number, keyword: string) => Promise<void>;
 }
 
 function SortIcon({
@@ -40,10 +41,14 @@ export default function TransactionTable({
   onSort,
   onCategoryChange,
   onNotesChange,
+  onAddKeyword,
 }: TransactionTableProps) {
   const { t } = useTranslation();
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [editingNotes, setEditingNotes] = useState("");
+  const [keywordRowId, setKeywordRowId] = useState<number | null>(null);
+  const [keywordText, setKeywordText] = useState("");
+  const [keywordSaved, setKeywordSaved] = useState<number | null>(null);
   const noCategoryExtra = useMemo(
     () => [{ value: "", label: t("transactions.table.noCategory") }],
     [t]
@@ -80,6 +85,23 @@ export default function TransactionTable({
   const handleNotesSave = (txId: number) => {
     onNotesChange(txId, editingNotes);
     setExpandedId(null);
+  };
+
+  const toggleKeyword = (row: TransactionRow) => {
+    if (keywordRowId === row.id) {
+      setKeywordRowId(null);
+    } else {
+      setKeywordRowId(row.id);
+      setKeywordText(row.description);
+    }
+  };
+
+  const handleKeywordSave = async (row: TransactionRow) => {
+    if (!row.category_id || !keywordText.trim()) return;
+    await onAddKeyword(row.category_id, keywordText);
+    setKeywordRowId(null);
+    setKeywordSaved(row.id);
+    setTimeout(() => setKeywordSaved(null), 2000);
   };
 
   return (
@@ -121,16 +143,31 @@ export default function TransactionTable({
                   })}
                 </td>
                 <td className="px-3 py-2">
-                  <CategoryCombobox
-                    categories={categories}
-                    value={row.category_id}
-                    onChange={(id) => onCategoryChange(row.id, id)}
-                    placeholder={t("transactions.table.noCategory")}
-                    compact
-                    extraOptions={noCategoryExtra}
-                    activeExtra={row.category_id === null ? "" : null}
-                    onExtraSelect={() => onCategoryChange(row.id, null)}
-                  />
+                  <div className="flex items-center gap-1">
+                    <CategoryCombobox
+                      categories={categories}
+                      value={row.category_id}
+                      onChange={(id) => onCategoryChange(row.id, id)}
+                      placeholder={t("transactions.table.noCategory")}
+                      compact
+                      extraOptions={noCategoryExtra}
+                      activeExtra={row.category_id === null ? "" : null}
+                      onExtraSelect={() => onCategoryChange(row.id, null)}
+                    />
+                    {row.category_id !== null && (
+                      <button
+                        onClick={() => toggleKeyword(row)}
+                        className={`p-1 rounded hover:bg-[var(--muted)] transition-colors shrink-0 ${
+                          keywordSaved === row.id
+                            ? "text-[var(--positive)]"
+                            : "text-[var(--muted-foreground)]"
+                        }`}
+                        title={keywordSaved === row.id ? t("transactions.keywordAdded") : t("transactions.addKeyword")}
+                      >
+                        <Tag size={14} />
+                      </button>
+                    )}
+                  </div>
                 </td>
                 <td className="px-3 py-2 text-center">
                   <button
@@ -162,6 +199,43 @@ export default function TransactionTable({
                         className="px-4 py-2 text-sm rounded-lg bg-[var(--primary)] text-white hover:opacity-90 transition-opacity self-end"
                       >
                         {t("common.save")}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {keywordRowId === row.id && row.category_id !== null && (
+                <tr>
+                  <td colSpan={5} className="px-3 py-2 bg-[var(--muted)]">
+                    <div className="flex items-center gap-2">
+                      <Tag size={14} className="text-[var(--muted-foreground)] shrink-0" />
+                      <span className="text-xs px-2 py-0.5 rounded bg-[var(--border)] text-[var(--foreground)] shrink-0">
+                        {row.category_name}
+                      </span>
+                      <input
+                        type="text"
+                        value={keywordText}
+                        onChange={(e) => setKeywordText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleKeywordSave(row);
+                          if (e.key === "Escape") setKeywordRowId(null);
+                        }}
+                        placeholder={t("transactions.keywordPlaceholder")}
+                        className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleKeywordSave(row)}
+                        disabled={!keywordText.trim()}
+                        className="px-3 py-1.5 text-sm rounded-lg bg-[var(--primary)] text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                      >
+                        {t("common.save")}
+                      </button>
+                      <button
+                        onClick={() => setKeywordRowId(null)}
+                        className="px-3 py-1.5 text-sm rounded-lg border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--border)] transition-colors"
+                      >
+                        {t("common.cancel")}
                       </button>
                     </div>
                   </td>

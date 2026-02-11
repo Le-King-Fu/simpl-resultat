@@ -203,6 +203,9 @@
     "autoCategorize": "Auto-catégoriser",
     "autoCategorizeResult": "{{count}} transaction(s) catégorisée(s)",
     "autoCategorizeNone": "Aucune correspondance trouvée",
+    "addKeyword": "Ajouter un mot-clé",
+    "keywordAdded": "Mot-clé ajouté",
+    "keywordPlaceholder": "Mot-clé à rechercher...",
     "help": {
       "title": "Comment utiliser les Transactions",
       "tips": [

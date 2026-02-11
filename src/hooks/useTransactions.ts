@@ -15,6 +15,7 @@ import {
   getAllImportSources,
   autoCategorizeTransactions,
 } from "../services/transactionService";
+import { createKeyword } from "../services/categoryService";
 
 interface TransactionsState {
   rows: TransactionRow[];
@@ -293,6 +294,20 @@ export function useTransactions() {
     }
   }, [state.sort, state.page, state.pageSize, fetchData]);
 
+  const addKeywordToCategory = useCallback(
+    async (categoryId: number, keyword: string) => {
+      try {
+        await createKeyword(categoryId, keyword.trim(), 0);
+      } catch (e) {
+        dispatch({
+          type: "SET_ERROR",
+          payload: e instanceof Error ? e.message : String(e),
+        });
+      }
+    },
+    []
+  );
+
   return {
     state,
     setFilter,
@@ -301,5 +316,6 @@ export function useTransactions() {
     updateCategory,
     saveNotes,
     autoCategorize,
+    addKeywordToCategory,
   };
 }

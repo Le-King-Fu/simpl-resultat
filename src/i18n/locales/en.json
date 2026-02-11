@@ -203,6 +203,9 @@
     "autoCategorize": "Auto-categorize",
     "autoCategorizeResult": "{{count}} transaction(s) categorized",
     "autoCategorizeNone": "No new matches found",
+    "addKeyword": "Add keyword",
+    "keywordAdded": "Keyword added",
+    "keywordPlaceholder": "Keyword to match...",
     "help": {
       "title": "How to use Transactions",
       "tips": [
