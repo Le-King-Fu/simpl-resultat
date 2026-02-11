@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
+import { PageHelp } from "../components/shared/PageHelp";
 import { useCategories } from "../hooks/useCategories";
 import CategoryTree from "../components/categories/CategoryTree";
 import CategoryDetailPanel from "../components/categories/CategoryDetailPanel";
@@ -26,8 +27,11 @@ export default function CategoriesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{t("categories.title")}</h1>
+      <div className="relative flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">{t("categories.title")}</h1>
+          <PageHelp helpKey="categories" />
+        </div>
         <button
           onClick={startCreating}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90"

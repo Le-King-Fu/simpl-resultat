@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Wand2 } from "lucide-react";
+import { PageHelp } from "../components/shared/PageHelp";
 import { useTransactions } from "../hooks/useTransactions";
 import TransactionFilterBar from "../components/transactions/TransactionFilterBar";
 import TransactionSummaryBar from "../components/transactions/TransactionSummaryBar";
@@ -26,8 +27,9 @@ export default function TransactionsPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="relative flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold">{t("transactions.title")}</h1>
+        <PageHelp helpKey="transactions" />
         <button
           onClick={handleAutoCategorize}
           disabled={state.isAutoCategorizing}

@@ -26,6 +26,15 @@
       "6months": "6 mois",
       "12months": "12 mois",
       "all": "Tout"
+    },
+    "help": {
+      "title": "Comment utiliser le tableau de bord",
+      "tips": [
+        "Utilisez le sélecteur de période (en haut à droite) pour changer la plage de dates",
+        "Les cartes résumées affichent votre solde, revenus et dépenses pour la période sélectionnée",
+        "Le graphique circulaire détaille vos dépenses par catégorie",
+        "Les transactions récentes sont listées en bas de page"
+      ]
     }
   },
   "import": {
@@ -145,6 +154,15 @@
       "checkDuplicates": "Vérifier les doublons",
       "confirm": "Confirmer",
       "import": "Importer"
+    },
+    "help": {
+      "title": "Comment importer des relevés bancaires",
+      "tips": [
+        "Configurez votre dossier d'import, puis créez un sous-dossier par banque/source avec des fichiers CSV",
+        "Cliquez sur une source pour configurer le mapping des colonnes, le délimiteur et le format de date",
+        "Prévisualisez vos données avant l'import pour détecter les problèmes de formatage",
+        "La détection des doublons empêche d'importer les mêmes transactions deux fois"
+      ]
     }
   },
   "transactions": {
@@ -184,7 +202,16 @@
     },
     "autoCategorize": "Auto-catégoriser",
     "autoCategorizeResult": "{{count}} transaction(s) catégorisée(s)",
-    "autoCategorizeNone": "Aucune correspondance trouvée"
+    "autoCategorizeNone": "Aucune correspondance trouvée",
+    "help": {
+      "title": "Comment utiliser les Transactions",
+      "tips": [
+        "Utilisez les filtres pour rechercher par description, catégorie, source ou plage de dates",
+        "Cliquez sur un en-tête de colonne pour trier les transactions",
+        "Assignez une catégorie via le menu déroulant sur chaque ligne",
+        "L'auto-catégorisation utilise vos règles de mots-clés pour catégoriser en masse"
+      ]
+    }
   },
   "categories": {
     "title": "Catégories",
@@ -207,7 +234,16 @@
     "keywordCount": "Mots-clés",
     "keywordText": "Mot-clé...",
     "priority": "Priorité",
-    "customColor": "Couleur personnalisée"
+    "customColor": "Couleur personnalisée",
+    "help": {
+      "title": "Comment gérer les Catégories",
+      "tips": [
+        "Créez des catégories et sous-catégories pour organiser vos dépenses et revenus",
+        "Ajoutez des mots-clés à une catégorie pour que les transactions correspondantes soient auto-catégorisées",
+        "Définissez une priorité sur les mots-clés pour résoudre les conflits entre catégories",
+        "Cliquez sur une catégorie dans l'arbre pour voir ses détails, la modifier ou gérer ses mots-clés"
+      ]
+    }
   },
   "adjustments": {
     "title": "Ajustements",
@@ -215,7 +251,15 @@
     "date": "Date",
     "description": "Description",
     "amount": "Montant",
-    "recurring": "Récurrent"
+    "recurring": "Récurrent",
+    "help": {
+      "title": "Comment utiliser les Ajustements",
+      "tips": [
+        "Les ajustements permettent d'ajouter des entrées manuelles non issues de vos relevés bancaires",
+        "Utilisez-les pour des dépenses ou revenus prévus non encore reflétés dans vos relevés",
+        "Les ajustements récurrents se répètent automatiquement à chaque période"
+      ]
+    }
   },
   "budget": {
     "title": "Budget",
@@ -224,7 +268,15 @@
     "planned": "Prévu",
     "actual": "Réel",
     "difference": "Écart",
-    "template": "Modèle"
+    "template": "Modèle",
+    "help": {
+      "title": "Comment utiliser le Budget",
+      "tips": [
+        "Définissez des montants prévus par catégorie pour suivre vos objectifs de dépenses",
+        "Comparez le prévu et le réel pour voir où vous dépassez ou êtes en dessous du budget",
+        "Utilisez les modèles pour appliquer rapidement le même budget sur plusieurs mois"
+      ]
+    }
   },
   "reports": {
     "title": "Rapports",
@@ -232,7 +284,16 @@
     "byCategory": "Dépenses par catégorie",
     "overTime": "Catégories dans le temps",
     "trends": "Tendances mensuelles",
-    "export": "Exporter"
+    "export": "Exporter",
+    "help": {
+      "title": "Comment utiliser les Rapports",
+      "tips": [
+        "Basculez entre les vues Tendances, Par catégorie et Dans le temps via les onglets",
+        "Utilisez le sélecteur de période pour ajuster la plage de dates de tous les graphiques",
+        "Les tendances mensuelles montrent vos revenus et dépenses au fil du temps",
+        "Catégories dans le temps suit l'évolution des dépenses par catégorie"
+      ]
+    }
   },
   "settings": {
     "title": "Paramètres",
@@ -251,7 +312,15 @@
       "error": "Erreur lors de la mise à jour",
       "retryButton": "Réessayer"
     },
-    "dataSafeNotice": "Vos données sont en sécurité — seul le programme est remplacé, votre base de données n'est pas modifiée."
+    "dataSafeNotice": "Vos données sont en sécurité — seul le programme est remplacé, votre base de données n'est pas modifiée.",
+    "help": {
+      "title": "À propos des Paramètres",
+      "tips": [
+        "Vérifiez les mises à jour de l'application et installez-les directement depuis cette page",
+        "Vos données sont stockées localement et ne sont jamais affectées par les mises à jour",
+        "Changez la langue de l'application via le sélecteur de langue dans la barre latérale"
+      ]
+    }
   },
   "common": {
     "save": "Enregistrer",

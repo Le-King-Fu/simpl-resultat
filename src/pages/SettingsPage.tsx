@@ -13,6 +13,7 @@ import {
 import { getVersion } from "@tauri-apps/api/app";
 import { useUpdater } from "../hooks/useUpdater";
 import { APP_NAME } from "../shared/constants";
+import { PageHelp } from "../components/shared/PageHelp";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -31,7 +32,10 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
+      <div className="relative flex items-center gap-3">
+        <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
+        <PageHelp helpKey="settings" />
+      </div>
 
       {/* About card */}
       <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6">

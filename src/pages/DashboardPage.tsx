@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import { useDashboard } from "../hooks/useDashboard";
+import { PageHelp } from "../components/shared/PageHelp";
 import PeriodSelector from "../components/dashboard/PeriodSelector";
 import CategoryPieChart from "../components/dashboard/CategoryPieChart";
 import RecentTransactionsList from "../components/dashboard/RecentTransactionsList";
@@ -43,8 +44,11 @@ export default function DashboardPage() {
 
   return (
     <div className={isLoading ? "opacity-50 pointer-events-none" : ""}>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+      <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+          <PageHelp helpKey="dashboard" />
+        </div>
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 

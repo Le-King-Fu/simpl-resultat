@@ -11,6 +11,7 @@ import ImportReportPanel from "../components/import/ImportReportPanel";
 import WizardNavigation from "../components/import/WizardNavigation";
 import ImportHistoryPanel from "../components/import/ImportHistoryPanel";
 import { AlertCircle } from "lucide-react";
+import { PageHelp } from "../components/shared/PageHelp";
 
 export default function ImportPage() {
   const { t } = useTranslation();
@@ -33,7 +34,10 @@ export default function ImportPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t("import.title")}</h1>
+      <div className="relative flex items-center gap-3 mb-6">
+        <h1 className="text-2xl font-bold">{t("import.title")}</h1>
+        <PageHelp helpKey="import" />
+      </div>
 
       {/* Error banner */}
       {state.error && (

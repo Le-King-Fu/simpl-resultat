@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useReports } from "../hooks/useReports";
+import { PageHelp } from "../components/shared/PageHelp";
 import type { ReportTab } from "../shared/types";
 import PeriodSelector from "../components/dashboard/PeriodSelector";
 import MonthlyTrendsChart from "../components/reports/MonthlyTrendsChart";
@@ -14,8 +15,11 @@ export default function ReportsPage() {
 
   return (
     <div className={state.isLoading ? "opacity-50 pointer-events-none" : ""}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">{t("reports.title")}</h1>
+      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">{t("reports.title")}</h1>
+          <PageHelp helpKey="reports" />
+        </div>
         <PeriodSelector value={state.period} onChange={setPeriod} />
       </div>
 

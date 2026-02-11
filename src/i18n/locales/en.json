@@ -26,6 +26,15 @@
       "6months": "6 months",
       "12months": "12 months",
       "all": "All"
+    },
+    "help": {
+      "title": "How to use the Dashboard",
+      "tips": [
+        "Use the period selector (top right) to view different time ranges",
+        "Summary cards show your balance, income, and expenses for the selected period",
+        "The pie chart breaks down your expenses by category",
+        "Recent transactions are listed at the bottom"
+      ]
     }
   },
   "import": {
@@ -145,6 +154,15 @@
       "checkDuplicates": "Check duplicates",
       "confirm": "Confirm",
       "import": "Import"
+    },
+    "help": {
+      "title": "How to import bank statements",
+      "tips": [
+        "Set your import folder, then create one subfolder per bank/source with CSV files inside",
+        "Click a source to configure column mapping, delimiter, and date format",
+        "Preview your data before importing to catch formatting issues",
+        "Duplicate detection prevents the same transactions from being imported twice"
+      ]
     }
   },
   "transactions": {
@@ -184,7 +202,16 @@
     },
     "autoCategorize": "Auto-categorize",
     "autoCategorizeResult": "{{count}} transaction(s) categorized",
-    "autoCategorizeNone": "No new matches found"
+    "autoCategorizeNone": "No new matches found",
+    "help": {
+      "title": "How to use Transactions",
+      "tips": [
+        "Use the filters to search by description, category, source, or date range",
+        "Click a column header to sort transactions",
+        "Assign categories by clicking the category dropdown on each row",
+        "Auto-categorize uses your keyword rules to categorize transactions in bulk"
+      ]
+    }
   },
   "categories": {
     "title": "Categories",
@@ -207,7 +234,16 @@
     "keywordCount": "Keywords",
     "keywordText": "Keyword...",
     "priority": "Priority",
-    "customColor": "Custom color"
+    "customColor": "Custom color",
+    "help": {
+      "title": "How to manage Categories",
+      "tips": [
+        "Create top-level categories and subcategories to organize your expenses and income",
+        "Add keywords to a category so transactions matching those words are auto-categorized",
+        "Set a priority on keywords to resolve conflicts when multiple categories match",
+        "Click a category in the tree to view its details, edit it, or manage keywords"
+      ]
+    }
   },
   "adjustments": {
     "title": "Adjustments",
@@ -215,7 +251,15 @@
     "date": "Date",
     "description": "Description",
     "amount": "Amount",
-    "recurring": "Recurring"
+    "recurring": "Recurring",
+    "help": {
+      "title": "How to use Adjustments",
+      "tips": [
+        "Adjustments let you add manual entries that don't come from bank imports",
+        "Use them for expected expenses or income not yet reflected in your statements",
+        "Recurring adjustments repeat automatically each period"
+      ]
+    }
   },
   "budget": {
     "title": "Budget",
@@ -224,7 +268,15 @@
     "planned": "Planned",
     "actual": "Actual",
     "difference": "Difference",
-    "template": "Template"
+    "template": "Template",
+    "help": {
+      "title": "How to use Budget",
+      "tips": [
+        "Set planned amounts for each category to track your spending goals",
+        "Compare planned vs. actual spending to see where you're over or under budget",
+        "Use templates to quickly apply the same budget across multiple months"
+      ]
+    }
   },
   "reports": {
     "title": "Reports",
@@ -232,7 +284,16 @@
     "byCategory": "Expenses by Category",
     "overTime": "Category Over Time",
     "trends": "Monthly Trends",
-    "export": "Export"
+    "export": "Export",
+    "help": {
+      "title": "How to use Reports",
+      "tips": [
+        "Switch between Trends, By Category, and Over Time views using the tabs",
+        "Use the period selector to adjust the time range for all charts",
+        "Monthly Trends shows your income and expenses over time",
+        "Category Over Time tracks how spending in each category evolves"
+      ]
+    }
   },
   "settings": {
     "title": "Settings",
@@ -251,7 +312,15 @@
       "error": "Update failed",
       "retryButton": "Retry"
     },
-    "dataSafeNotice": "Your data is safe — only the app binary is replaced, your database is not modified."
+    "dataSafeNotice": "Your data is safe — only the app binary is replaced, your database is not modified.",
+    "help": {
+      "title": "About Settings",
+      "tips": [
+        "Check for app updates and install them directly from this page",
+        "Your data is stored locally and is never affected by updates",
+        "Change the app language using the language selector in the sidebar"
+      ]
+    }
   },
   "common": {
     "save": "Save",
