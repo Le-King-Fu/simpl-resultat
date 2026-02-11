@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Wand2 } from "lucide-react";
 import type {
   ScannedSource,
   ScannedFile,
@@ -16,6 +17,8 @@ interface SourceConfigPanelProps {
   onConfigChange: (config: SourceConfig) => void;
   onFileToggle: (file: ScannedFile) => void;
   onSelectAllFiles: () => void;
+  onAutoDetect: () => void;
+  isLoading?: boolean;
 }
 
 export default function SourceConfigPanel({
@@ -26,6 +29,8 @@ export default function SourceConfigPanel({
   onConfigChange,
   onFileToggle,
   onSelectAllFiles,
+  onAutoDetect,
+  isLoading,
 }: SourceConfigPanelProps) {
   const { t } = useTranslation();
 
@@ -39,9 +44,19 @@ export default function SourceConfigPanel({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold">
-        {t("import.config.title")} — {source.folder_name}
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">
+          {t("import.config.title")} — {source.folder_name}
+        </h2>
+        <button
+          onClick={onAutoDetect}
+          disabled={isLoading || selectedFiles.length === 0}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-[var(--primary)] text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+        >
+          <Wand2 size={16} />
+          {t("import.config.autoDetect")}
+        </button>
+      </div>
 
       {/* Source name */}
       <div>
@@ -102,6 +117,7 @@ export default function SourceConfigPanel({
             <option value="DD/MM/YYYY">DD/MM/YYYY</option>
             <option value="MM/DD/YYYY">MM/DD/YYYY</option>
             <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+            <option value="YYYY/MM/DD">YYYY/MM/DD</option>
             <option value="DD-MM-YYYY">DD-MM-YYYY</option>
             <option value="DD.MM.YYYY">DD.MM.YYYY</option>
             <option value="YYYYMMDD">YYYYMMDD</option>

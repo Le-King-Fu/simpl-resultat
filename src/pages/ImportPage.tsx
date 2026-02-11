@@ -28,6 +28,7 @@ export default function ImportPage() {
     executeImport,
     goToStep,
     reset,
+    autoDetectConfig,
     toggleDuplicateRow,
     setSkipAllDuplicates,
   } = useImportWizard();
@@ -80,6 +81,8 @@ export default function ImportPage() {
             onConfigChange={updateConfig}
             onFileToggle={toggleFile}
             onSelectAllFiles={selectAllFiles}
+            onAutoDetect={autoDetectConfig}
+            isLoading={state.isLoading}
           />
           <WizardNavigation
             onBack={() => goToStep("source-list")}

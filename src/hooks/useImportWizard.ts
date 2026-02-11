@@ -35,6 +35,10 @@ import {
 import { categorizeBatch } from "../services/categorizationService";
 import { parseDate } from "../utils/dateParser";
 import { parseFrenchAmount } from "../utils/amountParser";
+import {
+  preprocessQuotedCSV,
+  autoDetectConfig as runAutoDetect,
+} from "../utils/csvAutoDetect";
 
 interface WizardState {
   step: ImportWizardStep;
@@ -429,7 +433,9 @@ export function useImportWizard() {
           encoding: config.encoding,
         });
 
-        const parsed = Papa.parse(content, {
+        const preprocessed = preprocessQuotedCSV(content);
+
+        const parsed = Papa.parse(preprocessed, {
           delimiter: config.delimiter,
           skipEmptyLines: true,
         });
@@ -772,6 +778,57 @@ export function useImportWizard() {
     dispatch({ type: "RESET" });
   }, []);
 
+  const autoDetectConfig = useCallback(async () => {
+    if (state.selectedFiles.length === 0) return;
+
+    dispatch({ type: "SET_LOADING", payload: true });
+    dispatch({ type: "SET_ERROR", payload: null });
+
+    try {
+      const content = await invoke<string>("read_file_content", {
+        filePath: state.selectedFiles[0].file_path,
+        encoding: state.sourceConfig.encoding,
+      });
+
+      const preprocessed = preprocessQuotedCSV(content);
+      const result = runAutoDetect(preprocessed);
+
+      if (result) {
+        const newConfig = {
+          ...state.sourceConfig,
+          delimiter: result.delimiter,
+          hasHeader: result.hasHeader,
+          skipLines: result.skipLines,
+          dateFormat: result.dateFormat,
+          columnMapping: result.columnMapping,
+          amountMode: result.amountMode,
+          signConvention: result.signConvention,
+        };
+        dispatch({ type: "SET_SOURCE_CONFIG", payload: newConfig });
+        dispatch({ type: "SET_LOADING", payload: false });
+
+        // Refresh column headers with new config
+        await loadHeadersWithConfig(
+          state.selectedFiles[0].file_path,
+          newConfig.delimiter,
+          newConfig.encoding,
+          newConfig.skipLines,
+          newConfig.hasHeader
+        );
+      } else {
+        dispatch({
+          type: "SET_ERROR",
+          payload: "Auto-detection failed. Please configure manually.",
+        });
+      }
+    } catch (e) {
+      dispatch({
+        type: "SET_ERROR",
+        payload: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }, [state.selectedFiles, state.sourceConfig, loadHeadersWithConfig]);
+
   return {
     state,
     browseFolder,
@@ -785,6 +842,7 @@ export function useImportWizard() {
     executeImport,
     goToStep,
     reset,
+    autoDetectConfig,
     toggleDuplicateRow: (index: number) =>
       dispatch({ type: "TOGGLE_DUPLICATE_ROW", payload: index }),
     setSkipAllDuplicates: (skipAll: boolean) =>

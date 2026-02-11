@@ -82,7 +82,8 @@
       "debitColumn": "Debit column",
       "creditColumn": "Credit column",
       "selectFiles": "Files to import",
-      "selectAll": "Select all"
+      "selectAll": "Select all",
+      "autoDetect": "Auto-detect"
     },
     "preview": {
       "title": "Data Preview",

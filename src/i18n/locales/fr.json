@@ -82,7 +82,8 @@
       "debitColumn": "Colonne débit",
       "creditColumn": "Colonne crédit",
       "selectFiles": "Fichiers à importer",
-      "selectAll": "Tout sélectionner"
+      "selectAll": "Tout sélectionner",
+      "autoDetect": "Auto-détecter"
     },
     "preview": {
       "title": "Aperçu des données",
