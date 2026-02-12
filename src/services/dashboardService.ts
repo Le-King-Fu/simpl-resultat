@@ -56,7 +56,7 @@ export async function getExpensesByCategory(
 ): Promise<CategoryBreakdownItem[]> {
   const db = await getDb();
 
-  const whereClauses: string[] = ["t.amount < 0"];
+  const whereClauses: string[] = ["COALESCE(c.type, 'expense') = 'expense'"];
   const params: unknown[] = [];
   let paramIndex = 1;
 
@@ -99,7 +99,7 @@ export async function getRecentTransactions(
        c.name AS category_name, c.color AS category_color
      FROM transactions t
      LEFT JOIN categories c ON t.category_id = c.id
-     WHERE t.amount < 0
+     WHERE COALESCE(c.type, 'expense') = 'expense'
      ORDER BY t.date DESC, t.id DESC
      LIMIT $1`,
     [limit]

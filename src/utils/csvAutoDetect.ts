@@ -220,17 +220,22 @@ function detectNumericColumns(rows: string[][], colCount: number): number[] {
   for (let col = 0; col < colCount; col++) {
     let numericCount = 0;
     let nonEmpty = 0;
+    const distinctValues = new Set<number>();
 
     for (const row of rows) {
       const cell = row[col]?.trim();
       if (!cell) continue;
       nonEmpty++;
-      if (!isNaN(parseFrenchAmount(cell))) {
+      const val = parseFrenchAmount(cell);
+      if (!isNaN(val)) {
         numericCount++;
+        distinctValues.add(val);
       }
     }
 
     if (nonEmpty > 0 && numericCount / nonEmpty >= 0.5) {
+      // Exclude constant-value columns (e.g., account numbers, transit numbers)
+      if (distinctValues.size <= 1 && nonEmpty > 2) continue;
       result.push(col);
     }
   }
@@ -444,8 +449,10 @@ function isSparseComplementary(
   for (const row of rows) {
     const cellA = row[colA]?.trim();
     const cellB = row[colB]?.trim();
-    const hasA = cellA !== "" && cellA != null && !isNaN(parseFrenchAmount(cellA));
-    const hasB = cellB !== "" && cellB != null && !isNaN(parseFrenchAmount(cellB));
+    const valA = cellA ? parseFrenchAmount(cellA) : NaN;
+    const valB = cellB ? parseFrenchAmount(cellB) : NaN;
+    const hasA = !isNaN(valA) && valA !== 0;
+    const hasB = !isNaN(valB) && valB !== 0;
 
     if (!hasA && !hasB) continue;
     total++;

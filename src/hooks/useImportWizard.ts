@@ -338,7 +338,8 @@ export function useImportWizard() {
           encoding,
           maxLines: skipLines + 5,
         });
-        const parsed = Papa.parse(preview, { delimiter, skipEmptyLines: true });
+        const preprocessed = preprocessQuotedCSV(preview);
+        const parsed = Papa.parse(preprocessed, { delimiter, skipEmptyLines: true });
         const data = parsed.data as string[][];
         const headerRow = hasHeader && data.length > skipLines ? skipLines : -1;
         if (headerRow >= 0 && data[headerRow]) {
@@ -445,6 +446,9 @@ export function useImportWizard() {
 
         if (config.hasHeader && data.length > config.skipLines) {
           headers = data[config.skipLines].map((h) => h.trim());
+        } else if (!config.hasHeader && headers.length === 0 && data.length > config.skipLines) {
+          const firstDataRow = data[config.skipLines];
+          headers = firstDataRow.map((_, i) => `Col ${i}`);
         }
 
         for (let i = startIdx; i < data.length; i++) {
