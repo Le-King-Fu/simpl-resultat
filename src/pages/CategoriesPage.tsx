@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Plus } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
 import { PageHelp } from "../components/shared/PageHelp";
 import { useCategories } from "../hooks/useCategories";
 import CategoryTree from "../components/categories/CategoryTree";
@@ -18,7 +18,14 @@ export default function CategoriesPage() {
     addKeyword,
     editKeyword,
     removeKeyword,
+    reinitializeCategories,
   } = useCategories();
+
+  const handleReinitialize = async () => {
+    if (confirm(t("categories.reinitializeConfirm"))) {
+      await reinitializeCategories();
+    }
+  };
 
   const selectedCategory =
     state.selectedCategoryId !== null
@@ -32,13 +39,23 @@ export default function CategoriesPage() {
           <h1 className="text-2xl font-bold">{t("categories.title")}</h1>
           <PageHelp helpKey="categories" />
         </div>
-        <button
-          onClick={startCreating}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90"
-        >
-          <Plus size={16} />
-          {t("categories.addCategory")}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleReinitialize}
+            disabled={state.isSaving}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--muted)] transition-colors disabled:opacity-50"
+          >
+            <RotateCcw size={16} />
+            {t("categories.reinitialize")}
+          </button>
+          <button
+            onClick={startCreating}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90"
+          >
+            <Plus size={16} />
+            {t("categories.addCategory")}
+          </button>
+        </div>
       </div>
 
       {state.error && (

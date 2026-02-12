@@ -35,3 +35,9 @@
 **Pattern**: Identifier columns have very low cardinality relative to row count (often a single repeated value). Amount columns vary per transaction.
 **Rule**: When detecting "amount" columns in CSV auto-detect, exclude numeric columns with ≤1 distinct value. Also treat 0 as "empty" in sparse-complementary detection for debit/credit pairs.
 **Applied**: CSV auto-detection, any heuristic column type inference
+
+## 2026-02-12 - Config fields must be persisted to DB, not hardcoded on restore
+**Mistake**: `hasHeader` was part of the SourceConfig in-memory object but was never stored in the `import_sources` DB table. When restoring config from DB, it was hardcoded to `true`, causing the first data row of headerless CSVs (Desjardins) to be treated as column headers.
+**Pattern**: When adding a config field to an in-memory interface, you must also add the column to the DB schema and update all CRUD paths (create, update, restore). Hardcoding a default on restore silently loses user preferences.
+**Rule**: For every field in a config interface: (1) verify it has a corresponding DB column, (2) verify it's included in INSERT/UPDATE queries, (3) verify it's restored from the DB row — never hardcoded. Use a grep for the field name across service, hook, and schema files.
+**Applied**: Import source config, any settings/preferences that need to survive across sessions

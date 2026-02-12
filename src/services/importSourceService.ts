@@ -33,8 +33,8 @@ export async function createSource(
 ): Promise<number> {
   const db = await getDb();
   const result = await db.execute(
-    `INSERT INTO import_sources (name, description, date_format, delimiter, encoding, column_mapping, skip_lines)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO import_sources (name, description, date_format, delimiter, encoding, column_mapping, skip_lines, has_header)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      ON CONFLICT(name) DO UPDATE SET
        description = excluded.description,
        date_format = excluded.date_format,
@@ -42,6 +42,7 @@ export async function createSource(
        encoding = excluded.encoding,
        column_mapping = excluded.column_mapping,
        skip_lines = excluded.skip_lines,
+       has_header = excluded.has_header,
        updated_at = CURRENT_TIMESTAMP`,
     [
       source.name,
@@ -51,6 +52,7 @@ export async function createSource(
       source.encoding,
       source.column_mapping,
       source.skip_lines,
+      source.has_header ? 1 : 0,
     ]
   );
   // On conflict, lastInsertId may be 0 — look up the existing row
@@ -95,6 +97,10 @@ export async function updateSource(
   if (source.skip_lines !== undefined) {
     fields.push(`skip_lines = $${paramIndex++}`);
     values.push(source.skip_lines);
+  }
+  if (source.has_header !== undefined) {
+    fields.push(`has_header = $${paramIndex++}`);
+    values.push(source.has_header ? 1 : 0);
   }
 
   if (fields.length === 0) return;

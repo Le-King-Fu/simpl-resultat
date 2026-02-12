@@ -10,10 +10,12 @@ import {
   updateCategory,
   deactivateCategory,
   getCategoryUsageCount,
+  getChildrenUsageCount,
   getKeywordsByCategoryId,
   createKeyword,
   updateKeyword,
   deactivateKeyword,
+  reinitializeCategories as reinitializeCategoriesSvc,
 } from "../services/categoryService";
 
 interface CategoriesState {
@@ -190,6 +192,11 @@ export function useCategories() {
       if (count > 0) {
         return { blocked: true, count };
       }
+      // Also check children usage — they'll be promoted to root, not deleted
+      const childrenCount = await getChildrenUsageCount(id);
+      if (childrenCount > 0) {
+        return { blocked: true, count: childrenCount };
+      }
       dispatch({ type: "SET_SAVING", payload: true });
       try {
         await deactivateCategory(id);
@@ -204,6 +211,19 @@ export function useCategories() {
     },
     [loadCategories]
   );
+
+  const reinitializeCategories = useCallback(async () => {
+    dispatch({ type: "SET_SAVING", payload: true });
+    dispatch({ type: "SET_ERROR", payload: null });
+    try {
+      await reinitializeCategoriesSvc();
+      dispatch({ type: "SELECT_CATEGORY", payload: null });
+      await loadCategories();
+      dispatch({ type: "SET_SAVING", payload: false });
+    } catch (e) {
+      dispatch({ type: "SET_ERROR", payload: e instanceof Error ? e.message : String(e) });
+    }
+  }, [loadCategories]);
 
   const loadKeywords = useCallback(async (categoryId: number) => {
     try {
@@ -268,5 +288,6 @@ export function useCategories() {
     addKeyword,
     editKeyword,
     removeKeyword,
+    reinitializeCategories,
   };
 }

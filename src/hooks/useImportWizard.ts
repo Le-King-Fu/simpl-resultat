@@ -271,7 +271,7 @@ export function useImportWizard() {
       let activeDelimiter = defaultConfig.delimiter;
       let activeEncoding = "utf-8";
       let activeSkipLines = 0;
-      const activeHasHeader = true;
+      let activeHasHeader = true;
 
       if (existing) {
         // Restore config from DB
@@ -286,12 +286,13 @@ export function useImportWizard() {
           amountMode:
             mapping.debitAmount !== undefined ? "debit_credit" : "single",
           signConvention: "negative_expense",
-          hasHeader: true,
+          hasHeader: !!existing.has_header,
         };
         dispatch({ type: "SET_SOURCE_CONFIG", payload: config });
         activeDelimiter = existing.delimiter;
         activeEncoding = existing.encoding;
         activeSkipLines = existing.skip_lines;
+        activeHasHeader = !!existing.has_header;
       } else {
         // Auto-detect encoding for first file
         if (source.files.length > 0) {
@@ -545,6 +546,7 @@ export function useImportWizard() {
           date_format: config.dateFormat,
           column_mapping: mappingJson,
           skip_lines: config.skipLines,
+          has_header: config.hasHeader,
         });
       } else {
         sourceId = await createSource({
@@ -554,6 +556,7 @@ export function useImportWizard() {
           date_format: config.dateFormat,
           column_mapping: mappingJson,
           skip_lines: config.skipLines,
+          has_header: config.hasHeader,
         });
       }
 

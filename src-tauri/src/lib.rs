@@ -18,6 +18,12 @@ pub fn run() {
             sql: database::SEED_CATEGORIES,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "add has_header to import_sources",
+            sql: "ALTER TABLE import_sources ADD COLUMN has_header INTEGER NOT NULL DEFAULT 1;",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

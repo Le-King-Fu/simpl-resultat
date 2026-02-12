@@ -7,6 +7,7 @@ export interface ImportSource {
   encoding: string;
   column_mapping: string;
   skip_lines: number;
+  has_header: boolean;
   created_at: string;
   updated_at: string;
 }
