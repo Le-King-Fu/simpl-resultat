@@ -256,6 +256,15 @@
     "description": "Description",
     "amount": "Amount",
     "recurring": "Recurring",
+    "entries": "Entries",
+    "addEntry": "Add entry",
+    "newAdjustment": "New adjustment",
+    "editAdjustment": "Edit adjustment",
+    "deleteConfirm": "Delete this adjustment?",
+    "total": "Total",
+    "selectAdjustment": "Select an adjustment",
+    "category": "Category",
+    "noEntries": "No entries yet",
     "help": {
       "title": "How to use Adjustments",
       "tips": [
@@ -267,18 +276,31 @@
   },
   "budget": {
     "title": "Budget",
-    "month": "Month",
-    "year": "Year",
+    "category": "Category",
     "planned": "Planned",
     "actual": "Actual",
     "difference": "Difference",
-    "template": "Template",
+    "expenses": "Expenses",
+    "income": "Income",
+    "transfers": "Transfers",
+    "totalPlanned": "Total Planned",
+    "totalActual": "Total Actual",
+    "totalDifference": "Difference",
+    "noCategories": "No categories found. Create categories first to set up your budget.",
+    "saveAsTemplate": "Save as template",
+    "applyTemplate": "Apply template",
+    "noTemplates": "No templates saved yet.",
+    "templateName": "Template name",
+    "templateDescription": "Description (optional)",
+    "deleteTemplateConfirm": "Delete this template?",
     "help": {
       "title": "How to use Budget",
       "tips": [
-        "Set planned amounts for each category to track your spending goals",
-        "Compare planned vs. actual spending to see where you're over or under budget",
-        "Use templates to quickly apply the same budget across multiple months"
+        "Use the month navigator to switch between months",
+        "Click on a planned amount to edit it inline — press Enter to save or Escape to cancel",
+        "The actual column shows real spending from your imported transactions",
+        "Green means under budget, red means over budget",
+        "Save your budget as a template and apply it to other months quickly"
       ]
     }
   },

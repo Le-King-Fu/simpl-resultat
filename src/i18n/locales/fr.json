@@ -256,6 +256,15 @@
     "description": "Description",
     "amount": "Montant",
     "recurring": "Récurrent",
+    "entries": "Entrées",
+    "addEntry": "Ajouter une entrée",
+    "newAdjustment": "Nouvel ajustement",
+    "editAdjustment": "Modifier l'ajustement",
+    "deleteConfirm": "Supprimer cet ajustement ?",
+    "total": "Total",
+    "selectAdjustment": "Sélectionnez un ajustement",
+    "category": "Catégorie",
+    "noEntries": "Aucune entrée",
     "help": {
       "title": "Comment utiliser les Ajustements",
       "tips": [
@@ -267,18 +276,31 @@
   },
   "budget": {
     "title": "Budget",
-    "month": "Mois",
-    "year": "Année",
+    "category": "Catégorie",
     "planned": "Prévu",
     "actual": "Réel",
     "difference": "Écart",
-    "template": "Modèle",
+    "expenses": "Dépenses",
+    "income": "Revenus",
+    "transfers": "Transferts",
+    "totalPlanned": "Total prévu",
+    "totalActual": "Total réel",
+    "totalDifference": "Écart",
+    "noCategories": "Aucune catégorie trouvée. Créez des catégories pour configurer votre budget.",
+    "saveAsTemplate": "Sauvegarder comme modèle",
+    "applyTemplate": "Appliquer un modèle",
+    "noTemplates": "Aucun modèle enregistré.",
+    "templateName": "Nom du modèle",
+    "templateDescription": "Description (optionnel)",
+    "deleteTemplateConfirm": "Supprimer ce modèle ?",
     "help": {
       "title": "Comment utiliser le Budget",
       "tips": [
-        "Définissez des montants prévus par catégorie pour suivre vos objectifs de dépenses",
-        "Comparez le prévu et le réel pour voir où vous dépassez ou êtes en dessous du budget",
-        "Utilisez les modèles pour appliquer rapidement le même budget sur plusieurs mois"
+        "Utilisez le navigateur de mois pour passer d'un mois à l'autre",
+        "Cliquez sur un montant prévu pour le modifier — appuyez sur Entrée pour sauvegarder ou Échap pour annuler",
+        "La colonne réel affiche les dépenses réelles de vos transactions importées",
+        "Vert signifie sous le budget, rouge signifie au-dessus du budget",
+        "Sauvegardez votre budget comme modèle et appliquez-le rapidement à d'autres mois"
       ]
     }
   },

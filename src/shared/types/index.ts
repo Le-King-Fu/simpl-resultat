@@ -119,6 +119,17 @@ export interface BudgetTemplateEntry {
   amount: number;
 }
 
+export interface BudgetRow {
+  category_id: number;
+  category_name: string;
+  category_color: string;
+  category_type: "expense" | "income" | "transfer";
+  planned: number;
+  actual: number;
+  difference: number;
+  notes?: string;
+}
+
 export interface UserPreference {
   key: string;
   value: string;
