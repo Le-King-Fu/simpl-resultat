@@ -10,8 +10,11 @@ import {
   BarChart3,
   Settings,
   Languages,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { NAV_ITEMS, APP_NAME } from "../../shared/constants";
+import { useTheme } from "../../hooks/useTheme";
 
 const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   LayoutDashboard,
@@ -26,6 +29,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
 
 export default function Sidebar() {
   const { t, i18n } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
 
   const toggleLanguage = () => {
     const next = i18n.language === "fr" ? "en" : "fr";
@@ -60,7 +64,14 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="p-3 border-t border-white/10">
+      <div className="p-3 border-t border-white/10 space-y-1">
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm hover:bg-[var(--sidebar-hover)] transition-colors"
+        >
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          <span>{theme === "dark" ? t("common.lightMode") : t("common.darkMode")}</span>
+        </button>
         <button
           onClick={toggleLanguage}
           className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm hover:bg-[var(--sidebar-hover)] transition-colors"

@@ -51,7 +51,10 @@ export default function CategoryBarChart({ data }: CategoryBarChartProps) {
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",
               borderRadius: "8px",
+              color: "var(--foreground)",
             }}
+            labelStyle={{ color: "var(--foreground)" }}
+            itemStyle={{ color: "var(--foreground)" }}
           />
           <Bar dataKey="total" name={t("dashboard.expenses")} radius={[0, 4, 4, 0]}>
             {data.map((item, index) => (

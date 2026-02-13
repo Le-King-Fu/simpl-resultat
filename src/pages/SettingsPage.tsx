@@ -45,7 +45,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <h2 className="text-lg font-semibold">{APP_NAME}</h2>
-            <p className="text-sm text-[var(--muted)]">
+            <p className="text-sm text-[var(--muted-foreground)]">
               {t("settings.version", { version })}
             </p>
           </div>
@@ -72,7 +72,7 @@ export default function SettingsPage() {
 
         {/* checking */}
         {state.status === "checking" && (
-          <div className="flex items-center gap-2 text-[var(--muted)]">
+          <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
             <Loader2 size={16} className="animate-spin" />
             {t("settings.updates.checking")}
           </div>
@@ -87,7 +87,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={checkForUpdate}
-              className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+              className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             >
               <RefreshCw size={14} />
             </button>
@@ -113,7 +113,7 @@ export default function SettingsPage() {
         {/* downloading */}
         {state.status === "downloading" && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-[var(--muted)]">
+            <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
               <Loader2 size={16} className="animate-spin" />
               {t("settings.updates.downloading")}
               {progressPercent !== null && <span>{progressPercent}%</span>}
@@ -145,7 +145,7 @@ export default function SettingsPage() {
 
         {/* installing */}
         {state.status === "installing" && (
-          <div className="flex items-center gap-2 text-[var(--muted)]">
+          <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
             <Loader2 size={16} className="animate-spin" />
             {t("settings.updates.installing")}
           </div>
@@ -158,7 +158,7 @@ export default function SettingsPage() {
               <AlertCircle size={16} />
               {t("settings.updates.error")}
             </div>
-            <p className="text-sm text-[var(--muted)]">{state.error}</p>
+            <p className="text-sm text-[var(--muted-foreground)]">{state.error}</p>
             <button
               onClick={checkForUpdate}
               className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] rounded-lg hover:bg-[var(--border)] transition-colors"
@@ -171,7 +171,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Data safety notice */}
-      <div className="flex items-start gap-2 text-sm text-[var(--muted)]">
+      <div className="flex items-start gap-2 text-sm text-[var(--muted-foreground)]">
         <ShieldCheck size={16} className="mt-0.5 shrink-0" />
         <p>{t("settings.dataSafeNotice")}</p>
       </div>

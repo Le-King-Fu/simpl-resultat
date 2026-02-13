@@ -39,7 +39,7 @@ export default function BudgetPage() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-800 text-sm border border-red-200">
+        <div className="mb-4 p-3 rounded-lg bg-[var(--negative)]/10 text-[var(--negative)] text-sm border border-[var(--negative)]/20">
           {error}
         </div>
       )}

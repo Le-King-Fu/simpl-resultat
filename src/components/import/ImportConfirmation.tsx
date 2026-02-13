@@ -78,7 +78,7 @@ export default function ImportConfirmation({
 
         {/* Rows to import */}
         <div className="p-4 flex items-center gap-3">
-          <CheckCircle size={18} className="text-emerald-500" />
+          <CheckCircle size={18} className="text-[var(--positive)]" />
           <div>
             <p className="text-sm font-medium">
               {t("import.confirm.rowsToImport")}

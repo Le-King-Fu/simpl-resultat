@@ -362,6 +362,8 @@
     "noResults": "Aucun résultat",
     "confirm": "Confirmer",
     "language": "Langue",
-    "total": "Total"
+    "total": "Total",
+    "darkMode": "Mode sombre",
+    "lightMode": "Mode clair"
   }
 }

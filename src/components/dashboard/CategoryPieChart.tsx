@@ -43,6 +43,14 @@ export default function CategoryPieChart({ data }: CategoryPieChartProps) {
             formatter={(value) =>
               new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(Number(value))
             }
+            contentStyle={{
+              backgroundColor: "var(--card)",
+              border: "1px solid var(--border)",
+              borderRadius: "8px",
+              color: "var(--foreground)",
+            }}
+            labelStyle={{ color: "var(--foreground)" }}
+            itemStyle={{ color: "var(--foreground)" }}
           />
         </PieChart>
       </ResponsiveContainer>

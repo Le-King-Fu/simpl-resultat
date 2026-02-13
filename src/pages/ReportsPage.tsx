@@ -40,7 +40,7 @@ export default function ReportsPage() {
       </div>
 
       {state.error && (
-        <div className="bg-red-100 text-red-700 rounded-xl p-4 mb-6">
+        <div className="bg-[var(--negative)]/10 text-[var(--negative)] rounded-xl p-4 mb-6">
           {state.error}
         </div>
       )}

@@ -59,7 +59,10 @@ export default function CategoryOverTimeChart({ data }: CategoryOverTimeChartPro
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",
               borderRadius: "8px",
+              color: "var(--foreground)",
             }}
+            labelStyle={{ color: "var(--foreground)" }}
+            itemStyle={{ color: "var(--foreground)" }}
           />
           <Legend />
           {data.categories.map((name) => (

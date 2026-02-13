@@ -59,34 +59,45 @@
   --negative: #ef4444;
 }
 
-/* Dark mode */
+/* Dark mode — inspired by famille-website warm gray palette */
 .dark {
-  --background: #1a1a2e;
-  --foreground: var(--color-creme-100);
-  --card: #16213e;
-  --card-foreground: var(--color-creme-100);
+  --background: #111827;
+  --foreground: #f3f4f6;
+  --card: #1f2937;
+  --card-foreground: #f3f4f6;
   --primary: var(--color-bleu-400);
-  --primary-foreground: #1a1a2e;
+  --primary-foreground: #111827;
   --accent: var(--color-terracotta-400);
-  --accent-foreground: #1a1a2e;
-  --muted: #16213e;
+  --accent-foreground: #111827;
+  --muted: #374151;
   --muted-foreground: #9ca3af;
-  --border: #2a2a4a;
-  --sidebar-bg: #0f0f23;
-  --sidebar-fg: var(--color-creme-200);
-  --sidebar-hover: #16213e;
-  --sidebar-active: #1a2744;
+  --border: #374151;
+  --sidebar-bg: #0f172a;
+  --sidebar-fg: #f3f4f6;
+  --sidebar-hover: #1e293b;
+  --sidebar-active: #334155;
   --positive: #4ade80;
   --negative: #f87171;
 }
 
 /* Base styles */
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   margin: 0;
   min-height: 100vh;
+}
+
+*, *::before, *::after {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 /* Scrollbar styling */

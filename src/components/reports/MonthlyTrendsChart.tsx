@@ -68,7 +68,10 @@ export default function MonthlyTrendsChart({ data }: MonthlyTrendsChartProps) {
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",
               borderRadius: "8px",
+              color: "var(--foreground)",
             }}
+            labelStyle={{ color: "var(--foreground)" }}
+            itemStyle={{ color: "var(--foreground)" }}
           />
           <Area
             type="monotone"

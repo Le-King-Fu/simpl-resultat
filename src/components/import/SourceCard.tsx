@@ -38,7 +38,7 @@ export default function SourceCard({
           {isConfigured && (
             <CheckCircle
               size={16}
-              className="text-emerald-500"
+              className="text-[var(--positive)]"
             />
           )}
         </div>
