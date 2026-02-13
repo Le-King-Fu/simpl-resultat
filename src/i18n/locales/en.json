@@ -352,6 +352,15 @@
       ]
     }
   },
+  "charts": {
+    "hideCategory": "Hide category",
+    "viewTransactions": "View transactions",
+    "hiddenCategories": "Hidden",
+    "showAll": "Show all",
+    "total": "Total",
+    "transactions": "transactions",
+    "clickToShow": "Click to show"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

@@ -85,8 +85,10 @@ export async function getCategoryOverTime(
 
   const topCategoryIds = new Set(topCategories.map((c) => c.category_id));
   const colors: Record<string, string> = {};
+  const categoryIds: Record<string, number | null> = {};
   for (const cat of topCategories) {
     colors[cat.category_name] = cat.category_color;
+    categoryIds[cat.category_name] = cat.category_id;
   }
 
   // Get monthly breakdown for all categories
@@ -142,5 +144,6 @@ export async function getCategoryOverTime(
     categories,
     data: Array.from(monthMap.values()),
     colors,
+    categoryIds,
   };
 }

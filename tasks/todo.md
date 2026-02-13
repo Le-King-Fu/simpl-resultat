@@ -1,21 +1,15 @@
-# Task: Fix orphan categories + add re-initialize button
-
-## Root Cause (orphan categories)
-`deactivateCategory` ran `SET is_active = 0 WHERE id = $1 OR parent_id = $1`, which silently
-deactivated ALL children when a parent was deleted — even children that had transactions assigned.
-Since `getAllCategoriesWithCounts` filters `WHERE is_active = 1`, those children vanished from the UI
-with no way to recover them.
+# Task: Import preview as popup + direct skip to duplicate check
 
 ## Plan
-- [x] Fix `deactivateCategory`: promote children to root, only deactivate the parent itself
-- [x] Add `getChildrenUsageCount` to block deletion when children have transactions
-- [x] Add `reinitializeCategories` service function (re-runs seed data)
-- [x] Add `reinitializeCategories` to hook
-- [x] Add re-initialize button with confirmation on CategoriesPage
-- [x] Add i18n keys (en + fr)
-- [x] Update deleteConfirm/deleteBlocked messages to reflect new behavior
-- [x] `npm run build` passes
+- [x] Create `FilePreviewModal.tsx` — portal modal wrapping `FilePreviewTable`
+- [x] Update `useImportWizard.ts` — extract `parseFilesInternal` helper, make `parsePreview` not change step, add `parseAndCheckDuplicates` combined function
+- [x] Update `ImportPage.tsx` — source-config step has Preview button (opens modal) + Check Duplicates button (main action); remove file-preview step; duplicate-check back goes to source-config
+- [x] Verify TypeScript compiles
+
+## Progress Notes
+- Extracted parsing logic into `parseFilesInternal` helper to avoid state closure issues when combining parse + duplicate check
+- `checkDuplicatesInternal` takes parsed rows as parameter so `parseAndCheckDuplicates` can pass them directly
+- No new i18n keys needed — reused existing ones
 
 ## Review
-6 files changed. Orphan fix promotes children to root level instead of cascading deactivation.
-Re-initialize button resets all categories+keywords to seed state (with user confirmation).
+4 files changed/created. Preview is now a popup modal, file-preview wizard step is removed, "Check Duplicates" goes directly from source-config to duplicate-check (parsing files on the fly). Back navigation from duplicate-check returns to source-config.

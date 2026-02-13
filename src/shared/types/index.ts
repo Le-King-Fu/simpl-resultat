@@ -264,6 +264,7 @@ export interface CategoryOverTimeData {
   categories: string[];
   data: CategoryOverTimeItem[];
   colors: Record<string, string>;
+  categoryIds: Record<string, number | null>;
 }
 
 export type ImportWizardStep =

@@ -33,7 +33,7 @@ const initialState: ReportsState = {
   period: "6months",
   monthlyTrends: [],
   categorySpending: [],
-  categoryOverTime: { categories: [], data: [], colors: {} },
+  categoryOverTime: { categories: [], data: [], colors: {}, categoryIds: {} },
   isLoading: false,
   error: null,
 };

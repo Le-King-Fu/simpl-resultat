@@ -418,6 +418,101 @@ export function useImportWizard() {
     }
   }, [state.selectedSource]);
 
+  // Internal helper: parses selected files and returns rows + headers
+  const parseFilesInternal = useCallback(async (): Promise<{ rows: ParsedRow[]; headers: string[] }> => {
+    const config = state.sourceConfig;
+    const allRows: ParsedRow[] = [];
+    let headers: string[] = [];
+
+    for (const file of state.selectedFiles) {
+      const content = await invoke<string>("read_file_content", {
+        filePath: file.file_path,
+        encoding: config.encoding,
+      });
+
+      const preprocessed = preprocessQuotedCSV(content);
+
+      const parsed = Papa.parse(preprocessed, {
+        delimiter: config.delimiter,
+        skipEmptyLines: true,
+      });
+
+      const data = parsed.data as string[][];
+      const startIdx = config.skipLines + (config.hasHeader ? 1 : 0);
+
+      if (config.hasHeader && data.length > config.skipLines) {
+        headers = data[config.skipLines].map((h) => h.trim());
+      } else if (!config.hasHeader && headers.length === 0 && data.length > config.skipLines) {
+        const firstDataRow = data[config.skipLines];
+        headers = firstDataRow.map((_, i) => `Col ${i}`);
+      }
+
+      for (let i = startIdx; i < data.length; i++) {
+        const raw = data[i];
+        if (raw.length <= 1 && raw[0]?.trim() === "") continue;
+
+        try {
+          const date = parseDate(
+            raw[config.columnMapping.date]?.trim() || "",
+            config.dateFormat
+          );
+          const description =
+            raw[config.columnMapping.description]?.trim() || "";
+
+          let amount: number;
+          if (config.amountMode === "debit_credit") {
+            const debit = parseFrenchAmount(
+              raw[config.columnMapping.debitAmount ?? 0] || ""
+            );
+            const credit = parseFrenchAmount(
+              raw[config.columnMapping.creditAmount ?? 0] || ""
+            );
+            amount = isNaN(credit) ? -(isNaN(debit) ? 0 : debit) : credit;
+          } else {
+            amount = parseFrenchAmount(
+              raw[config.columnMapping.amount ?? 0] || ""
+            );
+            if (config.signConvention === "positive_expense" && !isNaN(amount)) {
+              amount = -amount;
+            }
+          }
+
+          if (!date) {
+            allRows.push({
+              rowIndex: allRows.length,
+              raw,
+              parsed: null,
+              error: "Invalid date",
+            });
+          } else if (isNaN(amount)) {
+            allRows.push({
+              rowIndex: allRows.length,
+              raw,
+              parsed: null,
+              error: "Invalid amount",
+            });
+          } else {
+            allRows.push({
+              rowIndex: allRows.length,
+              raw,
+              parsed: { date, description, amount },
+            });
+          }
+        } catch {
+          allRows.push({
+            rowIndex: allRows.length,
+            raw,
+            parsed: null,
+            error: "Parse error",
+          });
+        }
+      }
+    }
+
+    return { rows: allRows, headers };
+  }, [state.selectedFiles, state.sourceConfig]);
+
+  // Parse files and store preview (does NOT change wizard step)
   const parsePreview = useCallback(async () => {
     if (state.selectedFiles.length === 0) return;
 
@@ -425,220 +520,134 @@ export function useImportWizard() {
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const config = state.sourceConfig;
-      const allRows: ParsedRow[] = [];
-      let headers: string[] = [];
-
-      for (const file of state.selectedFiles) {
-        const content = await invoke<string>("read_file_content", {
-          filePath: file.file_path,
-          encoding: config.encoding,
-        });
-
-        const preprocessed = preprocessQuotedCSV(content);
-
-        const parsed = Papa.parse(preprocessed, {
-          delimiter: config.delimiter,
-          skipEmptyLines: true,
-        });
-
-        const data = parsed.data as string[][];
-        const startIdx = config.skipLines + (config.hasHeader ? 1 : 0);
-
-        if (config.hasHeader && data.length > config.skipLines) {
-          headers = data[config.skipLines].map((h) => h.trim());
-        } else if (!config.hasHeader && headers.length === 0 && data.length > config.skipLines) {
-          const firstDataRow = data[config.skipLines];
-          headers = firstDataRow.map((_, i) => `Col ${i}`);
-        }
-
-        for (let i = startIdx; i < data.length; i++) {
-          const raw = data[i];
-          if (raw.length <= 1 && raw[0]?.trim() === "") continue;
-
-          try {
-            const date = parseDate(
-              raw[config.columnMapping.date]?.trim() || "",
-              config.dateFormat
-            );
-            const description =
-              raw[config.columnMapping.description]?.trim() || "";
-
-            let amount: number;
-            if (config.amountMode === "debit_credit") {
-              const debit = parseFrenchAmount(
-                raw[config.columnMapping.debitAmount ?? 0] || ""
-              );
-              const credit = parseFrenchAmount(
-                raw[config.columnMapping.creditAmount ?? 0] || ""
-              );
-              amount = isNaN(credit) ? -(isNaN(debit) ? 0 : debit) : credit;
-            } else {
-              amount = parseFrenchAmount(
-                raw[config.columnMapping.amount ?? 0] || ""
-              );
-              if (config.signConvention === "positive_expense" && !isNaN(amount)) {
-                amount = -amount;
-              }
-            }
-
-            if (!date) {
-              allRows.push({
-                rowIndex: allRows.length,
-                raw,
-                parsed: null,
-                error: "Invalid date",
-              });
-            } else if (isNaN(amount)) {
-              allRows.push({
-                rowIndex: allRows.length,
-                raw,
-                parsed: null,
-                error: "Invalid amount",
-              });
-            } else {
-              allRows.push({
-                rowIndex: allRows.length,
-                raw,
-                parsed: { date, description, amount },
-              });
-            }
-          } catch {
-            allRows.push({
-              rowIndex: allRows.length,
-              raw,
-              parsed: null,
-              error: "Parse error",
-            });
-          }
-        }
-      }
-
+      const result = await parseFilesInternal();
       dispatch({
         type: "SET_PARSED_PREVIEW",
-        payload: { rows: allRows, headers },
+        payload: result,
       });
-      dispatch({ type: "SET_STEP", payload: "file-preview" });
     } catch (e) {
       dispatch({
         type: "SET_ERROR",
         payload: e instanceof Error ? e.message : String(e),
       });
     }
-  }, [state.selectedFiles, state.sourceConfig]);
+  }, [state.selectedFiles, parseFilesInternal]);
 
+  // Internal helper: runs duplicate checking against parsed rows
+  const checkDuplicatesInternal = useCallback(async (parsedRows: ParsedRow[]) => {
+    // Save/update source config in DB
+    const config = state.sourceConfig;
+    const mappingJson = JSON.stringify(config.columnMapping);
+
+    let sourceId: number;
+    if (state.existingSource) {
+      sourceId = state.existingSource.id;
+      await updateSource(sourceId, {
+        name: config.name,
+        delimiter: config.delimiter,
+        encoding: config.encoding,
+        date_format: config.dateFormat,
+        column_mapping: mappingJson,
+        skip_lines: config.skipLines,
+        has_header: config.hasHeader,
+      });
+    } else {
+      sourceId = await createSource({
+        name: config.name,
+        delimiter: config.delimiter,
+        encoding: config.encoding,
+        date_format: config.dateFormat,
+        column_mapping: mappingJson,
+        skip_lines: config.skipLines,
+        has_header: config.hasHeader,
+      });
+    }
+
+    // Check file-level duplicates
+    let fileAlreadyImported = false;
+    let existingFileId: number | undefined;
+
+    if (state.selectedFiles.length > 0) {
+      const hash = await invoke<string>("hash_file", {
+        filePath: state.selectedFiles[0].file_path,
+      });
+      const existing = await existsByHash(hash);
+      if (existing) {
+        fileAlreadyImported = true;
+        existingFileId = existing.id;
+      }
+    }
+
+    // Check row-level duplicates
+    const validRows = parsedRows.filter((r) => r.parsed);
+    const duplicateMatches = await findDuplicates(
+      validRows.map((r) => ({
+        date: r.parsed!.date,
+        description: r.parsed!.description,
+        amount: r.parsed!.amount,
+      }))
+    );
+
+    const duplicateIndices = new Set(duplicateMatches.map((d) => d.rowIndex));
+    const newRows = validRows.filter(
+      (_, i) => !duplicateIndices.has(i)
+    );
+    const duplicateRows = duplicateMatches.map((d) => ({
+      rowIndex: d.rowIndex,
+      date: d.date,
+      description: d.description,
+      amount: d.amount,
+      existingTransactionId: d.existingTransactionId,
+    }));
+
+    dispatch({
+      type: "SET_DUPLICATE_RESULT",
+      payload: {
+        fileAlreadyImported,
+        existingFileId,
+        duplicateRows,
+        newRows,
+      },
+    });
+    dispatch({ type: "SET_STEP", payload: "duplicate-check" });
+  }, [state.sourceConfig, state.existingSource, state.selectedFiles]);
+
+  // Check duplicates using already-parsed preview data
   const checkDuplicates = useCallback(async () => {
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      // Save/update source config in DB
-      const config = state.sourceConfig;
-      const mappingJson = JSON.stringify(config.columnMapping);
-
-      let sourceId: number;
-      if (state.existingSource) {
-        sourceId = state.existingSource.id;
-        await updateSource(sourceId, {
-          name: config.name,
-          delimiter: config.delimiter,
-          encoding: config.encoding,
-          date_format: config.dateFormat,
-          column_mapping: mappingJson,
-          skip_lines: config.skipLines,
-          has_header: config.hasHeader,
-        });
-      } else {
-        sourceId = await createSource({
-          name: config.name,
-          delimiter: config.delimiter,
-          encoding: config.encoding,
-          date_format: config.dateFormat,
-          column_mapping: mappingJson,
-          skip_lines: config.skipLines,
-          has_header: config.hasHeader,
-        });
-      }
-
-      // Check file-level duplicates
-      let fileAlreadyImported = false;
-      let existingFileId: number | undefined;
-
-      if (state.selectedFiles.length > 0) {
-        const hash = await invoke<string>("hash_file", {
-          filePath: state.selectedFiles[0].file_path,
-        });
-        const existing = await existsByHash(hash);
-        if (existing) {
-          fileAlreadyImported = true;
-          existingFileId = existing.id;
-        }
-      }
-
-      // Check row-level duplicates
-      const validRows = state.parsedPreview.filter((r) => r.parsed);
-      const duplicateMatches = await findDuplicates(
-        validRows.map((r) => ({
-          date: r.parsed!.date,
-          description: r.parsed!.description,
-          amount: r.parsed!.amount,
-        }))
-      );
-
-      // Detect intra-batch duplicates (rows that appear more than once within the import)
-      const dbDuplicateIndices = new Set(duplicateMatches.map((d) => d.rowIndex));
-      const seenKeys = new Set<string>();
-      const batchDuplicateIndices = new Set<number>();
-
-      for (let i = 0; i < validRows.length; i++) {
-        if (dbDuplicateIndices.has(i)) continue; // already flagged as DB duplicate
-        const r = validRows[i].parsed!;
-        const key = `${r.date}|${r.description}|${r.amount}`;
-        if (seenKeys.has(key)) {
-          batchDuplicateIndices.add(i);
-        } else {
-          seenKeys.add(key);
-        }
-      }
-
-      const duplicateIndices = new Set([...dbDuplicateIndices, ...batchDuplicateIndices]);
-      const newRows = validRows.filter(
-        (_, i) => !duplicateIndices.has(i)
-      );
-      const duplicateRows = [
-        ...duplicateMatches.map((d) => ({
-          rowIndex: d.rowIndex,
-          date: d.date,
-          description: d.description,
-          amount: d.amount,
-          existingTransactionId: d.existingTransactionId,
-        })),
-        ...[...batchDuplicateIndices].map((i) => ({
-          rowIndex: i,
-          date: validRows[i].parsed!.date,
-          description: validRows[i].parsed!.description,
-          amount: validRows[i].parsed!.amount,
-          existingTransactionId: -1,
-        })),
-      ];
-
-      dispatch({
-        type: "SET_DUPLICATE_RESULT",
-        payload: {
-          fileAlreadyImported,
-          existingFileId,
-          duplicateRows,
-          newRows,
-        },
-      });
-      dispatch({ type: "SET_STEP", payload: "duplicate-check" });
+      await checkDuplicatesInternal(state.parsedPreview);
     } catch (e) {
       dispatch({
         type: "SET_ERROR",
         payload: e instanceof Error ? e.message : String(e),
       });
     }
-  }, [state.sourceConfig, state.existingSource, state.selectedFiles, state.parsedPreview]);
+  }, [state.parsedPreview, checkDuplicatesInternal]);
+
+  // Parse files then check duplicates in one step (skips preview step)
+  const parseAndCheckDuplicates = useCallback(async () => {
+    if (state.selectedFiles.length === 0) return;
+
+    dispatch({ type: "SET_LOADING", payload: true });
+    dispatch({ type: "SET_ERROR", payload: null });
+
+    try {
+      const result = await parseFilesInternal();
+      dispatch({
+        type: "SET_PARSED_PREVIEW",
+        payload: result,
+      });
+      await checkDuplicatesInternal(result.rows);
+    } catch (e) {
+      dispatch({
+        type: "SET_ERROR",
+        payload: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }, [state.selectedFiles, parseFilesInternal, checkDuplicatesInternal]);
 
   const executeImport = useCallback(async () => {
     if (!state.duplicateResult) return;
@@ -846,6 +855,7 @@ export function useImportWizard() {
     selectAllFiles,
     parsePreview,
     checkDuplicates,
+    parseAndCheckDuplicates,
     executeImport,
     goToStep,
     reset,

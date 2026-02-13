@@ -3,6 +3,7 @@ import type {
   DashboardSummary,
   CategoryBreakdownItem,
   RecentTransaction,
+  TransactionRow,
 } from "../shared/types";
 
 export async function getDashboardSummary(
@@ -84,6 +85,56 @@ export async function getExpensesByCategory(
      ${whereSQL}
      GROUP BY t.category_id
      ORDER BY total DESC`,
+    params
+  );
+}
+
+export async function getTransactionsByCategory(
+  categoryId: number | null,
+  dateFrom?: string,
+  dateTo?: string
+): Promise<TransactionRow[]> {
+  const db = await getDb();
+
+  const whereClauses: string[] = [];
+  const params: unknown[] = [];
+  let paramIndex = 1;
+
+  if (categoryId === null) {
+    whereClauses.push("t.category_id IS NULL");
+  } else {
+    whereClauses.push(`t.category_id = $${paramIndex}`);
+    params.push(categoryId);
+    paramIndex++;
+  }
+
+  if (dateFrom) {
+    whereClauses.push(`t.date >= $${paramIndex}`);
+    params.push(dateFrom);
+    paramIndex++;
+  }
+  if (dateTo) {
+    whereClauses.push(`t.date <= $${paramIndex}`);
+    params.push(dateTo);
+    paramIndex++;
+  }
+
+  const whereSQL = `WHERE ${whereClauses.join(" AND ")}`;
+
+  return db.select<TransactionRow[]>(
+    `SELECT
+       t.id, t.date, t.description, t.amount,
+       t.category_id,
+       c.name AS category_name,
+       c.color AS category_color,
+       s.name AS source_name,
+       t.notes,
+       t.is_manually_categorized
+     FROM transactions t
+     LEFT JOIN categories c ON t.category_id = c.id
+     LEFT JOIN import_sources s ON t.source_id = s.id
+     ${whereSQL}
+     ORDER BY t.date DESC, t.id DESC`,
     params
   );
 }
