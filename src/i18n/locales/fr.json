@@ -241,6 +241,8 @@
     "keywordText": "Mot-clé...",
     "priority": "Priorité",
     "customColor": "Couleur personnalisée",
+    "allKeywords": "Tous les mots-clés",
+    "allKeywordsEmpty": "Aucun mot-clé",
     "help": {
       "title": "Comment gérer les Catégories",
       "tips": [

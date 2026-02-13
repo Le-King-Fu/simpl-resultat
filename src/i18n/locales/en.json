@@ -241,6 +241,8 @@
     "keywordText": "Keyword...",
     "priority": "Priority",
     "customColor": "Custom color",
+    "allKeywords": "All Keywords",
+    "allKeywordsEmpty": "No keywords yet",
     "help": {
       "title": "How to manage Categories",
       "tips": [

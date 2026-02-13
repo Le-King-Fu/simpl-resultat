@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, RotateCcw } from "lucide-react";
+import { Plus, RotateCcw, List } from "lucide-react";
 import { PageHelp } from "../components/shared/PageHelp";
 import { useCategories } from "../hooks/useCategories";
 import CategoryTree from "../components/categories/CategoryTree";
 import CategoryDetailPanel from "../components/categories/CategoryDetailPanel";
+import AllKeywordsPanel from "../components/categories/AllKeywordsPanel";
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
+  const [showAllKeywords, setShowAllKeywords] = useState(false);
   const {
     state,
     selectCategory,
@@ -41,6 +44,17 @@ export default function CategoriesPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowAllKeywords((v) => !v)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              showAllKeywords
+                ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+                : "border-[var(--border)] hover:bg-[var(--muted)]"
+            }`}
+          >
+            <List size={16} />
+            {t("categories.allKeywords")}
+          </button>
+          <button
             onClick={handleReinitialize}
             disabled={state.isSaving}
             className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--muted)] transition-colors disabled:opacity-50"
@@ -66,6 +80,13 @@ export default function CategoriesPage() {
 
       {state.isLoading ? (
         <p className="text-[var(--muted-foreground)]">{t("common.loading")}</p>
+      ) : showAllKeywords ? (
+        <AllKeywordsPanel
+          onSelectCategory={(id) => {
+            setShowAllKeywords(false);
+            selectCategory(id);
+          }}
+        />
       ) : (
         <div className="flex gap-6" style={{ minHeight: "calc(100vh - 180px)" }}>
           <div className="w-1/3 bg-[var(--card)] rounded-xl border border-[var(--border)] p-3 overflow-y-auto">

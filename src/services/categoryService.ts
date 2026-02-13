@@ -210,6 +210,27 @@ export async function reinitializeCategories(): Promise<void> {
   }
 }
 
+export interface KeywordWithCategory {
+  id: number;
+  keyword: string;
+  priority: number;
+  category_id: number;
+  category_name: string;
+  category_color: string;
+}
+
+export async function getAllKeywordsWithCategory(): Promise<KeywordWithCategory[]> {
+  const db = await getDb();
+  return db.select<KeywordWithCategory[]>(
+    `SELECT k.id, k.keyword, k.priority, k.category_id,
+            c.name AS category_name, c.color AS category_color
+     FROM keywords k
+     JOIN categories c ON k.category_id = c.id AND c.is_active = 1
+     WHERE k.is_active = 1
+     ORDER BY k.keyword COLLATE NOCASE`
+  );
+}
+
 export async function getKeywordsByCategoryId(
   categoryId: number
 ): Promise<Keyword[]> {

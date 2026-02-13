@@ -39,15 +39,19 @@ export default function CategoryCombobox({
       ? extraOptions?.find((o) => o.value === activeExtra)?.label ?? ""
       : selectedCategory?.name ?? "";
 
+  // Strip accents + lowercase for accent-insensitive matching
+  const normalize = (s: string) =>
+    s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
   // Filter categories
-  const lowerQuery = query.toLowerCase();
+  const normalizedQuery = normalize(query);
   const filtered = query
-    ? categories.filter((c) => c.name.toLowerCase().includes(lowerQuery))
+    ? categories.filter((c) => normalize(c.name).includes(normalizedQuery))
     : categories;
 
   const filteredExtras = extraOptions
     ? query
-      ? extraOptions.filter((o) => o.label.toLowerCase().includes(lowerQuery))
+      ? extraOptions.filter((o) => normalize(o.label).includes(normalizedQuery))
       : extraOptions
     : [];
 
