@@ -1,11 +1,10 @@
 import { useReducer, useCallback, useEffect, useRef } from "react";
-import type { BudgetRow, BudgetTemplate } from "../shared/types";
+import type { BudgetYearRow, BudgetTemplate } from "../shared/types";
 import {
   getActiveCategories,
-  getBudgetEntriesForMonth,
-  getActualsByCategory,
+  getBudgetEntriesForYear,
   upsertBudgetEntry,
-  deleteBudgetEntry,
+  upsertBudgetEntriesForYear,
   getAllTemplates,
   saveAsTemplate as saveAsTemplateSvc,
   applyTemplate as applyTemplateSvc,
@@ -14,8 +13,7 @@ import {
 
 interface BudgetState {
   year: number;
-  month: number;
-  rows: BudgetRow[];
+  rows: BudgetYearRow[];
   templates: BudgetTemplate[];
   isLoading: boolean;
   isSaving: boolean;
@@ -26,14 +24,12 @@ type BudgetAction =
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_SAVING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null }
-  | { type: "SET_DATA"; payload: { rows: BudgetRow[]; templates: BudgetTemplate[] } }
-  | { type: "NAVIGATE_MONTH"; payload: { year: number; month: number } };
+  | { type: "SET_DATA"; payload: { rows: BudgetYearRow[]; templates: BudgetTemplate[] } }
+  | { type: "SET_YEAR"; payload: number };
 
 function initialState(): BudgetState {
-  const now = new Date();
   return {
-    year: now.getFullYear(),
-    month: now.getMonth() + 1,
+    year: new Date().getFullYear(),
     rows: [],
     templates: [],
     isLoading: false,
@@ -57,8 +53,8 @@ function reducer(state: BudgetState, action: BudgetAction): BudgetState {
         templates: action.payload.templates,
         isLoading: false,
       };
-    case "NAVIGATE_MONTH":
-      return { ...state, year: action.payload.year, month: action.payload.month };
+    case "SET_YEAR":
+      return { ...state, year: action.payload };
     default:
       return state;
   }
@@ -70,45 +66,43 @@ export function useBudget() {
   const [state, dispatch] = useReducer(reducer, undefined, initialState);
   const fetchIdRef = useRef(0);
 
-  const refreshData = useCallback(async (year: number, month: number) => {
+  const refreshData = useCallback(async (year: number) => {
     const fetchId = ++fetchIdRef.current;
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const [categories, entries, actuals, templates] = await Promise.all([
+      const [categories, entries, templates] = await Promise.all([
         getActiveCategories(),
-        getBudgetEntriesForMonth(year, month),
-        getActualsByCategory(year, month),
+        getBudgetEntriesForYear(year),
         getAllTemplates(),
       ]);
 
       if (fetchId !== fetchIdRef.current) return;
 
-      const entryMap = new Map(entries.map((e) => [e.category_id, e]));
-      const actualMap = new Map(actuals.map((a) => [a.category_id, a.actual]));
+      // Build a map: categoryId -> month(1-12) -> amount
+      const entryMap = new Map<number, Map<number, number>>();
+      for (const e of entries) {
+        if (!entryMap.has(e.category_id)) entryMap.set(e.category_id, new Map());
+        entryMap.get(e.category_id)!.set(e.month, e.amount);
+      }
 
-      const rows: BudgetRow[] = categories.map((cat) => {
-        const entry = entryMap.get(cat.id);
-        const planned = entry?.amount ?? 0;
-        const actual = actualMap.get(cat.id) ?? 0;
-
-        let difference: number;
-        if (cat.type === "income") {
-          difference = actual - planned;
-        } else {
-          difference = planned - Math.abs(actual);
+      const rows: BudgetYearRow[] = categories.map((cat) => {
+        const monthMap = entryMap.get(cat.id);
+        const months: number[] = [];
+        let annual = 0;
+        for (let m = 1; m <= 12; m++) {
+          const val = monthMap?.get(m) ?? 0;
+          months.push(val);
+          annual += val;
         }
-
         return {
           category_id: cat.id,
           category_name: cat.name,
           category_color: cat.color || "#9ca3af",
           category_type: cat.type,
-          planned,
-          actual,
-          difference,
-          notes: entry?.notes,
+          months,
+          annual,
         };
       });
 
@@ -130,28 +124,19 @@ export function useBudget() {
   }, []);
 
   useEffect(() => {
-    refreshData(state.year, state.month);
-  }, [state.year, state.month, refreshData]);
+    refreshData(state.year);
+  }, [state.year, refreshData]);
 
-  const navigateMonth = useCallback((delta: -1 | 1) => {
-    let newMonth = state.month + delta;
-    let newYear = state.year;
-    if (newMonth < 1) {
-      newMonth = 12;
-      newYear--;
-    } else if (newMonth > 12) {
-      newMonth = 1;
-      newYear++;
-    }
-    dispatch({ type: "NAVIGATE_MONTH", payload: { year: newYear, month: newMonth } });
-  }, [state.year, state.month]);
+  const navigateYear = useCallback((delta: -1 | 1) => {
+    dispatch({ type: "SET_YEAR", payload: state.year + delta });
+  }, [state.year]);
 
   const updatePlanned = useCallback(
-    async (categoryId: number, amount: number, notes?: string) => {
+    async (categoryId: number, month: number, amount: number) => {
       dispatch({ type: "SET_SAVING", payload: true });
       try {
-        await upsertBudgetEntry(categoryId, state.year, state.month, amount, notes);
-        await refreshData(state.year, state.month);
+        await upsertBudgetEntry(categoryId, state.year, month, amount);
+        await refreshData(state.year);
       } catch (e) {
         dispatch({
           type: "SET_ERROR",
@@ -161,15 +146,21 @@ export function useBudget() {
         dispatch({ type: "SET_SAVING", payload: false });
       }
     },
-    [state.year, state.month, refreshData]
+    [state.year, refreshData]
   );
 
-  const removePlanned = useCallback(
-    async (categoryId: number) => {
+  const splitEvenly = useCallback(
+    async (categoryId: number, annualAmount: number) => {
       dispatch({ type: "SET_SAVING", payload: true });
       try {
-        await deleteBudgetEntry(categoryId, state.year, state.month);
-        await refreshData(state.year, state.month);
+        const base = Math.floor((annualAmount / 12) * 100) / 100;
+        const remainder = Math.round((annualAmount - base * 12) * 100);
+        const amounts: number[] = [];
+        for (let m = 0; m < 12; m++) {
+          amounts.push(m < remainder ? base + 0.01 : base);
+        }
+        await upsertBudgetEntriesForYear(categoryId, state.year, amounts);
+        await refreshData(state.year);
       } catch (e) {
         dispatch({
           type: "SET_ERROR",
@@ -179,18 +170,19 @@ export function useBudget() {
         dispatch({ type: "SET_SAVING", payload: false });
       }
     },
-    [state.year, state.month, refreshData]
+    [state.year, refreshData]
   );
 
   const saveTemplate = useCallback(
     async (name: string, description?: string) => {
       dispatch({ type: "SET_SAVING", payload: true });
       try {
+        // Save template from January values (template is a single-month snapshot)
         const entries = state.rows
-          .filter((r) => r.planned !== 0)
-          .map((r) => ({ category_id: r.category_id, amount: r.planned }));
+          .filter((r) => r.months[0] !== 0)
+          .map((r) => ({ category_id: r.category_id, amount: r.months[0] }));
         await saveAsTemplateSvc(name, description, entries);
-        await refreshData(state.year, state.month);
+        await refreshData(state.year);
       } catch (e) {
         dispatch({
           type: "SET_ERROR",
@@ -200,15 +192,15 @@ export function useBudget() {
         dispatch({ type: "SET_SAVING", payload: false });
       }
     },
-    [state.rows, state.year, state.month, refreshData]
+    [state.rows, state.year, refreshData]
   );
 
   const applyTemplate = useCallback(
-    async (templateId: number) => {
+    async (templateId: number, month: number) => {
       dispatch({ type: "SET_SAVING", payload: true });
       try {
-        await applyTemplateSvc(templateId, state.year, state.month);
-        await refreshData(state.year, state.month);
+        await applyTemplateSvc(templateId, state.year, month);
+        await refreshData(state.year);
       } catch (e) {
         dispatch({
           type: "SET_ERROR",
@@ -218,7 +210,27 @@ export function useBudget() {
         dispatch({ type: "SET_SAVING", payload: false });
       }
     },
-    [state.year, state.month, refreshData]
+    [state.year, refreshData]
+  );
+
+  const applyTemplateAllMonths = useCallback(
+    async (templateId: number) => {
+      dispatch({ type: "SET_SAVING", payload: true });
+      try {
+        for (let m = 1; m <= 12; m++) {
+          await applyTemplateSvc(templateId, state.year, m);
+        }
+        await refreshData(state.year);
+      } catch (e) {
+        dispatch({
+          type: "SET_ERROR",
+          payload: e instanceof Error ? e.message : String(e),
+        });
+      } finally {
+        dispatch({ type: "SET_SAVING", payload: false });
+      }
+    },
+    [state.year, refreshData]
   );
 
   const deleteTemplate = useCallback(
@@ -226,7 +238,7 @@ export function useBudget() {
       dispatch({ type: "SET_SAVING", payload: true });
       try {
         await deleteTemplateSvc(templateId);
-        await refreshData(state.year, state.month);
+        await refreshData(state.year);
       } catch (e) {
         dispatch({
           type: "SET_ERROR",
@@ -236,16 +248,17 @@ export function useBudget() {
         dispatch({ type: "SET_SAVING", payload: false });
       }
     },
-    [state.year, state.month, refreshData]
+    [state.year, refreshData]
   );
 
   return {
     state,
-    navigateMonth,
+    navigateYear,
     updatePlanned,
-    removePlanned,
+    splitEvenly,
     saveTemplate,
     applyTemplate,
+    applyTemplateAllMonths,
     deleteTemplate,
   };
 }

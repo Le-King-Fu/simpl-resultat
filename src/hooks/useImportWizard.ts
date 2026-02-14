@@ -261,8 +261,21 @@ export function useImportWizard() {
 
   const selectSource = useCallback(
     async (source: ScannedSource) => {
-      dispatch({ type: "SET_SELECTED_SOURCE", payload: source });
-      dispatch({ type: "SET_SELECTED_FILES", payload: source.files });
+      // Sort files: new files first, then already-imported
+      const importedNames = state.importedFilesBySource.get(source.folder_name);
+      const sorted = [...source.files].sort((a, b) => {
+        const aImported = importedNames?.has(a.filename) ?? false;
+        const bImported = importedNames?.has(b.filename) ?? false;
+        if (aImported !== bImported) return aImported ? 1 : -1;
+        return a.filename.localeCompare(b.filename);
+      });
+      const sortedSource = { ...source, files: sorted };
+
+      // Pre-select only new files
+      const newFiles = sorted.filter((f) => !importedNames?.has(f.filename));
+
+      dispatch({ type: "SET_SELECTED_SOURCE", payload: sortedSource });
+      dispatch({ type: "SET_SELECTED_FILES", payload: newFiles });
 
       // Check if this source already has config in DB
       const existing = await getSourceByName(source.folder_name);

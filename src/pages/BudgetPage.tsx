@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { PageHelp } from "../components/shared/PageHelp";
 import { useBudget } from "../hooks/useBudget";
-import MonthNavigator from "../components/budget/MonthNavigator";
-import BudgetSummaryCards from "../components/budget/BudgetSummaryCards";
+import YearNavigator from "../components/budget/YearNavigator";
 import BudgetTable from "../components/budget/BudgetTable";
 import TemplateActions from "../components/budget/TemplateActions";
 
@@ -10,14 +9,16 @@ export default function BudgetPage() {
   const { t } = useTranslation();
   const {
     state,
-    navigateMonth,
+    navigateYear,
     updatePlanned,
+    splitEvenly,
     saveTemplate,
     applyTemplate,
+    applyTemplateAllMonths,
     deleteTemplate,
   } = useBudget();
 
-  const { year, month, rows, templates, isLoading, isSaving, error } = state;
+  const { year, rows, templates, isLoading, isSaving, error } = state;
 
   return (
     <div className={isLoading ? "opacity-50 pointer-events-none" : ""}>
@@ -30,11 +31,12 @@ export default function BudgetPage() {
           <TemplateActions
             templates={templates}
             onApply={applyTemplate}
+            onApplyAllMonths={applyTemplateAllMonths}
             onSave={saveTemplate}
             onDelete={deleteTemplate}
             disabled={isSaving}
           />
-          <MonthNavigator year={year} month={month} onNavigate={navigateMonth} />
+          <YearNavigator year={year} onNavigate={navigateYear} />
         </div>
       </div>
 
@@ -44,8 +46,11 @@ export default function BudgetPage() {
         </div>
       )}
 
-      <BudgetSummaryCards rows={rows} />
-      <BudgetTable rows={rows} onUpdatePlanned={updatePlanned} />
+      <BudgetTable
+        rows={rows}
+        onUpdatePlanned={updatePlanned}
+        onSplitEvenly={splitEvenly}
+      />
     </div>
   );
 }

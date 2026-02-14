@@ -83,6 +83,7 @@
       "creditColumn": "Colonne crédit",
       "selectFiles": "Fichiers à importer",
       "selectAll": "Tout sélectionner",
+      "alreadyImported": "Importé",
       "autoDetect": "Auto-détecter"
     },
     "preview": {
@@ -284,6 +285,10 @@
     "planned": "Prévu",
     "actual": "Réel",
     "difference": "Écart",
+    "annual": "Annuel",
+    "splitEvenly": "Répartir également sur 12 mois",
+    "applyToMonth": "Appliquer au mois",
+    "allMonths": "Les 12 mois",
     "expenses": "Dépenses",
     "income": "Revenus",
     "transfers": "Transferts",
@@ -300,11 +305,11 @@
     "help": {
       "title": "Comment utiliser le Budget",
       "tips": [
-        "Utilisez le navigateur de mois pour passer d'un mois à l'autre",
-        "Cliquez sur un montant prévu pour le modifier — appuyez sur Entrée pour sauvegarder ou Échap pour annuler",
-        "La colonne réel affiche les dépenses réelles de vos transactions importées",
-        "Vert signifie sous le budget, rouge signifie au-dessus du budget",
-        "Sauvegardez votre budget comme modèle et appliquez-le rapidement à d'autres mois"
+        "Utilisez le navigateur d'année pour changer d'année",
+        "Cliquez sur une cellule de mois pour modifier le montant prévu — Entrée pour sauvegarder, Échap pour annuler, Tab pour passer au mois suivant",
+        "La colonne Annuel affiche le total des 12 mois",
+        "Utilisez le bouton de répartition pour distribuer le total annuel également sur tous les mois",
+        "Sauvegardez votre budget comme modèle et appliquez-le à des mois spécifiques ou aux 12 mois d'un coup"
       ]
     }
   },
@@ -360,6 +365,20 @@
     "total": "Total",
     "transactions": "transactions",
     "clickToShow": "Cliquer pour afficher"
+  },
+  "months": {
+    "jan": "Jan",
+    "feb": "Fév",
+    "mar": "Mar",
+    "apr": "Avr",
+    "may": "Mai",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Aoû",
+    "sep": "Sep",
+    "oct": "Oct",
+    "nov": "Nov",
+    "dec": "Déc"
   },
   "common": {
     "save": "Enregistrer",

@@ -87,6 +87,7 @@ export default function ImportPage() {
             source={state.selectedSource}
             config={state.sourceConfig}
             selectedFiles={state.selectedFiles}
+            importedFileNames={state.importedFilesBySource.get(state.selectedSource.folder_name)}
             headers={state.previewHeaders}
             onConfigChange={updateConfig}
             onFileToggle={toggleFile}

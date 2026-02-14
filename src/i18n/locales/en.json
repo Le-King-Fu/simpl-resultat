@@ -83,6 +83,7 @@
       "creditColumn": "Credit column",
       "selectFiles": "Files to import",
       "selectAll": "Select all",
+      "alreadyImported": "Imported",
       "autoDetect": "Auto-detect"
     },
     "preview": {
@@ -284,6 +285,10 @@
     "planned": "Planned",
     "actual": "Actual",
     "difference": "Difference",
+    "annual": "Annual",
+    "splitEvenly": "Split evenly across 12 months",
+    "applyToMonth": "Apply to month",
+    "allMonths": "All 12 months",
     "expenses": "Expenses",
     "income": "Income",
     "transfers": "Transfers",
@@ -300,11 +305,11 @@
     "help": {
       "title": "How to use Budget",
       "tips": [
-        "Use the month navigator to switch between months",
-        "Click on a planned amount to edit it inline — press Enter to save or Escape to cancel",
-        "The actual column shows real spending from your imported transactions",
-        "Green means under budget, red means over budget",
-        "Save your budget as a template and apply it to other months quickly"
+        "Use the year navigator to switch between years",
+        "Click on any month cell to edit the planned amount — press Enter to save, Escape to cancel, Tab to move to next month",
+        "The Annual column shows the total of all 12 months",
+        "Use the split button to distribute the annual total evenly across all months",
+        "Save your budget as a template and apply it to specific months or all 12 at once"
       ]
     }
   },
@@ -360,6 +365,20 @@
     "total": "Total",
     "transactions": "transactions",
     "clickToShow": "Click to show"
+  },
+  "months": {
+    "jan": "Jan",
+    "feb": "Feb",
+    "mar": "Mar",
+    "apr": "Apr",
+    "may": "May",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Aug",
+    "sep": "Sep",
+    "oct": "Oct",
+    "nov": "Nov",
+    "dec": "Dec"
   },
   "common": {
     "save": "Save",

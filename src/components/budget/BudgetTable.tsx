@@ -1,50 +1,79 @@
 import { useState, useRef, useEffect, Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import type { BudgetRow } from "../../shared/types";
+import { SplitSquareHorizontal } from "lucide-react";
+import type { BudgetYearRow } from "../../shared/types";
 
-const fmt = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
+const fmt = new Intl.NumberFormat("en-CA", {
+  style: "currency",
+  currency: "CAD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+const MONTH_KEYS = [
+  "months.jan", "months.feb", "months.mar", "months.apr",
+  "months.may", "months.jun", "months.jul", "months.aug",
+  "months.sep", "months.oct", "months.nov", "months.dec",
+] as const;
 
 interface BudgetTableProps {
-  rows: BudgetRow[];
-  onUpdatePlanned: (categoryId: number, amount: number) => void;
+  rows: BudgetYearRow[];
+  onUpdatePlanned: (categoryId: number, month: number, amount: number) => void;
+  onSplitEvenly: (categoryId: number, annualAmount: number) => void;
 }
 
-export default function BudgetTable({ rows, onUpdatePlanned }: BudgetTableProps) {
+export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: BudgetTableProps) {
   const { t } = useTranslation();
-  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+  const [editingCell, setEditingCell] = useState<{ categoryId: number; monthIdx: number } | null>(null);
   const [editingValue, setEditingValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (editingCategoryId !== null && inputRef.current) {
+    if (editingCell && inputRef.current) {
       inputRef.current.focus();
       inputRef.current.select();
     }
-  }, [editingCategoryId]);
+  }, [editingCell]);
 
-  const handleStartEdit = (row: BudgetRow) => {
-    setEditingCategoryId(row.category_id);
-    setEditingValue(row.planned === 0 ? "" : String(row.planned));
+  const handleStartEdit = (categoryId: number, monthIdx: number, currentValue: number) => {
+    setEditingCell({ categoryId, monthIdx });
+    setEditingValue(currentValue === 0 ? "" : String(currentValue));
   };
 
   const handleSave = () => {
-    if (editingCategoryId === null) return;
+    if (!editingCell) return;
     const amount = parseFloat(editingValue) || 0;
-    onUpdatePlanned(editingCategoryId, amount);
-    setEditingCategoryId(null);
+    onUpdatePlanned(editingCell.categoryId, editingCell.monthIdx + 1, amount);
+    setEditingCell(null);
   };
 
   const handleCancel = () => {
-    setEditingCategoryId(null);
+    setEditingCell(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSave();
     if (e.key === "Escape") handleCancel();
+    if (e.key === "Tab") {
+      e.preventDefault();
+      if (!editingCell) return;
+      const amount = parseFloat(editingValue) || 0;
+      onUpdatePlanned(editingCell.categoryId, editingCell.monthIdx + 1, amount);
+      // Move to next month cell
+      const nextMonth = editingCell.monthIdx + (e.shiftKey ? -1 : 1);
+      if (nextMonth >= 0 && nextMonth < 12) {
+        const row = rows.find((r) => r.category_id === editingCell.categoryId);
+        if (row) {
+          handleStartEdit(editingCell.categoryId, nextMonth, row.months[nextMonth]);
+        }
+      } else {
+        setEditingCell(null);
+      }
+    }
   };
 
   // Group rows by type
-  const grouped: Record<string, BudgetRow[]> = {};
+  const grouped: Record<string, BudgetYearRow[]> = {};
   for (const row of rows) {
     const key = row.category_type;
     if (!grouped[key]) grouped[key] = [];
@@ -58,9 +87,17 @@ export default function BudgetTable({ rows, onUpdatePlanned }: BudgetTableProps)
     transfer: "budget.transfers",
   };
 
-  const totalPlanned = rows.reduce((s, r) => s + r.planned, 0);
-  const totalActual = rows.reduce((s, r) => s + Math.abs(r.actual), 0);
-  const totalDifference = totalPlanned - totalActual;
+  // Column totals
+  const monthTotals: number[] = Array(12).fill(0);
+  let annualTotal = 0;
+  for (const row of rows) {
+    for (let m = 0; m < 12; m++) {
+      monthTotals[m] += row.months[m];
+    }
+    annualTotal += row.annual;
+  }
+
+  const totalCols = 14; // category + annual + 12 months
 
   if (rows.length === 0) {
     return (
@@ -71,22 +108,21 @@ export default function BudgetTable({ rows, onUpdatePlanned }: BudgetTableProps)
   }
 
   return (
-    <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-x-auto">
+      <table className="w-full text-sm whitespace-nowrap">
         <thead>
           <tr className="border-b border-[var(--border)]">
-            <th className="text-left py-3 px-4 font-medium text-[var(--muted-foreground)]">
+            <th className="text-left py-2.5 px-3 font-medium text-[var(--muted-foreground)] sticky left-0 bg-[var(--card)] z-10 min-w-[140px]">
               {t("budget.category")}
             </th>
-            <th className="text-right py-3 px-4 font-medium text-[var(--muted-foreground)] w-36">
-              {t("budget.planned")}
+            <th className="text-right py-2.5 px-2 font-medium text-[var(--muted-foreground)] min-w-[90px]">
+              {t("budget.annual")}
             </th>
-            <th className="text-right py-3 px-4 font-medium text-[var(--muted-foreground)] w-36">
-              {t("budget.actual")}
-            </th>
-            <th className="text-right py-3 px-4 font-medium text-[var(--muted-foreground)] w-36">
-              {t("budget.difference")}
-            </th>
+            {MONTH_KEYS.map((key) => (
+              <th key={key} className="text-right py-2.5 px-2 font-medium text-[var(--muted-foreground)] min-w-[70px]">
+                {t(key)}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -97,8 +133,8 @@ export default function BudgetTable({ rows, onUpdatePlanned }: BudgetTableProps)
               <Fragment key={type}>
                 <tr>
                   <td
-                    colSpan={4}
-                    className="py-2 px-4 text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] bg-[var(--muted)]"
+                    colSpan={totalCols}
+                    className="py-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] bg-[var(--muted)]"
                   >
                     {t(typeLabelKeys[type])}
                   </td>
@@ -106,82 +142,81 @@ export default function BudgetTable({ rows, onUpdatePlanned }: BudgetTableProps)
                 {group.map((row) => (
                   <tr
                     key={row.category_id}
-                    className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-colors"
+                    className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)]/50 transition-colors"
                   >
-                    <td className="py-2.5 px-4">
+                    {/* Category name - sticky */}
+                    <td className="py-2 px-3 sticky left-0 bg-[var(--card)] z-10">
                       <div className="flex items-center gap-2">
                         <span
-                          className="w-3 h-3 rounded-full shrink-0"
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: row.category_color }}
                         />
-                        <span>{row.category_name}</span>
+                        <span className="truncate text-xs">{row.category_name}</span>
                       </div>
                     </td>
-                    <td className="py-2.5 px-4 text-right">
-                      {editingCategoryId === row.category_id ? (
-                        <input
-                          ref={inputRef}
-                          type="number"
-                          step="0.01"
-                          value={editingValue}
-                          onChange={(e) => setEditingValue(e.target.value)}
-                          onBlur={handleSave}
-                          onKeyDown={handleKeyDown}
-                          className="w-full text-right bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                        />
-                      ) : (
-                        <button
-                          onClick={() => handleStartEdit(row)}
-                          className="w-full text-right hover:text-[var(--primary)] transition-colors cursor-text"
-                        >
-                          {row.planned === 0 ? (
+                    {/* Annual total + split button */}
+                    <td className="py-2 px-2 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <span className="font-medium text-xs">
+                          {row.annual === 0 ? (
                             <span className="text-[var(--muted-foreground)]">—</span>
                           ) : (
-                            fmt.format(row.planned)
+                            fmt.format(row.annual)
                           )}
-                        </button>
-                      )}
-                    </td>
-                    <td className="py-2.5 px-4 text-right">
-                      {row.actual === 0 ? (
-                        <span className="text-[var(--muted-foreground)]">—</span>
-                      ) : (
-                        fmt.format(Math.abs(row.actual))
-                      )}
-                    </td>
-                    <td className="py-2.5 px-4 text-right">
-                      {row.planned === 0 && row.actual === 0 ? (
-                        <span className="text-[var(--muted-foreground)]">—</span>
-                      ) : (
-                        <span
-                          className={
-                            row.difference >= 0
-                              ? "text-[var(--positive)]"
-                              : "text-[var(--negative)]"
-                          }
-                        >
-                          {fmt.format(row.difference)}
                         </span>
-                      )}
+                        {row.annual > 0 && (
+                          <button
+                            onClick={() => onSplitEvenly(row.category_id, row.annual)}
+                            className="p-0.5 rounded hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors"
+                            title={t("budget.splitEvenly")}
+                          >
+                            <SplitSquareHorizontal size={13} />
+                          </button>
+                        )}
+                      </div>
                     </td>
+                    {/* 12 month cells */}
+                    {row.months.map((val, mIdx) => (
+                      <td key={mIdx} className="py-2 px-2 text-right">
+                        {editingCell?.categoryId === row.category_id && editingCell.monthIdx === mIdx ? (
+                          <input
+                            ref={inputRef}
+                            type="number"
+                            step="0.01"
+                            value={editingValue}
+                            onChange={(e) => setEditingValue(e.target.value)}
+                            onBlur={handleSave}
+                            onKeyDown={handleKeyDown}
+                            className="w-full text-right bg-[var(--background)] border border-[var(--border)] rounded px-1 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                          />
+                        ) : (
+                          <button
+                            onClick={() => handleStartEdit(row.category_id, mIdx, val)}
+                            className="w-full text-right hover:text-[var(--primary)] transition-colors cursor-text text-xs"
+                          >
+                            {val === 0 ? (
+                              <span className="text-[var(--muted-foreground)]">—</span>
+                            ) : (
+                              fmt.format(val)
+                            )}
+                          </button>
+                        )}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </Fragment>
             );
           })}
+          {/* Totals row */}
           <tr className="bg-[var(--muted)] font-semibold">
-            <td className="py-3 px-4">{t("common.total")}</td>
-            <td className="py-3 px-4 text-right">{fmt.format(totalPlanned)}</td>
-            <td className="py-3 px-4 text-right">{fmt.format(totalActual)}</td>
-            <td className="py-3 px-4 text-right">
-              <span
-                className={
-                  totalDifference >= 0 ? "text-[var(--positive)]" : "text-[var(--negative)]"
-                }
-              >
-                {fmt.format(totalDifference)}
-              </span>
-            </td>
+            <td className="py-2.5 px-3 sticky left-0 bg-[var(--muted)] z-10 text-xs">{t("common.total")}</td>
+            <td className="py-2.5 px-2 text-right text-xs">{fmt.format(annualTotal)}</td>
+            {monthTotals.map((total, mIdx) => (
+              <td key={mIdx} className="py-2.5 px-2 text-right text-xs">
+                {fmt.format(total)}
+              </td>
+            ))}
           </tr>
         </tbody>
       </table>

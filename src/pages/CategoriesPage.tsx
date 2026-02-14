@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, RotateCcw, List } from "lucide-react";
+import { Plus, RotateCcw, List, AlertTriangle } from "lucide-react";
 import { PageHelp } from "../components/shared/PageHelp";
 import { useCategories } from "../hooks/useCategories";
 import CategoryTree from "../components/categories/CategoryTree";
@@ -10,6 +10,7 @@ import AllKeywordsPanel from "../components/categories/AllKeywordsPanel";
 export default function CategoriesPage() {
   const { t } = useTranslation();
   const [showAllKeywords, setShowAllKeywords] = useState(false);
+  const [showReinitConfirm, setShowReinitConfirm] = useState(false);
   const {
     state,
     selectCategory,
@@ -25,9 +26,8 @@ export default function CategoriesPage() {
   } = useCategories();
 
   const handleReinitialize = async () => {
-    if (confirm(t("categories.reinitializeConfirm"))) {
-      await reinitializeCategories();
-    }
+    setShowReinitConfirm(false);
+    await reinitializeCategories();
   };
 
   const selectedCategory =
@@ -55,7 +55,7 @@ export default function CategoriesPage() {
             {t("categories.allKeywords")}
           </button>
           <button
-            onClick={handleReinitialize}
+            onClick={() => setShowReinitConfirm(true)}
             disabled={state.isSaving}
             className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] text-sm font-medium hover:bg-[var(--muted)] transition-colors disabled:opacity-50"
           >
@@ -111,6 +111,37 @@ export default function CategoriesPage() {
             onUpdateKeyword={editKeyword}
             onRemoveKeyword={removeKeyword}
           />
+        </div>
+      )}
+
+      {/* Reinitialize confirmation modal */}
+      {showReinitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-full bg-[var(--negative)]/10">
+                <AlertTriangle size={20} className="text-[var(--negative)]" />
+              </div>
+              <h2 className="text-lg font-semibold">{t("categories.reinitialize")}</h2>
+            </div>
+            <p className="text-sm text-[var(--muted-foreground)] mb-6">
+              {t("categories.reinitializeConfirm")}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowReinitConfirm(false)}
+                className="px-4 py-2 text-sm rounded-lg border border-[var(--border)] hover:bg-[var(--muted)] transition-colors"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                onClick={handleReinitialize}
+                className="px-4 py-2 text-sm rounded-lg bg-[var(--negative)] text-white hover:opacity-90 transition-opacity"
+              >
+                {t("common.confirm")}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

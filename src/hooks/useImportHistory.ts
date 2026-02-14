@@ -1,5 +1,4 @@
 import { useReducer, useCallback, useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import type { ImportedFileWithSource } from "../shared/types";
 import {
   getAllImportedFiles,
@@ -48,7 +47,6 @@ function reducer(
 export function useImportHistory(onChanged?: () => void) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const fetchIdRef = useRef(0);
-  const { t } = useTranslation();
 
   const loadHistory = useCallback(async () => {
     const fetchId = ++fetchIdRef.current;
@@ -69,11 +67,7 @@ export function useImportHistory(onChanged?: () => void) {
   }, []);
 
   const handleDelete = useCallback(
-    async (fileId: number, rowCount: number) => {
-      const ok = confirm(
-        t("import.history.deleteConfirm", { count: rowCount })
-      );
-      if (!ok) return;
+    async (fileId: number) => {
       dispatch({ type: "SET_DELETING", payload: true });
       try {
         await deleteImportWithTransactions(fileId);
@@ -85,12 +79,10 @@ export function useImportHistory(onChanged?: () => void) {
         dispatch({ type: "SET_DELETING", payload: false });
       }
     },
-    [loadHistory, onChanged, t]
+    [loadHistory, onChanged]
   );
 
   const handleDeleteAll = useCallback(async () => {
-    const ok = confirm(t("import.history.deleteAllConfirm"));
-    if (!ok) return;
     dispatch({ type: "SET_DELETING", payload: true });
     try {
       await deleteAllImportsWithTransactions();
@@ -101,7 +93,7 @@ export function useImportHistory(onChanged?: () => void) {
     } finally {
       dispatch({ type: "SET_DELETING", payload: false });
     }
-  }, [loadHistory, onChanged, t]);
+  }, [loadHistory, onChanged]);
 
   useEffect(() => {
     loadHistory();

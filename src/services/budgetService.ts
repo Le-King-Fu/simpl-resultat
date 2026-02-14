@@ -74,6 +74,41 @@ export async function getActualsByCategory(
   );
 }
 
+export async function getBudgetEntriesForYear(
+  year: number
+): Promise<BudgetEntry[]> {
+  const db = await getDb();
+  return db.select<BudgetEntry[]>(
+    "SELECT * FROM budget_entries WHERE year = $1",
+    [year]
+  );
+}
+
+export async function upsertBudgetEntriesForYear(
+  categoryId: number,
+  year: number,
+  amounts: number[]
+): Promise<void> {
+  const db = await getDb();
+  for (let m = 0; m < 12; m++) {
+    const month = m + 1;
+    const amount = amounts[m] ?? 0;
+    if (amount === 0) {
+      await db.execute(
+        "DELETE FROM budget_entries WHERE category_id = $1 AND year = $2 AND month = $3",
+        [categoryId, year, month]
+      );
+    } else {
+      await db.execute(
+        `INSERT INTO budget_entries (category_id, year, month, amount)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT(category_id, year, month) DO UPDATE SET amount = $4, updated_at = CURRENT_TIMESTAMP`,
+        [categoryId, year, month, amount]
+      );
+    }
+  }
+}
+
 // Templates
 
 export async function getAllTemplates(): Promise<BudgetTemplate[]> {

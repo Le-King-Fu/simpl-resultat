@@ -5,15 +5,23 @@ import type { BudgetTemplate } from "../../shared/types";
 
 interface TemplateActionsProps {
   templates: BudgetTemplate[];
-  onApply: (templateId: number) => void;
+  onApply: (templateId: number, month: number) => void;
+  onApplyAllMonths: (templateId: number) => void;
   onSave: (name: string, description?: string) => void;
   onDelete: (templateId: number) => void;
   disabled?: boolean;
 }
 
+const MONTH_KEYS = [
+  "months.jan", "months.feb", "months.mar", "months.apr",
+  "months.may", "months.jun", "months.jul", "months.aug",
+  "months.sep", "months.oct", "months.nov", "months.dec",
+] as const;
+
 export default function TemplateActions({
   templates,
   onApply,
+  onApplyAllMonths,
   onSave,
   onDelete,
   disabled,
@@ -22,6 +30,7 @@ export default function TemplateActions({
   const [showApply, setShowApply] = useState(false);
   const [showSave, setShowSave] = useState(false);
   const [templateName, setTemplateName] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
   const applyRef = useRef<HTMLDivElement>(null);
   const saveRef = useRef<HTMLDivElement>(null);
 
@@ -30,6 +39,7 @@ export default function TemplateActions({
     const handler = (e: MouseEvent) => {
       if (showApply && applyRef.current && !applyRef.current.contains(e.target as Node)) {
         setShowApply(false);
+        setSelectedTemplate(null);
       }
       if (showSave && saveRef.current && !saveRef.current.contains(e.target as Node)) {
         setShowSave(false);
@@ -53,12 +63,30 @@ export default function TemplateActions({
     }
   };
 
+  const handleSelectTemplate = (templateId: number) => {
+    setSelectedTemplate(templateId);
+  };
+
+  const handleApplyToMonth = (month: number) => {
+    if (selectedTemplate === null) return;
+    onApply(selectedTemplate, month);
+    setShowApply(false);
+    setSelectedTemplate(null);
+  };
+
+  const handleApplyAll = () => {
+    if (selectedTemplate === null) return;
+    onApplyAllMonths(selectedTemplate);
+    setShowApply(false);
+    setSelectedTemplate(null);
+  };
+
   return (
     <div className="flex items-center gap-2">
       {/* Apply template */}
       <div ref={applyRef} className="relative">
         <button
-          onClick={() => { setShowApply(!showApply); setShowSave(false); }}
+          onClick={() => { setShowApply(!showApply); setShowSave(false); setSelectedTemplate(null); }}
           disabled={disabled}
           className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-[var(--border)] hover:bg-[var(--muted)] transition-colors disabled:opacity-50"
         >
@@ -66,27 +94,52 @@ export default function TemplateActions({
           {t("budget.applyTemplate")}
         </button>
         {showApply && (
-          <div className="absolute right-0 top-full mt-1 z-40 w-64 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-lg py-1">
-            {templates.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-[var(--muted-foreground)]">
-                {t("budget.noTemplates")}
-              </p>
-            ) : (
-              templates.map((tmpl) => (
-                <div
-                  key={tmpl.id}
-                  className="flex items-center justify-between px-4 py-2 hover:bg-[var(--muted)] cursor-pointer transition-colors"
-                  onClick={() => { onApply(tmpl.id); setShowApply(false); }}
-                >
-                  <span className="text-sm truncate">{tmpl.name}</span>
-                  <button
-                    onClick={(e) => handleDelete(e, tmpl.id)}
-                    className="shrink-0 text-[var(--muted-foreground)] hover:text-[var(--negative)] transition-colors ml-2"
+          <div className="absolute right-0 top-full mt-1 z-40 w-72 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-lg py-1">
+            {selectedTemplate === null ? (
+              // Step 1: Pick a template
+              templates.length === 0 ? (
+                <p className="px-4 py-3 text-sm text-[var(--muted-foreground)]">
+                  {t("budget.noTemplates")}
+                </p>
+              ) : (
+                templates.map((tmpl) => (
+                  <div
+                    key={tmpl.id}
+                    className="flex items-center justify-between px-4 py-2 hover:bg-[var(--muted)] cursor-pointer transition-colors"
+                    onClick={() => handleSelectTemplate(tmpl.id)}
                   >
-                    <Trash2 size={14} />
-                  </button>
+                    <span className="text-sm truncate">{tmpl.name}</span>
+                    <button
+                      onClick={(e) => handleDelete(e, tmpl.id)}
+                      className="shrink-0 text-[var(--muted-foreground)] hover:text-[var(--negative)] transition-colors ml-2"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))
+              )
+            ) : (
+              // Step 2: Pick which month(s) to apply to
+              <div>
+                <p className="px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">
+                  {t("budget.applyToMonth")}
+                </p>
+                <div
+                  className="px-4 py-2 hover:bg-[var(--muted)] cursor-pointer transition-colors text-sm font-medium text-[var(--primary)]"
+                  onClick={handleApplyAll}
+                >
+                  {t("budget.allMonths")}
                 </div>
-              ))
+                {MONTH_KEYS.map((key, idx) => (
+                  <div
+                    key={key}
+                    className="px-4 py-1.5 hover:bg-[var(--muted)] cursor-pointer transition-colors text-sm"
+                    onClick={() => handleApplyToMonth(idx + 1)}
+                  >
+                    {t(key)}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}

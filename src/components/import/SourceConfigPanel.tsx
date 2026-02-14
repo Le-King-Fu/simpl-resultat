@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Wand2 } from "lucide-react";
+import { Wand2, Check } from "lucide-react";
 import type {
   ScannedSource,
   ScannedFile,
@@ -13,6 +13,7 @@ interface SourceConfigPanelProps {
   source: ScannedSource;
   config: SourceConfig;
   selectedFiles: ScannedFile[];
+  importedFileNames?: Set<string>;
   headers: string[];
   onConfigChange: (config: SourceConfig) => void;
   onFileToggle: (file: ScannedFile) => void;
@@ -25,6 +26,7 @@ export default function SourceConfigPanel({
   source,
   config,
   selectedFiles,
+  importedFileNames,
   headers,
   onConfigChange,
   onFileToggle,
@@ -222,10 +224,13 @@ export default function SourceConfigPanel({
             const isSelected = selectedFiles.some(
               (f) => f.file_path === file.file_path
             );
+            const isImported = importedFileNames?.has(file.filename) ?? false;
             return (
               <label
                 key={file.file_path}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--muted)] cursor-pointer text-sm"
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--muted)] cursor-pointer text-sm ${
+                  isImported ? "opacity-60" : ""
+                }`}
               >
                 <input
                   type="checkbox"
@@ -234,6 +239,12 @@ export default function SourceConfigPanel({
                   className="accent-[var(--primary)]"
                 />
                 <span className="flex-1">{file.filename}</span>
+                {isImported && (
+                  <span className="flex items-center gap-1 text-xs text-[var(--positive)]">
+                    <Check size={12} />
+                    {t("import.config.alreadyImported")}
+                  </span>
+                )}
                 <span className="text-xs text-[var(--muted-foreground)]">
                   {(file.size_bytes / 1024).toFixed(1)} KB
                 </span>
