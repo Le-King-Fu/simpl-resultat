@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { SplitSquareHorizontal } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import type { BudgetYearRow } from "../../shared/types";
 
 const fmt = new Intl.NumberFormat("en-CA", {
@@ -25,8 +25,10 @@ interface BudgetTableProps {
 export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: BudgetTableProps) {
   const { t } = useTranslation();
   const [editingCell, setEditingCell] = useState<{ categoryId: number; monthIdx: number } | null>(null);
+  const [editingAnnual, setEditingAnnual] = useState<{ categoryId: number } | null>(null);
   const [editingValue, setEditingValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const annualInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editingCell && inputRef.current) {
@@ -35,8 +37,22 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
     }
   }, [editingCell]);
 
+  useEffect(() => {
+    if (editingAnnual && annualInputRef.current) {
+      annualInputRef.current.focus();
+      annualInputRef.current.select();
+    }
+  }, [editingAnnual]);
+
   const handleStartEdit = (categoryId: number, monthIdx: number, currentValue: number) => {
+    setEditingAnnual(null);
     setEditingCell({ categoryId, monthIdx });
+    setEditingValue(currentValue === 0 ? "" : String(currentValue));
+  };
+
+  const handleStartEditAnnual = (categoryId: number, currentValue: number) => {
+    setEditingCell(null);
+    setEditingAnnual({ categoryId });
     setEditingValue(currentValue === 0 ? "" : String(currentValue));
   };
 
@@ -47,8 +63,16 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
     setEditingCell(null);
   };
 
+  const handleSaveAnnual = () => {
+    if (!editingAnnual) return;
+    const amount = parseFloat(editingValue) || 0;
+    onSplitEvenly(editingAnnual.categoryId, amount);
+    setEditingAnnual(null);
+  };
+
   const handleCancel = () => {
     setEditingCell(null);
+    setEditingAnnual(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -70,6 +94,11 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
         setEditingCell(null);
       }
     }
+  };
+
+  const handleAnnualKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSaveAnnual();
+    if (e.key === "Escape") handleCancel();
   };
 
   // Group rows by type
@@ -154,26 +183,41 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
                         <span className="truncate text-xs">{row.category_name}</span>
                       </div>
                     </td>
-                    {/* Annual total + split button */}
+                    {/* Annual total — editable */}
                     <td className="py-2 px-2 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <span className="font-medium text-xs">
-                          {row.annual === 0 ? (
-                            <span className="text-[var(--muted-foreground)]">—</span>
-                          ) : (
-                            fmt.format(row.annual)
-                          )}
-                        </span>
-                        {row.annual > 0 && (
+                      {editingAnnual?.categoryId === row.category_id ? (
+                        <input
+                          ref={annualInputRef}
+                          type="number"
+                          step="0.01"
+                          value={editingValue}
+                          onChange={(e) => setEditingValue(e.target.value)}
+                          onBlur={handleSaveAnnual}
+                          onKeyDown={handleAnnualKeyDown}
+                          className="w-full text-right bg-[var(--background)] border border-[var(--border)] rounded px-1 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-end gap-1">
                           <button
-                            onClick={() => onSplitEvenly(row.category_id, row.annual)}
-                            className="p-0.5 rounded hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors"
-                            title={t("budget.splitEvenly")}
+                            onClick={() => handleStartEditAnnual(row.category_id, row.annual)}
+                            className="font-medium text-xs hover:text-[var(--primary)] transition-colors cursor-text"
                           >
-                            <SplitSquareHorizontal size={13} />
+                            {row.annual === 0 ? (
+                              <span className="text-[var(--muted-foreground)]">—</span>
+                            ) : (
+                              fmt.format(row.annual)
+                            )}
                           </button>
-                        )}
-                      </div>
+                          {(() => {
+                            const monthSum = row.months.reduce((s, v) => s + v, 0);
+                            return row.annual !== 0 && Math.abs(row.annual - monthSum) > 0.01 ? (
+                              <span title={t("budget.annualMismatch")} className="text-[var(--negative)]">
+                                <AlertTriangle size={13} />
+                              </span>
+                            ) : null;
+                          })()}
+                        </div>
+                      )}
                     </td>
                     {/* 12 month cells */}
                     {row.months.map((val, mIdx) => (

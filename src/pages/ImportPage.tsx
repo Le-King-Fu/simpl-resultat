@@ -30,6 +30,9 @@ export default function ImportPage() {
     goToStep,
     reset,
     autoDetectConfig,
+    saveConfigAsTemplate,
+    applyConfigTemplate,
+    deleteConfigTemplate,
     toggleDuplicateRow,
     setSkipAllDuplicates,
   } = useImportWizard();
@@ -89,10 +92,14 @@ export default function ImportPage() {
             selectedFiles={state.selectedFiles}
             importedFileNames={state.importedFilesBySource.get(state.selectedSource.folder_name)}
             headers={state.previewHeaders}
+            configTemplates={state.configTemplates}
             onConfigChange={updateConfig}
             onFileToggle={toggleFile}
             onSelectAllFiles={selectAllFiles}
             onAutoDetect={autoDetectConfig}
+            onSaveAsTemplate={saveConfigAsTemplate}
+            onApplyTemplate={applyConfigTemplate}
+            onDeleteTemplate={deleteConfigTemplate}
             isLoading={state.isLoading}
           />
           <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">

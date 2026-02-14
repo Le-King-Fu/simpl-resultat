@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Wand2, Check } from "lucide-react";
+import { Wand2, Check, Save, X } from "lucide-react";
 import type {
   ScannedSource,
   ScannedFile,
   SourceConfig,
   AmountMode,
   ColumnMapping,
+  ImportConfigTemplate,
 } from "../../shared/types";
 import ColumnMappingEditor from "./ColumnMappingEditor";
 
@@ -15,10 +17,14 @@ interface SourceConfigPanelProps {
   selectedFiles: ScannedFile[];
   importedFileNames?: Set<string>;
   headers: string[];
+  configTemplates: ImportConfigTemplate[];
   onConfigChange: (config: SourceConfig) => void;
   onFileToggle: (file: ScannedFile) => void;
   onSelectAllFiles: () => void;
   onAutoDetect: () => void;
+  onSaveAsTemplate: (name: string) => void;
+  onApplyTemplate: (id: number) => void;
+  onDeleteTemplate: (id: number) => void;
   isLoading?: boolean;
 }
 
@@ -28,13 +34,19 @@ export default function SourceConfigPanel({
   selectedFiles,
   importedFileNames,
   headers,
+  configTemplates,
   onConfigChange,
   onFileToggle,
   onSelectAllFiles,
   onAutoDetect,
+  onSaveAsTemplate,
+  onApplyTemplate,
+  onDeleteTemplate,
   isLoading,
 }: SourceConfigPanelProps) {
   const { t } = useTranslation();
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
 
   const selectClass =
     "w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]";
@@ -58,6 +70,100 @@ export default function SourceConfigPanel({
           <Wand2 size={16} />
           {t("import.config.autoDetect")}
         </button>
+      </div>
+
+      {/* Template row */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+          <label className="text-sm text-[var(--muted-foreground)] whitespace-nowrap">
+            {t("import.config.loadTemplate")}
+          </label>
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) onApplyTemplate(Number(e.target.value));
+            }}
+            className={selectClass + " flex-1"}
+          >
+            <option value="">
+              {configTemplates.length === 0
+                ? t("import.config.noTemplates")
+                : `— ${t("import.config.loadTemplate")} —`}
+            </option>
+            {configTemplates.map((tpl) => (
+              <option key={tpl.id} value={tpl.id}>
+                {tpl.name}
+              </option>
+            ))}
+          </select>
+          {configTemplates.length > 0 && (
+            <div className="flex gap-1">
+              {configTemplates.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  onClick={() => onDeleteTemplate(tpl.id)}
+                  title={`${t("import.config.deleteTemplate")}: ${tpl.name}`}
+                  className="p-1 text-[var(--muted-foreground)] hover:text-[var(--negative)] transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {showSaveTemplate ? (
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder={t("import.config.templateName")}
+              className={inputClass + " w-48"}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && templateName.trim()) {
+                  onSaveAsTemplate(templateName.trim());
+                  setTemplateName("");
+                  setShowSaveTemplate(false);
+                } else if (e.key === "Escape") {
+                  setShowSaveTemplate(false);
+                  setTemplateName("");
+                }
+              }}
+            />
+            <button
+              onClick={() => {
+                if (templateName.trim()) {
+                  onSaveAsTemplate(templateName.trim());
+                  setTemplateName("");
+                  setShowSaveTemplate(false);
+                }
+              }}
+              disabled={!templateName.trim()}
+              className="p-1.5 rounded-lg bg-[var(--positive)] text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              <Check size={16} />
+            </button>
+            <button
+              onClick={() => {
+                setShowSaveTemplate(false);
+                setTemplateName("");
+              }}
+              className="p-1.5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowSaveTemplate(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
+          >
+            <Save size={16} />
+            {t("import.config.saveAsTemplate")}
+          </button>
+        )}
       </div>
 
       {/* Source name */}

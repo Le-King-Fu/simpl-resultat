@@ -16,7 +16,7 @@ function computeMonthDateRange(year: number, month: number) {
 export async function getActiveCategories(): Promise<Category[]> {
   const db = await getDb();
   return db.select<Category[]>(
-    "SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order, name"
+    "SELECT * FROM categories WHERE is_active = 1 AND is_inputable = 1 ORDER BY sort_order, name"
   );
 }
 

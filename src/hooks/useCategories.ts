@@ -91,7 +91,7 @@ function reducer(state: CategoriesState, action: CategoriesAction): CategoriesSt
         ...state,
         isCreating: true,
         selectedCategoryId: null,
-        editingCategory: { name: "", type: "expense", color: "#4A90A4", parent_id: null, sort_order: 0 },
+        editingCategory: { name: "", type: "expense", color: "#4A90A4", parent_id: null, is_inputable: true, sort_order: 0 },
         keywords: [],
       };
     case "START_EDITING":
@@ -154,6 +154,7 @@ export function useCategories() {
         type: cat.type,
         color: cat.color ?? "#4A90A4",
         parent_id: cat.parent_id,
+        is_inputable: cat.is_inputable,
         sort_order: cat.sort_order,
       },
     });

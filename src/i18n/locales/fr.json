@@ -84,7 +84,13 @@
       "selectFiles": "Fichiers à importer",
       "selectAll": "Tout sélectionner",
       "alreadyImported": "Importé",
-      "autoDetect": "Auto-détecter"
+      "autoDetect": "Auto-détecter",
+      "saveAsTemplate": "Sauver comme modèle",
+      "loadTemplate": "Charger un modèle",
+      "templateName": "Nom du modèle",
+      "templateSaved": "Modèle sauvegardé",
+      "deleteTemplate": "Supprimer le modèle",
+      "noTemplates": "Aucun modèle sauvegardé"
     },
     "preview": {
       "title": "Aperçu des données",
@@ -236,6 +242,8 @@
     "reinitialize": "Réinitialiser",
     "reinitializeConfirm": "Réinitialiser toutes les catégories et mots-clés à leurs valeurs par défaut ? Les catégories des transactions seront dissociées. Cette action est irréversible.",
     "noParent": "Aucun parent (niveau supérieur)",
+    "isInputable": "Autoriser la saisie",
+    "isInputableHint": "Décocher pour masquer du budget et des listes de catégories",
     "sortOrder": "Ordre de tri",
     "selectCategory": "Sélectionnez une catégorie pour voir les détails",
     "keywordCount": "Mots-clés",
@@ -287,6 +295,7 @@
     "difference": "Écart",
     "annual": "Annuel",
     "splitEvenly": "Répartir également sur 12 mois",
+    "annualMismatch": "Le total annuel ne correspond pas à la somme des montants mensuels",
     "applyToMonth": "Appliquer au mois",
     "allMonths": "Les 12 mois",
     "expenses": "Dépenses",

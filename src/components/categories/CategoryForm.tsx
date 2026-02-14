@@ -119,6 +119,18 @@ export default function CategoryForm({
         </select>
       </div>
 
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="is_inputable"
+          checked={form.is_inputable}
+          onChange={(e) => setForm({ ...form, is_inputable: e.target.checked })}
+          className="w-4 h-4 rounded border-[var(--border)] accent-[var(--primary)]"
+        />
+        <label htmlFor="is_inputable" className="text-sm font-medium">{t("categories.isInputable")}</label>
+        <span className="text-xs text-[var(--muted-foreground)]">{t("categories.isInputableHint")}</span>
+      </div>
+
       <div>
         <label className="block text-sm font-medium mb-1">{t("categories.sortOrder")}</label>
         <input

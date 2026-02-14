@@ -24,6 +24,30 @@ pub fn run() {
             sql: "ALTER TABLE import_sources ADD COLUMN has_header INTEGER NOT NULL DEFAULT 1;",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 4,
+            description: "add is_inputable to categories",
+            sql: "ALTER TABLE categories ADD COLUMN is_inputable INTEGER NOT NULL DEFAULT 1;",
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 5,
+            description: "create import_config_templates table",
+            sql: "CREATE TABLE IF NOT EXISTS import_config_templates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                delimiter TEXT NOT NULL DEFAULT ';',
+                encoding TEXT NOT NULL DEFAULT 'utf-8',
+                date_format TEXT NOT NULL DEFAULT 'DD/MM/YYYY',
+                skip_lines INTEGER NOT NULL DEFAULT 0,
+                has_header INTEGER NOT NULL DEFAULT 1,
+                column_mapping TEXT NOT NULL,
+                amount_mode TEXT NOT NULL DEFAULT 'single',
+                sign_convention TEXT NOT NULL DEFAULT 'negative_expense',
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

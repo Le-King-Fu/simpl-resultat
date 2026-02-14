@@ -35,6 +35,7 @@ export interface Category {
   icon?: string;
   type: "expense" | "income" | "transfer";
   is_active: boolean;
+  is_inputable: boolean;
   sort_order: number;
   created_at: string;
 }
@@ -138,6 +139,20 @@ export interface BudgetYearRow {
   category_type: "expense" | "income" | "transfer";
   months: number[]; // index 0-11 = Jan-Dec planned amounts
   annual: number;   // computed sum
+}
+
+export interface ImportConfigTemplate {
+  id: number;
+  name: string;
+  delimiter: string;
+  encoding: string;
+  date_format: string;
+  skip_lines: number;
+  has_header: number;
+  column_mapping: string;
+  amount_mode: AmountMode;
+  sign_convention: SignConvention;
+  created_at: string;
 }
 
 export interface UserPreference {
@@ -295,6 +310,7 @@ export interface CategoryTreeNode {
   icon: string | null;
   type: "expense" | "income" | "transfer";
   is_active: boolean;
+  is_inputable: boolean;
   sort_order: number;
   keyword_count: number;
   children: CategoryTreeNode[];
@@ -305,6 +321,7 @@ export interface CategoryFormData {
   type: "expense" | "income" | "transfer";
   color: string;
   parent_id: number | null;
+  is_inputable: boolean;
   sort_order: number;
 }
 

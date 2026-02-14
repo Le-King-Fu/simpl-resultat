@@ -10,6 +10,7 @@ import type {
   DuplicateCheckResult,
   ImportReport,
   ImportSource,
+  ImportConfigTemplate,
   ColumnMapping,
 } from "../shared/types";
 import {
@@ -33,6 +34,11 @@ import {
   findDuplicates,
 } from "../services/transactionService";
 import { categorizeBatch } from "../services/categorizationService";
+import {
+  getAllTemplates,
+  createTemplate,
+  deleteTemplate as deleteTemplateService,
+} from "../services/importConfigTemplateService";
 import { parseDate } from "../utils/dateParser";
 import { parseFrenchAmount } from "../utils/amountParser";
 import {
@@ -58,6 +64,7 @@ interface WizardState {
   error: string | null;
   configuredSourceNames: Set<string>;
   importedFilesBySource: Map<string, Set<string>>;
+  configTemplates: ImportConfigTemplate[];
 }
 
 type WizardAction =
@@ -77,6 +84,7 @@ type WizardAction =
   | { type: "SET_IMPORT_REPORT"; payload: ImportReport }
   | { type: "SET_IMPORT_PROGRESS"; payload: { current: number; total: number; file: string } }
   | { type: "SET_CONFIGURED_SOURCES"; payload: { names: Set<string>; files: Map<string, Set<string>> } }
+  | { type: "SET_CONFIG_TEMPLATES"; payload: ImportConfigTemplate[] }
   | { type: "RESET" };
 
 const defaultConfig: SourceConfig = {
@@ -109,6 +117,7 @@ const initialState: WizardState = {
   error: null,
   configuredSourceNames: new Set(),
   importedFilesBySource: new Map(),
+  configTemplates: [],
 };
 
 function reducer(state: WizardState, action: WizardAction): WizardState {
@@ -171,6 +180,8 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
         configuredSourceNames: action.payload.names,
         importedFilesBySource: action.payload.files,
       };
+    case "SET_CONFIG_TEMPLATES":
+      return { ...state, configTemplates: action.payload };
     case "RESET":
       return {
         ...initialState,
@@ -178,6 +189,7 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
         scannedSources: state.scannedSources,
         configuredSourceNames: state.configuredSourceNames,
         importedFilesBySource: state.importedFilesBySource,
+        configTemplates: state.configTemplates,
       };
     default:
       return state;
@@ -216,6 +228,9 @@ export function useImportWizard() {
     }
 
     dispatch({ type: "SET_CONFIGURED_SOURCES", payload: { names, files } });
+
+    const templates = await getAllTemplates();
+    dispatch({ type: "SET_CONFIG_TEMPLATES", payload: templates });
   }, []);
 
   const scanFolderInternal = useCallback(
@@ -858,6 +873,58 @@ export function useImportWizard() {
     }
   }, [state.selectedFiles, state.sourceConfig, loadHeadersWithConfig]);
 
+  const saveConfigAsTemplate = useCallback(async (name: string) => {
+    const config = state.sourceConfig;
+    await createTemplate({
+      name,
+      delimiter: config.delimiter,
+      encoding: config.encoding,
+      date_format: config.dateFormat,
+      skip_lines: config.skipLines,
+      has_header: config.hasHeader ? 1 : 0,
+      column_mapping: JSON.stringify(config.columnMapping),
+      amount_mode: config.amountMode,
+      sign_convention: config.signConvention,
+    });
+    const templates = await getAllTemplates();
+    dispatch({ type: "SET_CONFIG_TEMPLATES", payload: templates });
+  }, [state.sourceConfig]);
+
+  const applyConfigTemplate = useCallback((templateId: number) => {
+    const template = state.configTemplates.find((t) => t.id === templateId);
+    if (!template) return;
+    const mapping = JSON.parse(template.column_mapping) as ColumnMapping;
+    const newConfig: SourceConfig = {
+      name: state.sourceConfig.name,
+      delimiter: template.delimiter,
+      encoding: template.encoding,
+      dateFormat: template.date_format,
+      skipLines: template.skip_lines,
+      columnMapping: mapping,
+      amountMode: template.amount_mode,
+      signConvention: template.sign_convention,
+      hasHeader: !!template.has_header,
+    };
+    dispatch({ type: "SET_SOURCE_CONFIG", payload: newConfig });
+
+    // Reload headers with new config
+    if (state.selectedFiles.length > 0) {
+      loadHeadersWithConfig(
+        state.selectedFiles[0].file_path,
+        newConfig.delimiter,
+        newConfig.encoding,
+        newConfig.skipLines,
+        newConfig.hasHeader
+      );
+    }
+  }, [state.configTemplates, state.sourceConfig.name, state.selectedFiles, loadHeadersWithConfig]);
+
+  const deleteConfigTemplate = useCallback(async (id: number) => {
+    await deleteTemplateService(id);
+    const templates = await getAllTemplates();
+    dispatch({ type: "SET_CONFIG_TEMPLATES", payload: templates });
+  }, []);
+
   return {
     state,
     browseFolder,
@@ -873,6 +940,9 @@ export function useImportWizard() {
     goToStep,
     reset,
     autoDetectConfig,
+    saveConfigAsTemplate,
+    applyConfigTemplate,
+    deleteConfigTemplate,
     toggleDuplicateRow: (index: number) =>
       dispatch({ type: "TOGGLE_DUPLICATE_ROW", payload: index }),
     setSkipAllDuplicates: (skipAll: boolean) =>

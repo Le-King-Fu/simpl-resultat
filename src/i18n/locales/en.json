@@ -84,7 +84,13 @@
       "selectFiles": "Files to import",
       "selectAll": "Select all",
       "alreadyImported": "Imported",
-      "autoDetect": "Auto-detect"
+      "autoDetect": "Auto-detect",
+      "saveAsTemplate": "Save as template",
+      "loadTemplate": "Load template",
+      "templateName": "Template name",
+      "templateSaved": "Template saved",
+      "deleteTemplate": "Delete template",
+      "noTemplates": "No templates saved"
     },
     "preview": {
       "title": "Data Preview",
@@ -236,6 +242,8 @@
     "reinitialize": "Re-initialize",
     "reinitializeConfirm": "Reset all categories and keywords to their default values? Transaction categories will be unlinked. This cannot be undone.",
     "noParent": "No parent (top-level)",
+    "isInputable": "Allow input",
+    "isInputableHint": "Uncheck to hide from budget and transaction dropdowns",
     "sortOrder": "Sort Order",
     "selectCategory": "Select a category to view details",
     "keywordCount": "Keywords",
@@ -287,6 +295,7 @@
     "difference": "Difference",
     "annual": "Annual",
     "splitEvenly": "Split evenly across 12 months",
+    "annualMismatch": "Annual total does not match the sum of monthly amounts",
     "applyToMonth": "Apply to month",
     "allMonths": "All 12 months",
     "expenses": "Expenses",

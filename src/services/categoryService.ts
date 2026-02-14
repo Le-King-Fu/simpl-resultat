@@ -9,6 +9,7 @@ interface CategoryRow {
   icon: string | null;
   type: "expense" | "income" | "transfer";
   is_active: boolean;
+  is_inputable: boolean;
   sort_order: number;
   keyword_count: number;
 }
@@ -30,12 +31,13 @@ export async function createCategory(data: {
   type: string;
   color: string;
   parent_id: number | null;
+  is_inputable: boolean;
   sort_order: number;
 }): Promise<number> {
   const db = await getDb();
   const result = await db.execute(
-    `INSERT INTO categories (name, type, color, parent_id, sort_order) VALUES ($1, $2, $3, $4, $5)`,
-    [data.name, data.type, data.color, data.parent_id, data.sort_order]
+    `INSERT INTO categories (name, type, color, parent_id, is_inputable, sort_order) VALUES ($1, $2, $3, $4, $5, $6)`,
+    [data.name, data.type, data.color, data.parent_id, data.is_inputable ? 1 : 0, data.sort_order]
   );
   return result.lastInsertId as number;
 }
@@ -47,13 +49,14 @@ export async function updateCategory(
     type: string;
     color: string;
     parent_id: number | null;
+    is_inputable: boolean;
     sort_order: number;
   }
 ): Promise<void> {
   const db = await getDb();
   await db.execute(
-    `UPDATE categories SET name = $1, type = $2, color = $3, parent_id = $4, sort_order = $5 WHERE id = $6`,
-    [data.name, data.type, data.color, data.parent_id, data.sort_order, id]
+    `UPDATE categories SET name = $1, type = $2, color = $3, parent_id = $4, is_inputable = $5, sort_order = $6 WHERE id = $7`,
+    [data.name, data.type, data.color, data.parent_id, data.is_inputable ? 1 : 0, data.sort_order, id]
   );
 }
 
