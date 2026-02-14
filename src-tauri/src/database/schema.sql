@@ -38,7 +38,6 @@ CREATE TABLE IF NOT EXISTS categories (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
 );
--- NOTE: is_inputable column added by migration 4
 
 CREATE TABLE IF NOT EXISTS suppliers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -136,8 +135,6 @@ CREATE TABLE IF NOT EXISTS budget_template_entries (
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
     UNIQUE(template_id, category_id)
 );
-
--- NOTE: import_config_templates table created by migration 5
 
 CREATE TABLE IF NOT EXISTS user_preferences (
     key TEXT PRIMARY KEY,
