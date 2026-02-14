@@ -3770,7 +3770,7 @@ checksum = "e320a6c5ad31d271ad523dcf3ad13e2767ad8b1cb8f047f75a8aeaf8da139da2"
 
 [[package]]
 name = "simpl-result"
-version = "0.2.3"
+version = "0.2.5"
 dependencies = [
  "encoding_rs",
  "serde",

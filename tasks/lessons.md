@@ -41,3 +41,9 @@
 **Pattern**: When adding a config field to an in-memory interface, you must also add the column to the DB schema and update all CRUD paths (create, update, restore). Hardcoding a default on restore silently loses user preferences.
 **Rule**: For every field in a config interface: (1) verify it has a corresponding DB column, (2) verify it's included in INSERT/UPDATE queries, (3) verify it's restored from the DB row — never hardcoded. Use a grep for the field name across service, hook, and schema files.
 **Applied**: Import source config, any settings/preferences that need to survive across sessions
+
+## 2026-02-14 - Never modify schema.sql after initial release (migration checksum)
+**Mistake**: Added `is_inputable` column and `import_config_templates` table directly to `schema.sql` (migration 1), in addition to creating proper migrations 4+5 for them. This changed migration 1's SQL content.
+**Pattern**: `tauri-plugin-sql` uses `sqlx::migrate::Migrator` which stores SHA-256 checksums of each migration's SQL. Since `schema.sql` is `include_str!`'d into migration 1, any change to schema.sql changes the checksum. Sqlx then refuses to apply any new migrations because it detects the integrity violation.
+**Rule**: NEVER modify schema.sql (or any file used by migration 1) after it has been applied to user databases. New columns and tables must ONLY be added via new migrations. Schema.sql is frozen once deployed — treat it as append-only via migrations.
+**Applied**: Any Tauri app using tauri-plugin-sql with sqlx migrations, any system using file-based migration checksums

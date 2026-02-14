@@ -34,11 +34,11 @@ CREATE TABLE IF NOT EXISTS categories (
     icon TEXT,
     type TEXT NOT NULL DEFAULT 'expense', -- 'expense', 'income', 'transfer'
     is_active INTEGER NOT NULL DEFAULT 1,
-    is_inputable INTEGER NOT NULL DEFAULT 1,
     sort_order INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
 );
+-- NOTE: is_inputable column added by migration 4
 
 CREATE TABLE IF NOT EXISTS suppliers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -137,19 +137,7 @@ CREATE TABLE IF NOT EXISTS budget_template_entries (
     UNIQUE(template_id, category_id)
 );
 
-CREATE TABLE IF NOT EXISTS import_config_templates (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
-    delimiter TEXT NOT NULL DEFAULT ';',
-    encoding TEXT NOT NULL DEFAULT 'utf-8',
-    date_format TEXT NOT NULL DEFAULT 'DD/MM/YYYY',
-    skip_lines INTEGER NOT NULL DEFAULT 0,
-    has_header INTEGER NOT NULL DEFAULT 1,
-    column_mapping TEXT NOT NULL,
-    amount_mode TEXT NOT NULL DEFAULT 'single',
-    sign_convention TEXT NOT NULL DEFAULT 'negative_expense',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+-- NOTE: import_config_templates table created by migration 5
 
 CREATE TABLE IF NOT EXISTS user_preferences (
     key TEXT PRIMARY KEY,
