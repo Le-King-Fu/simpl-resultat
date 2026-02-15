@@ -71,6 +71,11 @@ pub fn run() {
             commands::detect_encoding,
             commands::get_file_preview,
             commands::pick_folder,
+            commands::pick_save_file,
+            commands::pick_import_file,
+            commands::write_export_file,
+            commands::read_import_file,
+            commands::is_file_encrypted,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

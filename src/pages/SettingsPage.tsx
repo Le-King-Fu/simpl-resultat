@@ -14,6 +14,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { useUpdater } from "../hooks/useUpdater";
 import { APP_NAME } from "../shared/constants";
 import { PageHelp } from "../components/shared/PageHelp";
+import DataManagementCard from "../components/settings/DataManagementCard";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -169,6 +170,9 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* Data management */}
+      <DataManagementCard />
 
       {/* Data safety notice */}
       <div className="flex items-start gap-2 text-sm text-[var(--muted-foreground)]">
