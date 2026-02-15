@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Wand2, Check, Save, X } from "lucide-react";
+import { Wand2, Check, Save, RefreshCw, X } from "lucide-react";
 import type {
   ScannedSource,
   ScannedFile,
@@ -24,7 +24,9 @@ interface SourceConfigPanelProps {
   onAutoDetect: () => void;
   onSaveAsTemplate: (name: string) => void;
   onApplyTemplate: (id: number) => void;
+  onUpdateTemplate: () => void;
   onDeleteTemplate: (id: number) => void;
+  selectedTemplateId: number | null;
   isLoading?: boolean;
 }
 
@@ -41,7 +43,9 @@ export default function SourceConfigPanel({
   onAutoDetect,
   onSaveAsTemplate,
   onApplyTemplate,
+  onUpdateTemplate,
   onDeleteTemplate,
+  selectedTemplateId,
   isLoading,
 }: SourceConfigPanelProps) {
   const { t } = useTranslation();
@@ -79,7 +83,7 @@ export default function SourceConfigPanel({
             {t("import.config.loadTemplate")}
           </label>
           <select
-            value=""
+            value={selectedTemplateId ?? ""}
             onChange={(e) => {
               if (e.target.value) onApplyTemplate(Number(e.target.value));
             }}
@@ -96,6 +100,15 @@ export default function SourceConfigPanel({
               </option>
             ))}
           </select>
+          {selectedTemplateId && (
+            <button
+              onClick={onUpdateTemplate}
+              title={t("import.config.updateTemplate")}
+              className="p-1.5 rounded-lg text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+            >
+              <RefreshCw size={16} />
+            </button>
+          )}
           {configTemplates.length > 0 && (
             <div className="flex gap-1">
               {configTemplates.map((tpl) => (

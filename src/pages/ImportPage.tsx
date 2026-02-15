@@ -32,6 +32,7 @@ export default function ImportPage() {
     autoDetectConfig,
     saveConfigAsTemplate,
     applyConfigTemplate,
+    updateConfigTemplate,
     deleteConfigTemplate,
     toggleDuplicateRow,
     setSkipAllDuplicates,
@@ -99,7 +100,9 @@ export default function ImportPage() {
             onAutoDetect={autoDetectConfig}
             onSaveAsTemplate={saveConfigAsTemplate}
             onApplyTemplate={applyConfigTemplate}
+            onUpdateTemplate={updateConfigTemplate}
             onDeleteTemplate={deleteConfigTemplate}
+            selectedTemplateId={state.selectedTemplateId}
             isLoading={state.isLoading}
           />
           <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">

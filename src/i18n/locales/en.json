@@ -90,7 +90,8 @@
       "templateName": "Template name",
       "templateSaved": "Template saved",
       "deleteTemplate": "Delete template",
-      "noTemplates": "No templates saved"
+      "noTemplates": "No templates saved",
+      "updateTemplate": "Update template"
     },
     "preview": {
       "title": "Data Preview",

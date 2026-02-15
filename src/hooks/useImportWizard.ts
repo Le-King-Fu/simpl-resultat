@@ -37,6 +37,7 @@ import { categorizeBatch } from "../services/categorizationService";
 import {
   getAllTemplates,
   createTemplate,
+  updateTemplate,
   deleteTemplate as deleteTemplateService,
 } from "../services/importConfigTemplateService";
 import { parseDate } from "../utils/dateParser";
@@ -65,6 +66,7 @@ interface WizardState {
   configuredSourceNames: Set<string>;
   importedFilesBySource: Map<string, Set<string>>;
   configTemplates: ImportConfigTemplate[];
+  selectedTemplateId: number | null;
 }
 
 type WizardAction =
@@ -85,6 +87,7 @@ type WizardAction =
   | { type: "SET_IMPORT_PROGRESS"; payload: { current: number; total: number; file: string } }
   | { type: "SET_CONFIGURED_SOURCES"; payload: { names: Set<string>; files: Map<string, Set<string>> } }
   | { type: "SET_CONFIG_TEMPLATES"; payload: ImportConfigTemplate[] }
+  | { type: "SET_SELECTED_TEMPLATE_ID"; payload: number | null }
   | { type: "RESET" };
 
 const defaultConfig: SourceConfig = {
@@ -118,6 +121,7 @@ const initialState: WizardState = {
   configuredSourceNames: new Set(),
   importedFilesBySource: new Map(),
   configTemplates: [],
+  selectedTemplateId: null,
 };
 
 function reducer(state: WizardState, action: WizardAction): WizardState {
@@ -182,6 +186,8 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       };
     case "SET_CONFIG_TEMPLATES":
       return { ...state, configTemplates: action.payload };
+    case "SET_SELECTED_TEMPLATE_ID":
+      return { ...state, selectedTemplateId: action.payload };
     case "RESET":
       return {
         ...initialState,
@@ -291,6 +297,7 @@ export function useImportWizard() {
 
       dispatch({ type: "SET_SELECTED_SOURCE", payload: sortedSource });
       dispatch({ type: "SET_SELECTED_FILES", payload: newFiles });
+      dispatch({ type: "SET_SELECTED_TEMPLATE_ID", payload: null });
 
       // Check if this source already has config in DB
       const existing = await getSourceByName(source.folder_name);
@@ -945,6 +952,7 @@ export function useImportWizard() {
       hasHeader: !!template.has_header,
     };
     dispatch({ type: "SET_SOURCE_CONFIG", payload: newConfig });
+    dispatch({ type: "SET_SELECTED_TEMPLATE_ID", payload: templateId });
 
     // Reload headers with new config
     if (state.selectedFiles.length > 0) {
@@ -958,11 +966,34 @@ export function useImportWizard() {
     }
   }, [state.configTemplates, state.sourceConfig.name, state.selectedFiles, loadHeadersWithConfig]);
 
-  const deleteConfigTemplate = useCallback(async (id: number) => {
-    await deleteTemplateService(id);
+  const updateConfigTemplate = useCallback(async () => {
+    if (!state.selectedTemplateId) return;
+    const template = state.configTemplates.find((t) => t.id === state.selectedTemplateId);
+    if (!template) return;
+    const config = state.sourceConfig;
+    await updateTemplate(state.selectedTemplateId, {
+      name: template.name,
+      delimiter: config.delimiter,
+      encoding: config.encoding,
+      date_format: config.dateFormat,
+      skip_lines: config.skipLines,
+      has_header: config.hasHeader ? 1 : 0,
+      column_mapping: JSON.stringify(config.columnMapping),
+      amount_mode: config.amountMode,
+      sign_convention: config.signConvention,
+    });
     const templates = await getAllTemplates();
     dispatch({ type: "SET_CONFIG_TEMPLATES", payload: templates });
-  }, []);
+  }, [state.selectedTemplateId, state.configTemplates, state.sourceConfig]);
+
+  const deleteConfigTemplate = useCallback(async (id: number) => {
+    await deleteTemplateService(id);
+    if (state.selectedTemplateId === id) {
+      dispatch({ type: "SET_SELECTED_TEMPLATE_ID", payload: null });
+    }
+    const templates = await getAllTemplates();
+    dispatch({ type: "SET_CONFIG_TEMPLATES", payload: templates });
+  }, [state.selectedTemplateId]);
 
   return {
     state,
@@ -981,6 +1012,7 @@ export function useImportWizard() {
     autoDetectConfig,
     saveConfigAsTemplate,
     applyConfigTemplate,
+    updateConfigTemplate,
     deleteConfigTemplate,
     toggleDuplicateRow: (index: number) =>
       dispatch({ type: "TOGGLE_DUPLICATE_ROW", payload: index }),

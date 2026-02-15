@@ -90,7 +90,8 @@
       "templateName": "Nom du modèle",
       "templateSaved": "Modèle sauvegardé",
       "deleteTemplate": "Supprimer le modèle",
-      "noTemplates": "Aucun modèle sauvegardé"
+      "noTemplates": "Aucun modèle sauvegardé",
+      "updateTemplate": "Mettre à jour le modèle"
     },
     "preview": {
       "title": "Aperçu des données",
