@@ -137,6 +137,8 @@ export interface BudgetYearRow {
   category_name: string;
   category_color: string;
   category_type: "expense" | "income" | "transfer";
+  parent_id: number | null;
+  is_parent: boolean;
   months: number[]; // index 0-11 = Jan-Dec planned amounts
   annual: number;   // computed sum
 }

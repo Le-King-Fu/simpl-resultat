@@ -1,7 +1,7 @@
 import { useReducer, useCallback, useEffect, useRef } from "react";
 import type { BudgetYearRow, BudgetTemplate } from "../shared/types";
 import {
-  getActiveCategories,
+  getAllActiveCategories,
   getBudgetEntriesForYear,
   upsertBudgetEntry,
   upsertBudgetEntriesForYear,
@@ -72,8 +72,8 @@ export function useBudget() {
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const [categories, entries, templates] = await Promise.all([
-        getActiveCategories(),
+      const [allCategories, entries, templates] = await Promise.all([
+        getAllActiveCategories(),
         getBudgetEntriesForYear(year),
         getAllTemplates(),
       ]);
@@ -87,8 +87,9 @@ export function useBudget() {
         entryMap.get(e.category_id)!.set(e.month, e.amount);
       }
 
-      const rows: BudgetYearRow[] = categories.map((cat) => {
-        const monthMap = entryMap.get(cat.id);
+      // Helper: build months array from entryMap
+      const buildMonths = (catId: number) => {
+        const monthMap = entryMap.get(catId);
         const months: number[] = [];
         let annual = 0;
         for (let m = 1; m <= 12; m++) {
@@ -96,20 +97,126 @@ export function useBudget() {
           months.push(val);
           annual += val;
         }
-        return {
-          category_id: cat.id,
-          category_name: cat.name,
-          category_color: cat.color || "#9ca3af",
-          category_type: cat.type,
-          months,
-          annual,
-        };
-      });
+        return { months, annual };
+      };
 
+      // Index categories by id and group children by parent_id
+      const catById = new Map(allCategories.map((c) => [c.id, c]));
+      const childrenByParent = new Map<number, typeof allCategories>();
+      for (const cat of allCategories) {
+        if (cat.parent_id) {
+          if (!childrenByParent.has(cat.parent_id)) childrenByParent.set(cat.parent_id, []);
+          childrenByParent.get(cat.parent_id)!.push(cat);
+        }
+      }
+
+      const rows: BudgetYearRow[] = [];
+
+      // Identify top-level parents and standalone leaves
+      const topLevel = allCategories.filter((c) => !c.parent_id);
+
+      for (const cat of topLevel) {
+        const children = (childrenByParent.get(cat.id) || []).filter((c) => c.is_inputable);
+
+        if (children.length === 0 && cat.is_inputable) {
+          // Standalone leaf (no children) — regular editable row
+          const { months, annual } = buildMonths(cat.id);
+          rows.push({
+            category_id: cat.id,
+            category_name: cat.name,
+            category_color: cat.color || "#9ca3af",
+            category_type: cat.type,
+            parent_id: null,
+            is_parent: false,
+            months,
+            annual,
+          });
+        } else if (children.length > 0) {
+          // Parent with children — build child rows first, then parent subtotal
+          const childRows: BudgetYearRow[] = [];
+
+          // If parent is also inputable, create a "(direct)" fake-child row
+          if (cat.is_inputable) {
+            const { months, annual } = buildMonths(cat.id);
+            childRows.push({
+              category_id: cat.id,
+              category_name: `${cat.name} (direct)`,
+              category_color: cat.color || "#9ca3af",
+              category_type: cat.type,
+              parent_id: cat.id,
+              is_parent: false,
+              months,
+              annual,
+            });
+          }
+
+          for (const child of children) {
+            const { months, annual } = buildMonths(child.id);
+            childRows.push({
+              category_id: child.id,
+              category_name: child.name,
+              category_color: child.color || cat.color || "#9ca3af",
+              category_type: child.type,
+              parent_id: cat.id,
+              is_parent: false,
+              months,
+              annual,
+            });
+          }
+
+          // Parent subtotal row: sum of all children (+ direct if inputable)
+          const parentMonths = Array(12).fill(0) as number[];
+          let parentAnnual = 0;
+          for (const cr of childRows) {
+            for (let m = 0; m < 12; m++) parentMonths[m] += cr.months[m];
+            parentAnnual += cr.annual;
+          }
+
+          rows.push({
+            category_id: cat.id,
+            category_name: cat.name,
+            category_color: cat.color || "#9ca3af",
+            category_type: cat.type,
+            parent_id: null,
+            is_parent: true,
+            months: parentMonths,
+            annual: parentAnnual,
+          });
+
+          // Sort children alphabetically, but keep "(direct)" first
+          childRows.sort((a, b) => {
+            if (a.category_id === cat.id) return -1;
+            if (b.category_id === cat.id) return 1;
+            return a.category_name.localeCompare(b.category_name);
+          });
+
+          rows.push(...childRows);
+        }
+        // else: non-inputable parent with no inputable children — skip
+      }
+
+      // Sort by type, then within each type: parent rows first (with children following), then standalone
       rows.sort((a, b) => {
         const typeA = TYPE_ORDER[a.category_type] ?? 9;
         const typeB = TYPE_ORDER[b.category_type] ?? 9;
         if (typeA !== typeB) return typeA - typeB;
+        // Within same type, keep parent+children groups together
+        const groupA = a.is_parent ? a.category_id : (a.parent_id ?? a.category_id);
+        const groupB = b.is_parent ? b.category_id : (b.parent_id ?? b.category_id);
+        if (groupA !== groupB) {
+          // Find the sort_order of the group's parent category
+          const catA = catById.get(groupA);
+          const catB = catById.get(groupB);
+          const orderA = catA?.sort_order ?? 999;
+          const orderB = catB?.sort_order ?? 999;
+          if (orderA !== orderB) return orderA - orderB;
+          return (catA?.name ?? "").localeCompare(catB?.name ?? "");
+        }
+        // Same group: parent row first, then children
+        if (a.is_parent !== b.is_parent) return a.is_parent ? -1 : 1;
+        // Children: "(direct)" first, then alphabetical
+        if (a.parent_id && a.category_id === a.parent_id) return -1;
+        if (b.parent_id && b.category_id === b.parent_id) return 1;
         return a.category_name.localeCompare(b.category_name);
       });
 
@@ -178,8 +285,9 @@ export function useBudget() {
       dispatch({ type: "SET_SAVING", payload: true });
       try {
         // Save template from January values (template is a single-month snapshot)
+        // Exclude parent subtotal rows (they're computed, not real entries)
         const entries = state.rows
-          .filter((r) => r.months[0] !== 0)
+          .filter((r) => !r.is_parent && r.months[0] !== 0)
           .map((r) => ({ category_id: r.category_id, amount: r.months[0] }));
         await saveAsTemplateSvc(name, description, entries);
         await refreshData(state.year);

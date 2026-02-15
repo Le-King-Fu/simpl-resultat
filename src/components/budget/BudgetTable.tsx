@@ -86,7 +86,7 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
       // Move to next month cell
       const nextMonth = editingCell.monthIdx + (e.shiftKey ? -1 : 1);
       if (nextMonth >= 0 && nextMonth < 12) {
-        const row = rows.find((r) => r.category_id === editingCell.categoryId);
+        const row = rows.find((r) => r.category_id === editingCell.categoryId && !r.is_parent);
         if (row) {
           handleStartEdit(editingCell.categoryId, nextMonth, row.months[nextMonth]);
         }
@@ -100,6 +100,9 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
     if (e.key === "Enter") handleSaveAnnual();
     if (e.key === "Escape") handleCancel();
   };
+
+  // Sign multiplier: expenses negative, income/transfer positive
+  const signFor = (type: string) => (type === "expense" ? -1 : 1);
 
   // Group rows by type
   const grouped: Record<string, BudgetYearRow[]> = {};
@@ -116,14 +119,16 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
     transfer: "budget.transfers",
   };
 
-  // Column totals
+  // Column totals with sign convention (only count leaf rows to avoid double-counting parents)
   const monthTotals: number[] = Array(12).fill(0);
   let annualTotal = 0;
   for (const row of rows) {
+    if (row.is_parent) continue; // skip parent subtotals to avoid double-counting
+    const sign = signFor(row.category_type);
     for (let m = 0; m < 12; m++) {
-      monthTotals[m] += row.months[m];
+      monthTotals[m] += row.months[m] * sign;
     }
-    annualTotal += row.annual;
+    annualTotal += row.annual * sign;
   }
 
   const totalCols = 14; // category + annual + 12 months
@@ -135,6 +140,122 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
       </div>
     );
   }
+
+  const formatSigned = (value: number) => {
+    if (value === 0) return <span className="text-[var(--muted-foreground)]">—</span>;
+    const color = value > 0 ? "text-[var(--positive)]" : "text-[var(--negative)]";
+    return <span className={color}>{fmt.format(value)}</span>;
+  };
+
+  const renderRow = (row: BudgetYearRow) => {
+    const sign = signFor(row.category_type);
+    const isChild = row.parent_id !== null && !row.is_parent;
+    // Unique key: parent rows and "(direct)" fake children can share the same category_id
+    const rowKey = row.is_parent ? `parent-${row.category_id}` : `leaf-${row.category_id}-${row.category_name}`;
+
+    if (row.is_parent) {
+      // Parent subtotal row: read-only, bold, distinct background
+      return (
+        <tr
+          key={rowKey}
+          className="border-b border-[var(--border)] bg-[var(--muted)]/30"
+        >
+          <td className="py-2 px-3 sticky left-0 bg-[var(--muted)]/30 z-10">
+            <div className="flex items-center gap-2">
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: row.category_color }}
+              />
+              <span className="truncate text-xs font-semibold">{row.category_name}</span>
+            </div>
+          </td>
+          <td className="py-2 px-2 text-right text-xs font-semibold">
+            {formatSigned(row.annual * sign)}
+          </td>
+          {row.months.map((val, mIdx) => (
+            <td key={mIdx} className="py-2 px-2 text-right text-xs font-semibold">
+              {formatSigned(val * sign)}
+            </td>
+          ))}
+        </tr>
+      );
+    }
+
+    // Leaf / child row: editable
+    return (
+      <tr
+        key={rowKey}
+        className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)]/50 transition-colors"
+      >
+        {/* Category name - sticky */}
+        <td className={`py-2 sticky left-0 bg-[var(--card)] z-10 ${isChild ? "pl-8 pr-3" : "px-3"}`}>
+          <div className="flex items-center gap-2">
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: row.category_color }}
+            />
+            <span className="truncate text-xs">{row.category_name}</span>
+          </div>
+        </td>
+        {/* Annual total — editable */}
+        <td className="py-2 px-2 text-right">
+          {editingAnnual?.categoryId === row.category_id ? (
+            <input
+              ref={annualInputRef}
+              type="number"
+              step="0.01"
+              value={editingValue}
+              onChange={(e) => setEditingValue(e.target.value)}
+              onBlur={handleSaveAnnual}
+              onKeyDown={handleAnnualKeyDown}
+              className="w-full text-right bg-[var(--background)] border border-[var(--border)] rounded px-1 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            />
+          ) : (
+            <div className="flex items-center justify-end gap-1">
+              <button
+                onClick={() => handleStartEditAnnual(row.category_id, row.annual)}
+                className="font-medium text-xs hover:text-[var(--primary)] transition-colors cursor-text"
+              >
+                {formatSigned(row.annual * sign)}
+              </button>
+              {(() => {
+                const monthSum = row.months.reduce((s, v) => s + v, 0);
+                return row.annual !== 0 && Math.abs(row.annual - monthSum) > 0.01 ? (
+                  <span title={t("budget.annualMismatch")} className="text-[var(--negative)]">
+                    <AlertTriangle size={13} />
+                  </span>
+                ) : null;
+              })()}
+            </div>
+          )}
+        </td>
+        {/* 12 month cells */}
+        {row.months.map((val, mIdx) => (
+          <td key={mIdx} className="py-2 px-2 text-right">
+            {editingCell?.categoryId === row.category_id && editingCell.monthIdx === mIdx ? (
+              <input
+                ref={inputRef}
+                type="number"
+                step="0.01"
+                value={editingValue}
+                onChange={(e) => setEditingValue(e.target.value)}
+                onBlur={handleSave}
+                onKeyDown={handleKeyDown}
+                className="w-full text-right bg-[var(--background)] border border-[var(--border)] rounded px-1 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+              />
+            ) : (
+              <button
+                onClick={() => handleStartEdit(row.category_id, mIdx, val)}
+                className="w-full text-right hover:text-[var(--primary)] transition-colors cursor-text text-xs"
+              >
+                {formatSigned(val * sign)}
+              </button>
+            )}
+          </td>
+        ))}
+      </tr>
+    );
+  };
 
   return (
     <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-x-auto">
@@ -168,97 +289,17 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
                     {t(typeLabelKeys[type])}
                   </td>
                 </tr>
-                {group.map((row) => (
-                  <tr
-                    key={row.category_id}
-                    className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)]/50 transition-colors"
-                  >
-                    {/* Category name - sticky */}
-                    <td className="py-2 px-3 sticky left-0 bg-[var(--card)] z-10">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: row.category_color }}
-                        />
-                        <span className="truncate text-xs">{row.category_name}</span>
-                      </div>
-                    </td>
-                    {/* Annual total — editable */}
-                    <td className="py-2 px-2 text-right">
-                      {editingAnnual?.categoryId === row.category_id ? (
-                        <input
-                          ref={annualInputRef}
-                          type="number"
-                          step="0.01"
-                          value={editingValue}
-                          onChange={(e) => setEditingValue(e.target.value)}
-                          onBlur={handleSaveAnnual}
-                          onKeyDown={handleAnnualKeyDown}
-                          className="w-full text-right bg-[var(--background)] border border-[var(--border)] rounded px-1 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => handleStartEditAnnual(row.category_id, row.annual)}
-                            className="font-medium text-xs hover:text-[var(--primary)] transition-colors cursor-text"
-                          >
-                            {row.annual === 0 ? (
-                              <span className="text-[var(--muted-foreground)]">—</span>
-                            ) : (
-                              fmt.format(row.annual)
-                            )}
-                          </button>
-                          {(() => {
-                            const monthSum = row.months.reduce((s, v) => s + v, 0);
-                            return row.annual !== 0 && Math.abs(row.annual - monthSum) > 0.01 ? (
-                              <span title={t("budget.annualMismatch")} className="text-[var(--negative)]">
-                                <AlertTriangle size={13} />
-                              </span>
-                            ) : null;
-                          })()}
-                        </div>
-                      )}
-                    </td>
-                    {/* 12 month cells */}
-                    {row.months.map((val, mIdx) => (
-                      <td key={mIdx} className="py-2 px-2 text-right">
-                        {editingCell?.categoryId === row.category_id && editingCell.monthIdx === mIdx ? (
-                          <input
-                            ref={inputRef}
-                            type="number"
-                            step="0.01"
-                            value={editingValue}
-                            onChange={(e) => setEditingValue(e.target.value)}
-                            onBlur={handleSave}
-                            onKeyDown={handleKeyDown}
-                            className="w-full text-right bg-[var(--background)] border border-[var(--border)] rounded px-1 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                          />
-                        ) : (
-                          <button
-                            onClick={() => handleStartEdit(row.category_id, mIdx, val)}
-                            className="w-full text-right hover:text-[var(--primary)] transition-colors cursor-text text-xs"
-                          >
-                            {val === 0 ? (
-                              <span className="text-[var(--muted-foreground)]">—</span>
-                            ) : (
-                              fmt.format(val)
-                            )}
-                          </button>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {group.map((row) => renderRow(row))}
               </Fragment>
             );
           })}
           {/* Totals row */}
           <tr className="bg-[var(--muted)] font-semibold">
             <td className="py-2.5 px-3 sticky left-0 bg-[var(--muted)] z-10 text-xs">{t("common.total")}</td>
-            <td className="py-2.5 px-2 text-right text-xs">{fmt.format(annualTotal)}</td>
+            <td className="py-2.5 px-2 text-right text-xs">{formatSigned(annualTotal)}</td>
             {monthTotals.map((total, mIdx) => (
               <td key={mIdx} className="py-2.5 px-2 text-right text-xs">
-                {fmt.format(total)}
+                {formatSigned(total)}
               </td>
             ))}
           </tr>

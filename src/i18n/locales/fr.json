@@ -312,6 +312,7 @@
     "noTemplates": "Aucun modèle enregistré.",
     "templateName": "Nom du modèle",
     "templateDescription": "Description (optionnel)",
+    "directSuffix": "(direct)",
     "deleteTemplateConfirm": "Supprimer ce modèle ?",
     "help": {
       "title": "Comment utiliser le Budget",

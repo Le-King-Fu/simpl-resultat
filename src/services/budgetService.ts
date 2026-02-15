@@ -20,6 +20,13 @@ export async function getActiveCategories(): Promise<Category[]> {
   );
 }
 
+export async function getAllActiveCategories(): Promise<Category[]> {
+  const db = await getDb();
+  return db.select<Category[]>(
+    "SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order, name"
+  );
+}
+
 export async function getBudgetEntriesForMonth(
   year: number,
   month: number

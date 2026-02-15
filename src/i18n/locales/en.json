@@ -312,6 +312,7 @@
     "noTemplates": "No templates saved yet.",
     "templateName": "Template name",
     "templateDescription": "Description (optional)",
+    "directSuffix": "(direct)",
     "deleteTemplateConfirm": "Delete this template?",
     "help": {
       "title": "How to use Budget",
