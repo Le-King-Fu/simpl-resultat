@@ -1,8 +1,43 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 import type { TransactionFilters, Category, ImportSource } from "../../shared/types";
 import CategoryCombobox from "../shared/CategoryCombobox";
+
+type QuickPeriod = "month" | "3months" | "6months" | "year" | "all";
+const PERIODS: QuickPeriod[] = ["month", "3months", "6months", "year", "all"];
+
+function computePeriodDates(period: QuickPeriod): { dateFrom: string | null; dateTo: string | null } {
+  if (period === "all") return { dateFrom: null, dateTo: null };
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  if (period === "year") return { dateFrom: `${year}-01-01`, dateTo: null };
+  let from: Date;
+  switch (period) {
+    case "month":
+      from = new Date(year, month, 1);
+      break;
+    case "3months":
+      from = new Date(year, month - 2, 1);
+      break;
+    case "6months":
+      from = new Date(year, month - 5, 1);
+      break;
+  }
+  const dateFrom = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, "0")}-${String(from.getDate()).padStart(2, "0")}`;
+  return { dateFrom, dateTo: null };
+}
+
+function detectActivePeriod(filters: TransactionFilters): QuickPeriod | null {
+  if (filters.dateTo) return null;
+  if (!filters.dateFrom) return "all";
+  for (const p of PERIODS) {
+    const { dateFrom } = computePeriodDates(p);
+    if (dateFrom === filters.dateFrom) return p;
+  }
+  return null;
+}
 
 interface TransactionFilterBarProps {
   filters: TransactionFilters;
@@ -18,6 +53,17 @@ export default function TransactionFilterBar({
   onFilterChange,
 }: TransactionFilterBarProps) {
   const { t } = useTranslation();
+
+  const activePeriod = detectActivePeriod(filters);
+
+  const handlePeriodChange = useCallback(
+    (period: QuickPeriod) => {
+      const { dateFrom, dateTo } = computePeriodDates(period);
+      onFilterChange("dateFrom", dateFrom);
+      onFilterChange("dateTo", dateTo);
+    },
+    [onFilterChange]
+  );
 
   const categoryExtras = useMemo(
     () => [
@@ -37,6 +83,23 @@ export default function TransactionFilterBar({
 
   return (
     <div className="bg-[var(--card)] rounded-xl p-4 border border-[var(--border)] mb-4">
+      {/* Period quick-select */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {PERIODS.map((p) => (
+          <button
+            key={p}
+            onClick={() => handlePeriodChange(p)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              p === activePeriod
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--muted)]"
+            }`}
+          >
+            {t(`dashboard.period.${p}`)}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">

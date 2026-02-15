@@ -51,7 +51,7 @@ const initialFilters: TransactionFilters = {
   search: "",
   categoryId: null,
   sourceId: null,
-  dateFrom: null,
+  dateFrom: `${new Date().getFullYear()}-01-01`,
   dateTo: null,
   uncategorizedOnly: false,
 };
