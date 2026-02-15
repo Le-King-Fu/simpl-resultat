@@ -48,6 +48,25 @@ pub fn run() {
             );",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 6,
+            description: "change imported_files unique constraint from hash to filename",
+            sql: "CREATE TABLE imported_files_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_id INTEGER NOT NULL REFERENCES import_sources(id),
+                filename TEXT NOT NULL,
+                file_hash TEXT NOT NULL,
+                import_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                row_count INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'completed',
+                notes TEXT,
+                UNIQUE(source_id, filename)
+            );
+            INSERT INTO imported_files_new SELECT * FROM imported_files;
+            DROP TABLE imported_files;
+            ALTER TABLE imported_files_new RENAME TO imported_files;",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

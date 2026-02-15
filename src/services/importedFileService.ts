@@ -31,15 +31,15 @@ export async function createImportedFile(file: {
   notes?: string;
 }): Promise<number> {
   const db = await getDb();
-  // Check if file already exists (e.g. from a previous failed import)
+  // Check if file already exists by filename (e.g. re-import of same file)
   const existing = await db.select<ImportedFile[]>(
-    "SELECT id FROM imported_files WHERE source_id = $1 AND file_hash = $2",
-    [file.source_id, file.file_hash]
+    "SELECT id FROM imported_files WHERE source_id = $1 AND filename = $2",
+    [file.source_id, file.filename]
   );
   if (existing.length > 0) {
     await db.execute(
-      `UPDATE imported_files SET filename = $1, row_count = $2, status = $3, notes = $4, import_date = CURRENT_TIMESTAMP WHERE id = $5`,
-      [file.filename, file.row_count, file.status, file.notes || null, existing[0].id]
+      `UPDATE imported_files SET file_hash = $1, row_count = $2, status = $3, notes = $4, import_date = CURRENT_TIMESTAMP WHERE id = $5`,
+      [file.file_hash, file.row_count, file.status, file.notes || null, existing[0].id]
     );
     return existing[0].id;
   }
