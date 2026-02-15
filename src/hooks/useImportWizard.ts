@@ -439,12 +439,16 @@ export function useImportWizard() {
 
   const selectAllFiles = useCallback(() => {
     if (state.selectedSource) {
+      const importedNames = state.importedFilesBySource.get(state.selectedSource.folder_name);
+      const newFiles = importedNames
+        ? state.selectedSource.files.filter((f) => !importedNames.has(f.filename))
+        : state.selectedSource.files;
       dispatch({
         type: "SET_SELECTED_FILES",
-        payload: state.selectedSource.files,
+        payload: newFiles,
       });
     }
-  }, [state.selectedSource]);
+  }, [state.selectedSource, state.importedFilesBySource]);
 
   // Internal helper: parses selected files and returns rows + headers
   const parseFilesInternal = useCallback(async (): Promise<{ rows: ParsedRow[]; headers: string[] }> => {
@@ -511,6 +515,7 @@ export function useImportWizard() {
               raw,
               parsed: null,
               error: "Invalid date",
+              sourceFilename: file.filename,
             });
           } else if (isNaN(amount)) {
             allRows.push({
@@ -518,12 +523,14 @@ export function useImportWizard() {
               raw,
               parsed: null,
               error: "Invalid amount",
+              sourceFilename: file.filename,
             });
           } else {
             allRows.push({
               rowIndex: allRows.length,
               raw,
               parsed: { date, description, amount },
+              sourceFilename: file.filename,
             });
           }
         } catch {
@@ -532,6 +539,7 @@ export function useImportWizard() {
             raw,
             parsed: null,
             error: "Parse error",
+            sourceFilename: file.filename,
           });
         }
       }
@@ -591,22 +599,23 @@ export function useImportWizard() {
       });
     }
 
-    // Check file-level duplicates
+    // Check file-level duplicates (check ALL selected files, not just the first)
     let fileAlreadyImported = false;
     let existingFileId: number | undefined;
 
-    if (state.selectedFiles.length > 0) {
+    for (const file of state.selectedFiles) {
       const hash = await invoke<string>("hash_file", {
-        filePath: state.selectedFiles[0].file_path,
+        filePath: file.file_path,
       });
       const existing = await existsByHash(hash);
       if (existing) {
         fileAlreadyImported = true;
         existingFileId = existing.id;
+        break;
       }
     }
 
-    // Check row-level duplicates
+    // Check row-level duplicates against DB
     const validRows = parsedRows.filter((r) => r.parsed);
     const duplicateMatches = await findDuplicates(
       validRows.map((r) => ({
@@ -616,10 +625,7 @@ export function useImportWizard() {
       }))
     );
 
-    const duplicateIndices = new Set(duplicateMatches.map((d) => d.rowIndex));
-    const newRows = validRows.filter(
-      (_, i) => !duplicateIndices.has(i)
-    );
+    const dbDuplicateIndices = new Set(duplicateMatches.map((d) => d.rowIndex));
     const duplicateRows = duplicateMatches.map((d) => ({
       rowIndex: d.rowIndex,
       date: d.date,
@@ -627,6 +633,34 @@ export function useImportWizard() {
       amount: d.amount,
       existingTransactionId: d.existingTransactionId,
     }));
+
+    // Cross-file duplicate detection: find rows that appear in multiple source files
+    const seenKeys = new Map<string, number>(); // key → first-seen validRows index
+    for (let i = 0; i < validRows.length; i++) {
+      if (dbDuplicateIndices.has(i)) continue; // already flagged as DB duplicate
+      const row = validRows[i];
+      const key = `${row.parsed!.date}|${row.parsed!.description}|${row.parsed!.amount}`;
+      const firstIdx = seenKeys.get(key);
+      if (firstIdx !== undefined) {
+        // Only flag as cross-file duplicate if rows come from different files
+        if (validRows[firstIdx].sourceFilename !== row.sourceFilename) {
+          duplicateRows.push({
+            rowIndex: i,
+            date: row.parsed!.date,
+            description: row.parsed!.description,
+            amount: row.parsed!.amount,
+            existingTransactionId: -1, // signals "within batch" in the UI
+          });
+          dbDuplicateIndices.add(i);
+        }
+      } else {
+        seenKeys.set(key, i);
+      }
+    }
+
+    const newRows = validRows.filter(
+      (_, i) => !dbDuplicateIndices.has(i)
+    );
 
     dispatch({
       type: "SET_DUPLICATE_RESULT",
@@ -711,21 +745,22 @@ export function useImportWizard() {
         payload: { current: 0, total: totalRows, file: state.selectedFiles[0]?.filename || "" },
       });
 
-      // Create imported file record
-      let fileHash = "";
-      if (state.selectedFiles.length > 0) {
-        fileHash = await invoke<string>("hash_file", {
-          filePath: state.selectedFiles[0].file_path,
+      // Create one imported_files record per file
+      const fileIdMap = new Map<string, number>();
+      for (const file of state.selectedFiles) {
+        const hash = await invoke<string>("hash_file", {
+          filePath: file.file_path,
         });
+        const rowCount = validRows.filter((r) => r.sourceFilename === file.filename).length;
+        const fId = await createImportedFile({
+          source_id: sourceId,
+          filename: file.filename,
+          file_hash: hash,
+          row_count: rowCount,
+          status: "completed",
+        });
+        fileIdMap.set(file.filename, fId);
       }
-
-      const fileId = await createImportedFile({
-        source_id: sourceId,
-        filename: state.selectedFiles.map((f) => f.filename).join(", "),
-        file_hash: fileHash,
-        row_count: totalRows,
-        status: "completed",
-      });
 
       // Auto-categorize
       const descriptions = validRows.map((r) => r.parsed!.description);
@@ -748,7 +783,7 @@ export function useImportWizard() {
           description: row.parsed!.description,
           amount: row.parsed!.amount,
           source_id: sourceId,
-          file_id: fileId,
+          file_id: fileIdMap.get(row.sourceFilename || "") ?? 0,
           original_description: row.raw.join(config.delimiter),
           category_id: cat.category_id,
           supplier_id: cat.supplier_id,
@@ -759,9 +794,10 @@ export function useImportWizard() {
       let importedCount = 0;
       try {
         importedCount = await insertBatch(transactions, (inserted) => {
+          const currentFile = validRows[inserted - 1]?.sourceFilename || "";
           dispatch({
             type: "SET_IMPORT_PROGRESS",
-            payload: { current: inserted, total: totalRows, file: state.selectedFiles[0]?.filename || "" },
+            payload: { current: inserted, total: totalRows, file: currentFile },
           });
         });
 
@@ -770,7 +806,10 @@ export function useImportWizard() {
           payload: { current: importedCount, total: totalRows, file: "done" },
         });
       } catch (e) {
-        await updateFileStatus(fileId, "error", 0, String(e));
+        // Update status on all file records on error
+        for (const fId of fileIdMap.values()) {
+          await updateFileStatus(fId, "error", 0, String(e));
+        }
         errors.push({
           rowIndex: 0,
           message: e instanceof Error ? e.message : String(e),

@@ -215,6 +215,7 @@ export interface ParsedRow {
     amount: number;
   } | null;
   error?: string;
+  sourceFilename?: string;
 }
 
 export interface DuplicateRow {

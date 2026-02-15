@@ -6,14 +6,14 @@ import SourceCard from "./SourceCard";
 interface SourceListProps {
   sources: ScannedSource[];
   configuredSourceNames: Set<string>;
-  importedFileHashes: Map<string, Set<string>>;
+  importedFileNames: Map<string, Set<string>>;
   onSelectSource: (source: ScannedSource) => void;
 }
 
 export default function SourceList({
   sources,
   configuredSourceNames,
-  importedFileHashes,
+  importedFileNames,
   onSelectSource,
 }: SourceListProps) {
   const { t } = useTranslation();
@@ -41,7 +41,7 @@ export default function SourceList({
         {sources.map((source) => {
           const isConfigured = configuredSourceNames.has(source.folder_name);
           // Count files not yet imported for this source
-          const sourceHashes = importedFileHashes.get(source.folder_name);
+          const sourceHashes = importedFileNames.get(source.folder_name);
           const newFileCount = sourceHashes
             ? source.files.filter(
                 (f) => !sourceHashes.has(f.filename)

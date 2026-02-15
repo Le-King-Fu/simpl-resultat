@@ -77,7 +77,7 @@ export default function ImportPage() {
           <SourceList
             sources={state.scannedSources}
             configuredSourceNames={state.configuredSourceNames}
-            importedFileHashes={state.importedFilesBySource}
+            importedFileNames={state.importedFilesBySource}
             onSelectSource={selectSource}
           />
           <ImportHistoryPanel onChanged={refreshFolder} />
