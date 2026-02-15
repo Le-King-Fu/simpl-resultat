@@ -45,5 +45,17 @@
 ## 2026-02-14 - Never modify schema.sql after initial release (migration checksum)
 **Mistake**: Added `is_inputable` column and `import_config_templates` table directly to `schema.sql` (migration 1), in addition to creating proper migrations 4+5 for them. This changed migration 1's SQL content.
 **Pattern**: `tauri-plugin-sql` uses `sqlx::migrate::Migrator` which stores SHA-256 checksums of each migration's SQL. Since `schema.sql` is `include_str!`'d into migration 1, any change to schema.sql changes the checksum. Sqlx then refuses to apply any new migrations because it detects the integrity violation.
-**Rule**: NEVER modify schema.sql (or any file used by migration 1) after it has been applied to user databases. New columns and tables must ONLY be added via new migrations. Schema.sql is frozen once deployed — treat it as append-only via migrations.
+**Rule**: NEVER modify schema.sql (or any file used by migration 1) after it has been applied to user databases — not even comments. sqlx uses SHA-384 checksums, so even adding `-- NOTE:` comments changes the hash. New columns and tables must ONLY be added via new migrations. Schema.sql is frozen once deployed.
 **Applied**: Any Tauri app using tauri-plugin-sql with sqlx migrations, any system using file-based migration checksums
+
+## 2026-02-14 - Comments in SQL migration files change checksums
+**Mistake**: After reverting schema.sql content, added `-- NOTE:` comment lines for documentation. These changed the SHA-384 checksum, so the fix didn't actually work.
+**Pattern**: sqlx checksums the ENTIRE SQL string byte-for-byte, including comments and whitespace. Any modification — even a single comment or blank line — produces a different hash.
+**Rule**: When restoring a migration file to match its original, use `git show <commit>:<path> > <file>` to get an exact byte-for-byte copy. Never manually edit and "eyeball" the match. Verify with `diff` before committing.
+**Applied**: Any fix involving migration file restoration, any checksum-sensitive file
+
+## 2026-02-15 - gh issue view fails with Projects (classic) deprecation error
+**Mistake**: Used `gh issue view 1` without `--json` flag, which triggers the default GraphQL query that includes `projectCards` — a deprecated field. GitHub returns an error: `GraphQL: Projects (classic) is being deprecated`.
+**Pattern**: The `gh` CLI's default issue view fetches all fields including legacy Projects (classic) data. If the repo or org ever had classic projects, this query fails.
+**Rule**: Always use `gh issue view <number> --json <fields>` (e.g. `--json title,body,state,number`) instead of the bare `gh issue view`. This avoids the deprecated `projectCards` field and is also faster since it only fetches what you need.
+**Applied**: Any `gh issue view`, `gh pr view`, or similar GitHub CLI commands that may touch deprecated GraphQL fields
