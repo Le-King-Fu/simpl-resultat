@@ -33,6 +33,7 @@ type ImportAction =
   | { type: "NEEDS_PASSWORD"; filePath: string }
   | {
       type: "CONFIRMING";
+      filePath: string;
       summary: ImportSummary;
       data: ExportEnvelope["data"];
       importType: ExportEnvelope["export_type"];
@@ -61,6 +62,7 @@ function reducer(state: ImportState, action: ImportAction): ImportState {
       return {
         ...state,
         status: "confirming",
+        filePath: action.filePath,
         summary: action.summary,
         parsedData: action.data,
         importType: action.importType,
@@ -132,7 +134,7 @@ export function useDataImport() {
       });
 
       const { summary, data, importType } = parseContent(content, filePath);
-      dispatch({ type: "CONFIRMING", summary, data, importType });
+      dispatch({ type: "CONFIRMING", filePath, summary, data, importType });
     } catch (e) {
       dispatch({
         type: "IMPORT_ERROR",
@@ -152,7 +154,7 @@ export function useDataImport() {
         });
 
         const { summary, data, importType } = parseContent(content, state.filePath);
-        dispatch({ type: "CONFIRMING", summary, data, importType });
+        dispatch({ type: "CONFIRMING", filePath: state.filePath, summary, data, importType });
       } catch (e) {
         dispatch({
           type: "IMPORT_ERROR",
@@ -166,16 +168,17 @@ export function useDataImport() {
   const executeImport = useCallback(async () => {
     if (!state.parsedData || !state.importType) return;
     dispatch({ type: "IMPORT_START" });
+    const filename = state.filePath?.split(/[/\\]/).pop() ?? "unknown";
     try {
       switch (state.importType) {
         case "categories_only":
           await importCategoriesOnly(state.parsedData);
           break;
         case "transactions_with_categories":
-          await importTransactionsWithCategories(state.parsedData);
+          await importTransactionsWithCategories(state.parsedData, filename);
           break;
         case "transactions_only":
-          await importTransactionsOnly(state.parsedData);
+          await importTransactionsOnly(state.parsedData, filename);
           break;
       }
       dispatch({ type: "IMPORT_SUCCESS" });
@@ -185,7 +188,7 @@ export function useDataImport() {
         error: e instanceof Error ? e.message : String(e),
       });
     }
-  }, [state.parsedData, state.importType]);
+  }, [state.parsedData, state.importType, state.filePath]);
 
   const reset = useCallback(() => dispatch({ type: "RESET" }), []);
 

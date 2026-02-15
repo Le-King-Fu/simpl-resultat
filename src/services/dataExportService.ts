@@ -254,13 +254,15 @@ export async function importCategoriesOnly(data: ExportEnvelope["data"]): Promis
 }
 
 export async function importTransactionsWithCategories(
-  data: ExportEnvelope["data"]
+  data: ExportEnvelope["data"],
+  filename: string
 ): Promise<void> {
   const db = await getDb();
 
   // Wipe everything
   await db.execute("DELETE FROM transactions");
   await db.execute("DELETE FROM imported_files");
+  await db.execute("DELETE FROM import_sources");
   await db.execute("DELETE FROM keywords");
   await db.execute("DELETE FROM suppliers");
   await db.execute("DELETE FROM categories");
@@ -308,12 +310,28 @@ export async function importTransactionsWithCategories(
     }
   }
 
-  // Re-insert transactions
+  // Create tracking records for import history
+  const sourceResult = await db.execute(
+    `INSERT INTO import_sources (name, description, date_format, delimiter, encoding, column_mapping, skip_lines)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    ["Data Import", "Imported from settings", "%Y-%m-%d", ",", "utf-8", "{}", 0]
+  );
+  const sourceId = sourceResult.lastInsertId;
+
+  const txCount = data.transactions?.length ?? 0;
+  const fileResult = await db.execute(
+    `INSERT INTO imported_files (source_id, filename, file_hash, row_count, status)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [sourceId, filename, `data-import-${Date.now()}`, txCount, "completed"]
+  );
+  const fileId = fileResult.lastInsertId;
+
+  // Re-insert transactions linked to the import
   if (data.transactions) {
     for (const tx of data.transactions) {
       await db.execute(
-        `INSERT INTO transactions (date, description, amount, category_id, original_description, notes, is_manually_categorized, is_split, parent_transaction_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO transactions (date, description, amount, category_id, original_description, notes, is_manually_categorized, is_split, parent_transaction_id, source_id, file_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
         [
           tx.date,
           tx.description,
@@ -324,6 +342,8 @@ export async function importTransactionsWithCategories(
           tx.is_manually_categorized,
           tx.is_split,
           tx.parent_transaction_id,
+          sourceId,
+          fileId,
         ]
       );
     }
@@ -331,20 +351,38 @@ export async function importTransactionsWithCategories(
 }
 
 export async function importTransactionsOnly(
-  data: ExportEnvelope["data"]
+  data: ExportEnvelope["data"],
+  filename: string
 ): Promise<void> {
   const db = await getDb();
 
   // Wipe transactions and import history
   await db.execute("DELETE FROM transactions");
   await db.execute("DELETE FROM imported_files");
+  await db.execute("DELETE FROM import_sources");
 
-  // Re-insert transactions
+  // Create tracking records for import history
+  const sourceResult = await db.execute(
+    `INSERT INTO import_sources (name, description, date_format, delimiter, encoding, column_mapping, skip_lines)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    ["Data Import", "Imported from settings", "%Y-%m-%d", ",", "utf-8", "{}", 0]
+  );
+  const sourceId = sourceResult.lastInsertId;
+
+  const txCount = data.transactions?.length ?? 0;
+  const fileResult = await db.execute(
+    `INSERT INTO imported_files (source_id, filename, file_hash, row_count, status)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [sourceId, filename, `data-import-${Date.now()}`, txCount, "completed"]
+  );
+  const fileId = fileResult.lastInsertId;
+
+  // Re-insert transactions linked to the import
   if (data.transactions) {
     for (const tx of data.transactions) {
       await db.execute(
-        `INSERT INTO transactions (date, description, amount, category_id, original_description, notes, is_manually_categorized, is_split, parent_transaction_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO transactions (date, description, amount, category_id, original_description, notes, is_manually_categorized, is_split, parent_transaction_id, source_id, file_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
         [
           tx.date,
           tx.description,
@@ -355,6 +393,8 @@ export async function importTransactionsOnly(
           tx.is_manually_categorized,
           tx.is_split,
           tx.parent_transaction_id,
+          sourceId,
+          fileId,
         ]
       );
     }
