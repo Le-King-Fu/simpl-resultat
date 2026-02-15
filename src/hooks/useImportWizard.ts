@@ -363,7 +363,7 @@ export function useImportWizard() {
 
       dispatch({ type: "SET_STEP", payload: "source-config" });
     },
-    [] // eslint-disable-line react-hooks/exhaustive-deps
+    [state.importedFilesBySource] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const loadHeadersWithConfig = useCallback(
