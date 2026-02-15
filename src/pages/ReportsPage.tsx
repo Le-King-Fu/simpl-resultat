@@ -4,12 +4,14 @@ import { useReports } from "../hooks/useReports";
 import { PageHelp } from "../components/shared/PageHelp";
 import type { ReportTab, CategoryBreakdownItem, DashboardPeriod } from "../shared/types";
 import PeriodSelector from "../components/dashboard/PeriodSelector";
+import MonthNavigator from "../components/budget/MonthNavigator";
 import MonthlyTrendsChart from "../components/reports/MonthlyTrendsChart";
 import CategoryBarChart from "../components/reports/CategoryBarChart";
 import CategoryOverTimeChart from "../components/reports/CategoryOverTimeChart";
+import BudgetVsActualTable from "../components/reports/BudgetVsActualTable";
 import TransactionDetailModal from "../components/shared/TransactionDetailModal";
 
-const TABS: ReportTab[] = ["trends", "byCategory", "overTime"];
+const TABS: ReportTab[] = ["trends", "byCategory", "overTime", "budgetVsActual"];
 
 function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?: string } {
   if (period === "all") return {};
@@ -31,7 +33,7 @@ function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?
 
 export default function ReportsPage() {
   const { t } = useTranslation();
-  const { state, setTab, setPeriod } = useReports();
+  const { state, setTab, setPeriod, navigateBudgetMonth } = useReports();
 
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
   const [detailModal, setDetailModal] = useState<CategoryBreakdownItem | null>(null);
@@ -60,10 +62,18 @@ export default function ReportsPage() {
           <h1 className="text-2xl font-bold">{t("reports.title")}</h1>
           <PageHelp helpKey="reports" />
         </div>
-        <PeriodSelector value={state.period} onChange={setPeriod} />
+        {state.tab === "budgetVsActual" ? (
+          <MonthNavigator
+            year={state.budgetYear}
+            month={state.budgetMonth}
+            onNavigate={navigateBudgetMonth}
+          />
+        ) : (
+          <PeriodSelector value={state.period} onChange={setPeriod} />
+        )}
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 flex-wrap">
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -103,6 +113,9 @@ export default function ReportsPage() {
           onShowAll={showAll}
           onViewDetails={viewDetails}
         />
+      )}
+      {state.tab === "budgetVsActual" && (
+        <BudgetVsActualTable data={state.budgetVsActual} />
       )}
 
       {detailModal && (

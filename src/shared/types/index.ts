@@ -274,7 +274,7 @@ export interface RecentTransaction {
 
 // --- Report Types ---
 
-export type ReportTab = "trends" | "byCategory" | "overTime";
+export type ReportTab = "trends" | "byCategory" | "overTime" | "budgetVsActual";
 
 export interface MonthlyTrendItem {
   month: string;       // "2025-01"
@@ -292,6 +292,23 @@ export interface CategoryOverTimeData {
   data: CategoryOverTimeItem[];
   colors: Record<string, string>;
   categoryIds: Record<string, number | null>;
+}
+
+export interface BudgetVsActualRow {
+  category_id: number;
+  category_name: string;
+  category_color: string;
+  category_type: "expense" | "income" | "transfer";
+  parent_id: number | null;
+  is_parent: boolean;
+  monthActual: number;
+  monthBudget: number;
+  monthVariation: number;
+  monthVariationPct: number | null;
+  ytdActual: number;
+  ytdBudget: number;
+  ytdVariation: number;
+  ytdVariationPct: number | null;
 }
 
 export type ImportWizardStep =

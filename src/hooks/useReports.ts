@@ -5,9 +5,11 @@ import type {
   MonthlyTrendItem,
   CategoryBreakdownItem,
   CategoryOverTimeData,
+  BudgetVsActualRow,
 } from "../shared/types";
 import { getMonthlyTrends, getCategoryOverTime } from "../services/reportService";
 import { getExpensesByCategory } from "../services/dashboardService";
+import { getBudgetVsActualData } from "../services/budgetService";
 
 interface ReportsState {
   tab: ReportTab;
@@ -15,6 +17,9 @@ interface ReportsState {
   monthlyTrends: MonthlyTrendItem[];
   categorySpending: CategoryBreakdownItem[];
   categoryOverTime: CategoryOverTimeData;
+  budgetYear: number;
+  budgetMonth: number;
+  budgetVsActual: BudgetVsActualRow[];
   isLoading: boolean;
   error: string | null;
 }
@@ -26,7 +31,11 @@ type ReportsAction =
   | { type: "SET_ERROR"; payload: string | null }
   | { type: "SET_MONTHLY_TRENDS"; payload: MonthlyTrendItem[] }
   | { type: "SET_CATEGORY_SPENDING"; payload: CategoryBreakdownItem[] }
-  | { type: "SET_CATEGORY_OVER_TIME"; payload: CategoryOverTimeData };
+  | { type: "SET_CATEGORY_OVER_TIME"; payload: CategoryOverTimeData }
+  | { type: "SET_BUDGET_MONTH"; payload: { year: number; month: number } }
+  | { type: "SET_BUDGET_VS_ACTUAL"; payload: BudgetVsActualRow[] };
+
+const now = new Date();
 
 const initialState: ReportsState = {
   tab: "trends",
@@ -34,6 +43,9 @@ const initialState: ReportsState = {
   monthlyTrends: [],
   categorySpending: [],
   categoryOverTime: { categories: [], data: [], colors: {}, categoryIds: {} },
+  budgetYear: now.getFullYear(),
+  budgetMonth: now.getMonth() + 1,
+  budgetVsActual: [],
   isLoading: false,
   error: null,
 };
@@ -54,6 +66,10 @@ function reducer(state: ReportsState, action: ReportsAction): ReportsState {
       return { ...state, categorySpending: action.payload, isLoading: false };
     case "SET_CATEGORY_OVER_TIME":
       return { ...state, categoryOverTime: action.payload, isLoading: false };
+    case "SET_BUDGET_MONTH":
+      return { ...state, budgetYear: action.payload.year, budgetMonth: action.payload.month };
+    case "SET_BUDGET_VS_ACTUAL":
+      return { ...state, budgetVsActual: action.payload, isLoading: false };
     default:
       return state;
   }
@@ -94,31 +110,43 @@ export function useReports() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const fetchIdRef = useRef(0);
 
-  const fetchData = useCallback(async (tab: ReportTab, period: DashboardPeriod) => {
+  const fetchData = useCallback(async (
+    tab: ReportTab,
+    period: DashboardPeriod,
+    budgetYear: number,
+    budgetMonth: number,
+  ) => {
     const fetchId = ++fetchIdRef.current;
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const { dateFrom, dateTo } = computeDateRange(period);
-
       switch (tab) {
         case "trends": {
+          const { dateFrom, dateTo } = computeDateRange(period);
           const data = await getMonthlyTrends(dateFrom, dateTo);
           if (fetchId !== fetchIdRef.current) return;
           dispatch({ type: "SET_MONTHLY_TRENDS", payload: data });
           break;
         }
         case "byCategory": {
+          const { dateFrom, dateTo } = computeDateRange(period);
           const data = await getExpensesByCategory(dateFrom, dateTo);
           if (fetchId !== fetchIdRef.current) return;
           dispatch({ type: "SET_CATEGORY_SPENDING", payload: data });
           break;
         }
         case "overTime": {
+          const { dateFrom, dateTo } = computeDateRange(period);
           const data = await getCategoryOverTime(dateFrom, dateTo);
           if (fetchId !== fetchIdRef.current) return;
           dispatch({ type: "SET_CATEGORY_OVER_TIME", payload: data });
+          break;
+        }
+        case "budgetVsActual": {
+          const data = await getBudgetVsActualData(budgetYear, budgetMonth);
+          if (fetchId !== fetchIdRef.current) return;
+          dispatch({ type: "SET_BUDGET_VS_ACTUAL", payload: data });
           break;
         }
       }
@@ -132,8 +160,8 @@ export function useReports() {
   }, []);
 
   useEffect(() => {
-    fetchData(state.tab, state.period);
-  }, [state.tab, state.period, fetchData]);
+    fetchData(state.tab, state.period, state.budgetYear, state.budgetMonth);
+  }, [state.tab, state.period, state.budgetYear, state.budgetMonth, fetchData]);
 
   const setTab = useCallback((tab: ReportTab) => {
     dispatch({ type: "SET_TAB", payload: tab });
@@ -143,5 +171,18 @@ export function useReports() {
     dispatch({ type: "SET_PERIOD", payload: period });
   }, []);
 
-  return { state, setTab, setPeriod };
+  const navigateBudgetMonth = useCallback((delta: -1 | 1) => {
+    let newMonth = state.budgetMonth + delta;
+    let newYear = state.budgetYear;
+    if (newMonth < 1) {
+      newMonth = 12;
+      newYear -= 1;
+    } else if (newMonth > 12) {
+      newMonth = 1;
+      newYear += 1;
+    }
+    dispatch({ type: "SET_BUDGET_MONTH", payload: { year: newYear, month: newMonth } });
+  }, [state.budgetYear, state.budgetMonth]);
+
+  return { state, setTab, setPeriod, navigateBudgetMonth };
 }

@@ -331,6 +331,14 @@
     "byCategory": "Dépenses par catégorie",
     "overTime": "Catégories dans le temps",
     "trends": "Tendances mensuelles",
+    "budgetVsActual": "Budget vs R\u00e9el",
+    "bva": {
+      "monthly": "Mensuel",
+      "ytd": "Cumul annuel",
+      "dollarVar": "$ \u00c9cart",
+      "pctVar": "% \u00c9cart",
+      "noData": "Aucune donn\u00e9e de budget ou de transaction pour cette p\u00e9riode."
+    },
     "export": "Exporter",
     "help": {
       "title": "Comment utiliser les Rapports",

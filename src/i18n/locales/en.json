@@ -331,6 +331,14 @@
     "byCategory": "Expenses by Category",
     "overTime": "Category Over Time",
     "trends": "Monthly Trends",
+    "budgetVsActual": "Budget vs Actual",
+    "bva": {
+      "monthly": "Monthly",
+      "ytd": "Year-to-Date",
+      "dollarVar": "$ Var",
+      "pctVar": "% Var",
+      "noData": "No budget or transaction data for this period."
+    },
     "export": "Export",
     "help": {
       "title": "How to use Reports",
