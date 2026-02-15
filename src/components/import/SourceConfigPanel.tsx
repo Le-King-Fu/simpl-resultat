@@ -101,27 +101,22 @@ export default function SourceConfigPanel({
             ))}
           </select>
           {selectedTemplateId && (
-            <button
-              onClick={onUpdateTemplate}
-              title={t("import.config.updateTemplate")}
-              className="p-1.5 rounded-lg text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
-            >
-              <RefreshCw size={16} />
-            </button>
-          )}
-          {configTemplates.length > 0 && (
-            <div className="flex gap-1">
-              {configTemplates.map((tpl) => (
-                <button
-                  key={tpl.id}
-                  onClick={() => onDeleteTemplate(tpl.id)}
-                  title={`${t("import.config.deleteTemplate")}: ${tpl.name}`}
-                  className="p-1 text-[var(--muted-foreground)] hover:text-[var(--negative)] transition-colors"
-                >
-                  <X size={14} />
-                </button>
-              ))}
-            </div>
+            <>
+              <button
+                onClick={onUpdateTemplate}
+                title={t("import.config.updateTemplate")}
+                className="p-1.5 rounded-lg text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+              >
+                <RefreshCw size={16} />
+              </button>
+              <button
+                onClick={() => onDeleteTemplate(selectedTemplateId)}
+                title={t("import.config.deleteTemplate")}
+                className="p-1.5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--negative)] transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </>
           )}
         </div>
 
