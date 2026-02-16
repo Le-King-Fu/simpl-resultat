@@ -10,7 +10,7 @@ import TransactionPagination from "../components/transactions/TransactionPaginat
 
 export default function TransactionsPage() {
   const { t } = useTranslation();
-  const { state, setFilter, setSort, setPage, updateCategory, saveNotes, autoCategorize, addKeywordToCategory } =
+  const { state, setFilter, setSort, setPage, updateCategory, saveNotes, autoCategorize, addKeywordToCategory, loadSplitChildren, saveSplit, deleteSplit } =
     useTransactions();
   const [resultMessage, setResultMessage] = useState<string | null>(null);
 
@@ -81,6 +81,9 @@ export default function TransactionsPage() {
             onCategoryChange={updateCategory}
             onNotesChange={saveNotes}
             onAddKeyword={addKeywordToCategory}
+            onLoadSplitChildren={loadSplitChildren}
+            onSaveSplit={saveSplit}
+            onDeleteSplit={deleteSplit}
           />
 
           <TransactionPagination

@@ -8,6 +8,7 @@ import type {
   TransactionPageResult,
   Category,
   ImportSource,
+  SplitChild,
 } from "../shared/types";
 
 export async function insertBatch(
@@ -138,8 +139,10 @@ export async function getTransactionPage(
     paramIndex++;
   }
 
-  const whereSQL =
-    whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+  // Always exclude split children from the transaction list
+  whereClauses.push(`t.parent_transaction_id IS NULL`);
+
+  const whereSQL = `WHERE ${whereClauses.join(" AND ")}`;
 
   // Map sort column to SQL
   const sortColumnMap: Record<string, string> = {
@@ -156,7 +159,8 @@ export async function getTransactionPage(
   const rowsSQL = `
     SELECT t.id, t.date, t.description, t.amount, t.category_id,
            c.name AS category_name, c.color AS category_color,
-           s.name AS source_name, t.notes, t.is_manually_categorized
+           s.name AS source_name, t.notes, t.is_manually_categorized,
+           t.is_split
     FROM transactions t
     LEFT JOIN categories c ON t.category_id = c.id
     LEFT JOIN import_sources s ON t.source_id = s.id
@@ -266,4 +270,91 @@ export async function autoCategorizeTransactions(): Promise<number> {
   }
 
   return count;
+}
+
+export async function getSplitChildren(parentId: number): Promise<SplitChild[]> {
+  const db = await getDb();
+  return db.select<SplitChild[]>(
+    `SELECT t.id, t.category_id, c.name AS category_name, c.color AS category_color,
+            t.amount, t.description
+     FROM transactions t
+     LEFT JOIN categories c ON t.category_id = c.id
+     WHERE t.parent_transaction_id = $1
+     ORDER BY t.id`,
+    [parentId]
+  );
+}
+
+export async function saveSplitAdjustment(
+  parentId: number,
+  entries: Array<{ category_id: number; amount: number; description: string }>
+): Promise<void> {
+  const db = await getDb();
+
+  // Delete any existing children
+  await db.execute(
+    `DELETE FROM transactions WHERE parent_transaction_id = $1`,
+    [parentId]
+  );
+
+  // Fetch parent transaction
+  const [parent] = await db.select<Transaction[]>(
+    `SELECT * FROM transactions WHERE id = $1`,
+    [parentId]
+  );
+  if (!parent) throw new Error("Parent transaction not found");
+
+  // Insert each split child
+  let offsetTotal = 0;
+  for (const entry of entries) {
+    await db.execute(
+      `INSERT INTO transactions (date, description, amount, category_id, source_id, file_id, original_description, parent_transaction_id, is_split)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)`,
+      [
+        parent.date,
+        entry.description,
+        entry.amount,
+        entry.category_id,
+        parent.source_id ?? null,
+        parent.file_id ?? null,
+        parent.original_description ?? "",
+        parentId,
+      ]
+    );
+    offsetTotal += entry.amount;
+  }
+
+  // Insert offset child (cancels the redistributed portion from the original category)
+  await db.execute(
+    `INSERT INTO transactions (date, description, amount, category_id, source_id, file_id, original_description, parent_transaction_id, is_split)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)`,
+    [
+      parent.date,
+      parent.description,
+      -offsetTotal,
+      parent.category_id ?? null,
+      parent.source_id ?? null,
+      parent.file_id ?? null,
+      parent.original_description ?? "",
+      parentId,
+    ]
+  );
+
+  // Mark parent as split
+  await db.execute(
+    `UPDATE transactions SET is_split = 1, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+    [parentId]
+  );
+}
+
+export async function deleteSplitAdjustment(parentId: number): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `DELETE FROM transactions WHERE parent_transaction_id = $1`,
+    [parentId]
+  );
+  await db.execute(
+    `UPDATE transactions SET is_split = 0, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+    [parentId]
+  );
 }

@@ -216,6 +216,16 @@
     "addKeyword": "Ajouter un mot-clé",
     "keywordAdded": "Mot-clé ajouté",
     "keywordPlaceholder": "Mot-clé à rechercher...",
+    "splitAdjustment": "Répartition",
+    "splitBase": "Base",
+    "splitAdjusted": "Ajusté",
+    "splitCategory": "Catégorie",
+    "splitAmount": "Montant",
+    "splitDescription": "Description",
+    "splitAddRow": "Ajouter une répartition",
+    "splitRemove": "Supprimer la répartition",
+    "splitTotal": "Le total doit égaler le montant original",
+    "splitDeleteConfirm": "Supprimer cette répartition ?",
     "help": {
       "title": "Comment utiliser les Transactions",
       "tips": [

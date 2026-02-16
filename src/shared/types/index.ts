@@ -358,6 +358,16 @@ export interface TransactionRow {
   source_name: string | null;
   notes: string | null;
   is_manually_categorized: boolean;
+  is_split: boolean;
+}
+
+export interface SplitChild {
+  id: number;
+  category_id: number | null;
+  category_name: string | null;
+  category_color: string | null;
+  amount: number;
+  description: string;
 }
 
 export interface TransactionFilters {

@@ -1,12 +1,14 @@
 import { Fragment, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronUp, ChevronDown, MessageSquare, Tag } from "lucide-react";
+import { ChevronUp, ChevronDown, MessageSquare, Tag, Split } from "lucide-react";
 import type {
   TransactionRow,
   TransactionSort,
   Category,
+  SplitChild,
 } from "../../shared/types";
 import CategoryCombobox from "../shared/CategoryCombobox";
+import SplitAdjustmentModal from "./SplitAdjustmentModal";
 
 interface TransactionTableProps {
   rows: TransactionRow[];
@@ -16,6 +18,9 @@ interface TransactionTableProps {
   onCategoryChange: (txId: number, categoryId: number | null) => void;
   onNotesChange: (txId: number, notes: string) => void;
   onAddKeyword: (categoryId: number, keyword: string) => Promise<void>;
+  onLoadSplitChildren: (parentId: number) => Promise<SplitChild[]>;
+  onSaveSplit: (parentId: number, entries: Array<{ category_id: number; amount: number; description: string }>) => Promise<void>;
+  onDeleteSplit: (parentId: number) => Promise<void>;
 }
 
 function SortIcon({
@@ -42,6 +47,9 @@ export default function TransactionTable({
   onCategoryChange,
   onNotesChange,
   onAddKeyword,
+  onLoadSplitChildren,
+  onSaveSplit,
+  onDeleteSplit,
 }: TransactionTableProps) {
   const { t } = useTranslation();
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -49,6 +57,7 @@ export default function TransactionTable({
   const [keywordRowId, setKeywordRowId] = useState<number | null>(null);
   const [keywordText, setKeywordText] = useState("");
   const [keywordSaved, setKeywordSaved] = useState<number | null>(null);
+  const [splitRow, setSplitRow] = useState<TransactionRow | null>(null);
   const noCategoryExtra = useMemo(
     () => [{ value: "", label: t("transactions.table.noCategory") }],
     [t]
@@ -155,17 +164,30 @@ export default function TransactionTable({
                       onExtraSelect={() => onCategoryChange(row.id, null)}
                     />
                     {row.category_id !== null && (
-                      <button
-                        onClick={() => toggleKeyword(row)}
-                        className={`p-1 rounded hover:bg-[var(--muted)] transition-colors shrink-0 ${
-                          keywordSaved === row.id
-                            ? "text-[var(--positive)]"
-                            : "text-[var(--muted-foreground)]"
-                        }`}
-                        title={keywordSaved === row.id ? t("transactions.keywordAdded") : t("transactions.addKeyword")}
-                      >
-                        <Tag size={14} />
-                      </button>
+                      <>
+                        <button
+                          onClick={() => toggleKeyword(row)}
+                          className={`p-1 rounded hover:bg-[var(--muted)] transition-colors shrink-0 ${
+                            keywordSaved === row.id
+                              ? "text-[var(--positive)]"
+                              : "text-[var(--muted-foreground)]"
+                          }`}
+                          title={keywordSaved === row.id ? t("transactions.keywordAdded") : t("transactions.addKeyword")}
+                        >
+                          <Tag size={14} />
+                        </button>
+                        <button
+                          onClick={() => setSplitRow(row)}
+                          className={`p-1 rounded hover:bg-[var(--muted)] transition-colors shrink-0 ${
+                            row.is_split
+                              ? "text-[var(--primary)]"
+                              : "text-[var(--muted-foreground)]"
+                          }`}
+                          title={t("transactions.splitAdjustment")}
+                        >
+                          <Split size={14} />
+                        </button>
+                      </>
                     )}
                   </div>
                 </td>
@@ -245,6 +267,16 @@ export default function TransactionTable({
           ))}
         </tbody>
       </table>
+      {splitRow && (
+        <SplitAdjustmentModal
+          transaction={splitRow}
+          categories={categories}
+          onLoadChildren={onLoadSplitChildren}
+          onSave={onSaveSplit}
+          onDelete={onDeleteSplit}
+          onClose={() => setSplitRow(null)}
+        />
+      )}
     </div>
   );
 }

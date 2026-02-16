@@ -216,6 +216,16 @@
     "addKeyword": "Add keyword",
     "keywordAdded": "Keyword added",
     "keywordPlaceholder": "Keyword to match...",
+    "splitAdjustment": "Split adjustment",
+    "splitBase": "Base",
+    "splitAdjusted": "Adjusted",
+    "splitCategory": "Category",
+    "splitAmount": "Amount",
+    "splitDescription": "Description",
+    "splitAddRow": "Add split",
+    "splitRemove": "Remove split",
+    "splitTotal": "Total must equal original amount",
+    "splitDeleteConfirm": "Remove this split adjustment?",
     "help": {
       "title": "How to use Transactions",
       "tips": [

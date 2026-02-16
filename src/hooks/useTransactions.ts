@@ -6,6 +6,7 @@ import type {
   TransactionPageResult,
   Category,
   ImportSource,
+  SplitChild,
 } from "../shared/types";
 import {
   getTransactionPage,
@@ -14,6 +15,9 @@ import {
   getAllCategories,
   getAllImportSources,
   autoCategorizeTransactions,
+  getSplitChildren,
+  saveSplitAdjustment,
+  deleteSplitAdjustment,
 } from "../services/transactionService";
 import { createKeyword } from "../services/categoryService";
 
@@ -308,6 +312,54 @@ export function useTransactions() {
     []
   );
 
+  const loadSplitChildren = useCallback(
+    async (parentId: number): Promise<SplitChild[]> => {
+      try {
+        return await getSplitChildren(parentId);
+      } catch (e) {
+        dispatch({
+          type: "SET_ERROR",
+          payload: e instanceof Error ? e.message : String(e),
+        });
+        return [];
+      }
+    },
+    []
+  );
+
+  const saveSplit = useCallback(
+    async (
+      parentId: number,
+      entries: Array<{ category_id: number; amount: number; description: string }>
+    ) => {
+      try {
+        await saveSplitAdjustment(parentId, entries);
+        fetchData(debouncedFiltersRef.current, state.sort, state.page, state.pageSize);
+      } catch (e) {
+        dispatch({
+          type: "SET_ERROR",
+          payload: e instanceof Error ? e.message : String(e),
+        });
+      }
+    },
+    [state.sort, state.page, state.pageSize, fetchData]
+  );
+
+  const deleteSplit = useCallback(
+    async (parentId: number) => {
+      try {
+        await deleteSplitAdjustment(parentId);
+        fetchData(debouncedFiltersRef.current, state.sort, state.page, state.pageSize);
+      } catch (e) {
+        dispatch({
+          type: "SET_ERROR",
+          payload: e instanceof Error ? e.message : String(e),
+        });
+      }
+    },
+    [state.sort, state.page, state.pageSize, fetchData]
+  );
+
   return {
     state,
     setFilter,
@@ -317,5 +369,8 @@ export function useTransactions() {
     saveNotes,
     autoCategorize,
     addKeywordToCategory,
+    loadSplitChildren,
+    saveSplit,
+    deleteSplit,
   };
 }
