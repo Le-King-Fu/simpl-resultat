@@ -656,6 +656,27 @@
       ]
     }
   },
+  "profile": {
+    "title": "Profiles",
+    "select": "Select a profile",
+    "create": "Create Profile",
+    "edit": "Edit Profile",
+    "delete": "Delete Profile",
+    "deleteConfirm": "Delete this profile and all its data? This cannot be undone.",
+    "name": "Profile Name",
+    "namePlaceholder": "Enter a name...",
+    "color": "Color",
+    "pin": "PIN",
+    "pinSet": "PIN set",
+    "pinNotSet": "No PIN",
+    "setPin": "Set PIN",
+    "removePin": "Remove PIN",
+    "enterPin": "Enter your PIN",
+    "wrongPin": "Wrong PIN. Try again.",
+    "switchProfile": "Switch Profile",
+    "manageProfiles": "Manage Profiles",
+    "default": "Default"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

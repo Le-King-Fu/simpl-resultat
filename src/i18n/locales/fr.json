@@ -656,6 +656,27 @@
       ]
     }
   },
+  "profile": {
+    "title": "Profils",
+    "select": "Sélectionnez un profil",
+    "create": "Créer un profil",
+    "edit": "Modifier le profil",
+    "delete": "Supprimer le profil",
+    "deleteConfirm": "Supprimer ce profil et toutes ses données ? Cette action est irréversible.",
+    "name": "Nom du profil",
+    "namePlaceholder": "Entrez un nom...",
+    "color": "Couleur",
+    "pin": "NIP",
+    "pinSet": "NIP défini",
+    "pinNotSet": "Aucun NIP",
+    "setPin": "Définir un NIP",
+    "removePin": "Supprimer le NIP",
+    "enterPin": "Entrez votre NIP",
+    "wrongPin": "NIP incorrect. Réessayez.",
+    "switchProfile": "Changer de profil",
+    "manageProfiles": "Gérer les profils",
+    "default": "Par défaut"
+  },
   "common": {
     "save": "Enregistrer",
     "cancel": "Annuler",

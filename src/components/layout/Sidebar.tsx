@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { NAV_ITEMS, APP_NAME } from "../../shared/constants";
 import { useTheme } from "../../hooks/useTheme";
+import ProfileSwitcher from "../profile/ProfileSwitcher";
 
 const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
   LayoutDashboard,
@@ -41,6 +42,8 @@ export default function Sidebar() {
       <div className="p-5 border-b border-white/10">
         <h1 className="text-lg font-bold tracking-tight">{APP_NAME}</h1>
       </div>
+
+      <ProfileSwitcher />
 
       <nav className="flex-1 py-4 space-y-1 px-3">
         {NAV_ITEMS.map((item) => {

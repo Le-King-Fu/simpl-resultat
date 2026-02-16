@@ -95,6 +95,12 @@ pub fn run() {
             commands::write_export_file,
             commands::read_import_file,
             commands::is_file_encrypted,
+            commands::load_profiles,
+            commands::save_profiles,
+            commands::delete_profile_db,
+            commands::get_new_profile_init_sql,
+            commands::hash_pin,
+            commands::verify_pin,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
