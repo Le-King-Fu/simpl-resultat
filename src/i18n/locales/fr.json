@@ -410,6 +410,10 @@
         "tryAgain": "Réessayer"
       }
     },
+    "userGuide": {
+      "title": "Guide d'utilisation",
+      "description": "Apprenez à utiliser toutes les fonctionnalités de l'application"
+    },
     "dataSafeNotice": "Vos données sont en sécurité — seul le programme est remplacé, votre base de données n'est pas modifiée.",
     "help": {
       "title": "À propos des Paramètres",
@@ -442,6 +446,215 @@
     "oct": "Oct",
     "nov": "Nov",
     "dec": "Déc"
+  },
+  "docs": {
+    "title": "Guide d'utilisation",
+    "backToSettings": "Retour aux paramètres",
+    "print": "Imprimer",
+    "features": "Fonctionnalités",
+    "howTo": "Comment faire",
+    "quickStart": "Démarrage rapide",
+    "tipsHeader": "Astuces",
+    "gettingStarted": {
+      "title": "Premiers pas",
+      "overview": "Simpl'Résultat vous aide à suivre vos finances personnelles en important des relevés bancaires, en catégorisant les transactions, en planifiant des budgets et en générant des rapports.",
+      "features": [
+        "Importation de relevés bancaires CSV depuis plusieurs sources",
+        "Catégorisation automatique et manuelle des transactions",
+        "Planification budgétaire avec vues mensuelles et annuelles",
+        "Rapports visuels et analyse des tendances"
+      ],
+      "steps": [
+        "Allez dans Paramètres et définissez votre dossier d'import — créez un sous-dossier par compte bancaire",
+        "Placez vos relevés bancaires CSV dans le sous-dossier correspondant",
+        "Ouvrez la page Import et configurez votre source (mapping des colonnes, délimiteur, format de date)",
+        "Importez vos transactions, puis allez dans Catégories pour configurer les règles de mots-clés",
+        "Utilisez l'auto-catégorisation sur la page Transactions pour appliquer vos règles en masse",
+        "Configurez votre Budget et suivez votre progression via les Rapports"
+      ],
+      "tips": [
+        "Vous pouvez basculer entre le français et l'anglais via le sélecteur de langue dans la barre latérale",
+        "Chaque page a une icône d'aide (?) dans l'en-tête avec des astuces rapides",
+        "Vos données sont stockées localement sur votre ordinateur — rien n'est envoyé vers le cloud"
+      ]
+    },
+    "dashboard": {
+      "title": "Tableau de bord",
+      "overview": "Le tableau de bord vous donne un aperçu rapide de votre situation financière pour une période sélectionnée.",
+      "features": [
+        "Cartes résumées du solde, des revenus et des dépenses",
+        "Répartition des dépenses par catégorie (graphique circulaire)",
+        "Liste des transactions récentes",
+        "Sélecteur de période ajustable"
+      ],
+      "steps": [
+        "Utilisez le sélecteur de période en haut à droite pour choisir une plage de temps (mois, 3 mois, année, etc.)",
+        "Consultez les cartes résumées pour votre solde, revenus totaux et dépenses totales",
+        "Vérifiez le graphique circulaire pour voir comment vos dépenses sont réparties par catégorie",
+        "Faites défiler vers le bas pour voir vos transactions les plus récentes"
+      ],
+      "tips": [
+        "Le solde est calculé comme les revenus moins les dépenses pour la période sélectionnée",
+        "Cliquez sur une catégorie dans le graphique circulaire pour voir ses transactions"
+      ]
+    },
+    "import": {
+      "title": "Import",
+      "overview": "Importez des relevés bancaires à partir de fichiers CSV à l'aide d'un assistant étape par étape. Chaque compte bancaire est représenté par un dossier source.",
+      "features": [
+        "Assistant d'import multi-étapes avec aperçu des données",
+        "Mapping de colonnes configurable, délimiteur et format de date",
+        "Détection automatique des doublons (dans le lot et contre les données existantes)",
+        "Modèles d'import pour sauvegarder et réutiliser les configurations",
+        "Historique des imports avec possibilité de supprimer les imports précédents"
+      ],
+      "steps": [
+        "Définissez votre dossier d'import via le sélecteur de dossier en haut de la page",
+        "Créez un sous-dossier pour chaque banque/source et placez-y les fichiers CSV",
+        "Cliquez sur une source pour ouvrir l'assistant d'import",
+        "Configurez le délimiteur, l'encodage, le format de date et le mapping des colonnes",
+        "Sélectionnez les fichiers à importer et prévisualisez les données analysées",
+        "Vérifiez les doublons, examinez le résumé, puis confirmez l'import"
+      ],
+      "tips": [
+        "Sauvegardez votre configuration comme modèle pour ne pas avoir à reconfigurer à chaque fois",
+        "Les fichiers déjà importés sont marqués d'un badge — les ré-importer déclenchera la détection de doublons",
+        "Vous pouvez supprimer un import de l'historique pour retirer toutes ses transactions"
+      ]
+    },
+    "transactions": {
+      "title": "Transactions",
+      "overview": "Parcourez, filtrez, triez et catégorisez toutes vos transactions importées. C'est ici que vous organisez vos données financières.",
+      "features": [
+        "Recherche et filtre par description, catégorie, source ou plage de dates",
+        "Sélecteurs de période rapides (ce mois, mois dernier, cette année, etc.)",
+        "Colonnes triables (date, description, montant, catégorie)",
+        "Assignation de catégorie en ligne via menu déroulant",
+        "Auto-catégorisation basée sur les règles de mots-clés",
+        "Ajout de mots-clés directement depuis une transaction",
+        "Notes sur les transactions"
+      ],
+      "steps": [
+        "Utilisez la barre de filtres pour affiner les transactions par texte, catégorie, source ou date",
+        "Cliquez sur un en-tête de colonne pour trier par ordre croissant ou décroissant",
+        "Pour catégoriser une transaction, cliquez sur son menu déroulant de catégorie et sélectionnez une catégorie",
+        "Pour auto-catégoriser toutes les transactions non catégorisées, cliquez sur le bouton Auto-catégoriser",
+        "Pour ajouter une règle de mot-clé depuis une transaction, cliquez sur l'icône + et entrez le mot-clé"
+      ],
+      "tips": [
+        "Utilisez les boutons de période rapide (Ce mois, Mois dernier, etc.) pour filtrer rapidement par date",
+        "L'auto-catégorisation n'affecte que les transactions non catégorisées — elle n'écrase pas les assignations manuelles",
+        "Ajouter un mot-clé depuis une transaction pré-remplit la catégorie pour construire rapidement vos règles"
+      ]
+    },
+    "categories": {
+      "title": "Catégories",
+      "overview": "Gérez votre arbre de catégories avec des sous-catégories, des règles de mots-clés pour l'auto-catégorisation et des couleurs personnalisées.",
+      "features": [
+        "Catégories hiérarchiques avec relations parent/enfant",
+        "Trois types de catégories : Dépense, Revenu, Transfert",
+        "Règles de mots-clés avec niveaux de priorité pour l'auto-catégorisation",
+        "Couleurs personnalisées pour l'affichage des graphiques",
+        "Basculer les catégories en saisissable ou non-saisissable",
+        "Réinitialiser les catégories aux valeurs par défaut"
+      ],
+      "steps": [
+        "Cliquez sur Ajouter une catégorie pour créer une nouvelle catégorie — choisissez un nom, un type et un parent optionnel",
+        "Sélectionnez une catégorie dans l'arbre pour voir ses détails et sa liste de mots-clés",
+        "Ajoutez des mots-clés correspondant aux descriptions des transactions pour l'auto-catégorisation",
+        "Définissez la priorité des mots-clés pour résoudre les conflits quand plusieurs catégories correspondent",
+        "Utilisez le sélecteur de couleur pour assigner une couleur personnalisée pour les graphiques"
+      ],
+      "tips": [
+        "Les catégories non-saisissables sont masquées du budget et des menus déroulants mais restent visibles dans les rapports",
+        "Les mots-clés de priorité supérieure l'emportent quand plusieurs catégories correspondent à la même transaction",
+        "Utilisez Réinitialiser pour revenir aux catégories par défaut — cela dissociera toutes les catégories des transactions"
+      ]
+    },
+    "adjustments": {
+      "title": "Ajustements",
+      "overview": "Ajoutez des entrées manuelles non issues de vos relevés bancaires — utile pour les dépenses prévues, revenus ou corrections pas encore dans vos relevés.",
+      "features": [
+        "Créer des groupes d'ajustement nommés avec plusieurs entrées",
+        "Assigner une catégorie à chaque entrée",
+        "Marquer des ajustements comme récurrents"
+      ],
+      "steps": [
+        "Cliquez sur Nouvel ajustement pour créer un groupe d'ajustement",
+        "Ajoutez des entrées avec une description, un montant, une date et une catégorie",
+        "Activez le drapeau récurrent si l'ajustement doit se répéter à chaque période"
+      ],
+      "tips": [
+        "Les ajustements apparaissent dans vos réels de budget aux côtés des transactions importées",
+        "Utilisez les ajustements pour les dépenses prévues qui n'ont pas encore été débitées de votre compte"
+      ]
+    },
+    "budget": {
+      "title": "Budget",
+      "overview": "Planifiez votre budget mensuel pour chaque catégorie et suivez le prévu par rapport au réel tout au long de l'année.",
+      "features": [
+        "Grille budgétaire mensuelle pour toutes les catégories",
+        "Colonne annuelle avec totaux automatiques",
+        "Répartition égale du montant annuel sur 12 mois",
+        "Modèles de budget pour sauvegarder et appliquer des configurations",
+        "Sous-totaux par catégorie parente"
+      ],
+      "steps": [
+        "Utilisez le navigateur d'année pour sélectionner l'année du budget",
+        "Cliquez sur une cellule de mois pour entrer un montant prévu",
+        "Appuyez sur Entrée pour sauvegarder, Échap pour annuler, ou Tab pour passer au mois suivant",
+        "Utilisez le bouton de répartition (sur la colonne Annuel) pour distribuer également sur tous les mois",
+        "Sauvegardez votre budget comme modèle pour le réutiliser les années suivantes"
+      ],
+      "tips": [
+        "La colonne Annuel additionne automatiquement les 12 mois — un avertissement apparaît si les totaux mensuels ne correspondent pas",
+        "Les modèles peuvent être appliqués à des mois spécifiques ou aux 12 mois d'un coup",
+        "Les catégories parentes affichent les sous-totaux agrégés de leurs enfants"
+      ]
+    },
+    "reports": {
+      "title": "Rapports",
+      "overview": "Visualisez vos données financières avec des graphiques interactifs et comparez votre plan budgétaire au réel.",
+      "features": [
+        "Tendances mensuelles : revenus vs dépenses dans le temps (graphique en barres)",
+        "Dépenses par catégorie : répartition des dépenses (graphique circulaire)",
+        "Catégories dans le temps : suivez l'évolution de chaque catégorie (graphique en ligne)",
+        "Budget vs Réel : tableau comparatif mensuel et cumul annuel"
+      ],
+      "steps": [
+        "Utilisez les onglets pour basculer entre Tendances, Par catégorie, Dans le temps et Budget vs Réel",
+        "Ajustez la période avec le sélecteur de période",
+        "Dans le graphique circulaire, cliquez sur une catégorie pour la masquer/afficher",
+        "Dans Budget vs Réel, basculez entre les vues Mensuel et Cumul annuel"
+      ],
+      "tips": [
+        "Les catégories masquées sont mémorisées tant que vous restez sur la page — cliquez sur Tout afficher pour réinitialiser",
+        "Le sélecteur de période s'applique à tous les onglets de graphiques simultanément",
+        "Budget vs Réel affiche l'écart en dollars et en pourcentage pour chaque catégorie"
+      ]
+    },
+    "settings": {
+      "title": "Paramètres",
+      "overview": "Configurez les préférences de l'application, vérifiez les mises à jour et gérez vos données avec les outils d'export/import.",
+      "features": [
+        "Affichage de la version de l'application",
+        "Vérification automatique des mises à jour avec installation en un clic",
+        "Export des données (transactions, catégories, ou les deux) en format JSON ou CSV",
+        "Import des données depuis un fichier exporté précédemment",
+        "Chiffrement optionnel pour les fichiers exportés"
+      ],
+      "steps": [
+        "Cliquez sur Vérifier les mises à jour pour voir si une nouvelle version est disponible",
+        "Utilisez la section Gestion des données pour exporter ou importer vos données",
+        "Lors de l'export, choisissez ce qu'il faut inclure et définissez optionnellement un mot de passe pour le chiffrement",
+        "Lors de l'import, sélectionnez un fichier exporté précédemment — les fichiers chiffrés demanderont le mot de passe"
+      ],
+      "tips": [
+        "Les mises à jour ne remplacent que le programme — votre base de données n'est jamais modifiée",
+        "Changez la langue de l'application via le sélecteur de langue dans la barre latérale",
+        "Exportez régulièrement pour garder une sauvegarde de vos données"
+      ]
+    }
   },
   "common": {
     "save": "Enregistrer",

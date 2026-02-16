@@ -9,9 +9,12 @@ import {
   RotateCcw,
   Loader2,
   ShieldCheck,
+  BookOpen,
+  ChevronRight,
 } from "lucide-react";
 import { getVersion } from "@tauri-apps/api/app";
 import { useUpdater } from "../hooks/useUpdater";
+import { Link } from "react-router-dom";
 import { APP_NAME } from "../shared/constants";
 import { PageHelp } from "../components/shared/PageHelp";
 import DataManagementCard from "../components/settings/DataManagementCard";
@@ -52,6 +55,27 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* User guide card */}
+      <Link
+        to="/docs"
+        className="block bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 hover:border-[var(--primary)] transition-colors group"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)]">
+              <BookOpen size={22} />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold">{t("settings.userGuide.title")}</h2>
+              <p className="text-sm text-[var(--muted-foreground)]">
+                {t("settings.userGuide.description")}
+              </p>
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-colors" />
+        </div>
+      </Link>
 
       {/* Update card */}
       <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 space-y-4">

@@ -8,6 +8,7 @@ import AdjustmentsPage from "./pages/AdjustmentsPage";
 import BudgetPage from "./pages/BudgetPage";
 import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
+import DocsPage from "./pages/DocsPage";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/budget" element={<BudgetPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/docs" element={<DocsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

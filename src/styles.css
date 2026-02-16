@@ -100,6 +100,41 @@ body {
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
+/* Print styles */
+@media print {
+  /* Hide app sidebar and docs TOC */
+  aside,
+  nav.w-56 {
+    display: none !important;
+  }
+
+  /* Remove screen layout constraints */
+  .h-screen,
+  .overflow-hidden,
+  .overflow-y-auto {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* White background for print */
+  body,
+  :root {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Clean section breaks */
+  section {
+    break-inside: avoid;
+    border-color: #e5e7eb !important;
+  }
+
+  /* Disable transitions for print */
+  *, *::before, *::after {
+    transition: none !important;
+  }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

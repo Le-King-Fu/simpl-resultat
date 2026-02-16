@@ -410,6 +410,10 @@
         "tryAgain": "Try again"
       }
     },
+    "userGuide": {
+      "title": "User Guide",
+      "description": "Learn how to use all features of the app"
+    },
     "dataSafeNotice": "Your data is safe — only the app binary is replaced, your database is not modified.",
     "help": {
       "title": "About Settings",
@@ -442,6 +446,215 @@
     "oct": "Oct",
     "nov": "Nov",
     "dec": "Dec"
+  },
+  "docs": {
+    "title": "User Guide",
+    "backToSettings": "Back to Settings",
+    "print": "Print",
+    "features": "Features",
+    "howTo": "How To",
+    "quickStart": "Quick Start",
+    "tipsHeader": "Tips",
+    "gettingStarted": {
+      "title": "Getting Started",
+      "overview": "Simpl'Result helps you track your personal finances by importing bank statements, categorizing transactions, setting budgets, and generating reports.",
+      "features": [
+        "Import CSV bank statements from multiple sources",
+        "Automatic and manual transaction categorization",
+        "Budget planning with monthly and annual views",
+        "Visual reports and trend analysis"
+      ],
+      "steps": [
+        "Go to Settings and set your import folder — create one subfolder per bank account",
+        "Place your CSV bank statements in the corresponding subfolder",
+        "Open the Import page and configure your source (column mapping, delimiter, date format)",
+        "Import your transactions, then head to Categories to set up keyword rules",
+        "Use Auto-categorize on the Transactions page to apply your rules in bulk",
+        "Set up your Budget and track progress via Reports"
+      ],
+      "tips": [
+        "You can switch between English and French using the language selector in the sidebar",
+        "Each page has a help icon (?) in the header with quick tips",
+        "Your data is stored locally on your computer — nothing is sent to the cloud"
+      ]
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "overview": "The Dashboard gives you an at-a-glance summary of your financial situation for a selected time period.",
+      "features": [
+        "Balance, income, and expense summary cards",
+        "Expense breakdown by category (pie chart)",
+        "Recent transactions list",
+        "Adjustable time period selector"
+      ],
+      "steps": [
+        "Use the period selector in the top-right to choose a time range (month, 3 months, year, etc.)",
+        "Review the summary cards for your balance, total income, and total expenses",
+        "Check the pie chart to see how your spending is distributed across categories",
+        "Scroll down to see your most recent transactions"
+      ],
+      "tips": [
+        "The balance is calculated as income minus expenses for the selected period",
+        "Click on a category in the pie chart to view its transactions"
+      ]
+    },
+    "import": {
+      "title": "Import",
+      "overview": "Import bank statements from CSV files using a step-by-step wizard. Each bank account is represented as a source folder.",
+      "features": [
+        "Multi-step import wizard with data preview",
+        "Configurable column mapping, delimiter, and date format",
+        "Automatic duplicate detection (within batch and against existing data)",
+        "Import templates to save and reuse source configurations",
+        "Import history with the ability to delete past imports"
+      ],
+      "steps": [
+        "Set your import folder via the folder picker at the top of the page",
+        "Create a subfolder for each bank/source and place CSV files inside",
+        "Click on a source to open the import wizard",
+        "Configure the delimiter, encoding, date format, and column mapping",
+        "Select which files to import and preview the parsed data",
+        "Check for duplicates, review the summary, then confirm the import"
+      ],
+      "tips": [
+        "Save your configuration as a template so you don't have to reconfigure each time",
+        "Files already imported are marked with a badge — re-importing them will trigger duplicate detection",
+        "You can delete an import from the history to remove all its transactions"
+      ]
+    },
+    "transactions": {
+      "title": "Transactions",
+      "overview": "Browse, filter, sort, and categorize all your imported transactions. This is where you organize your financial data.",
+      "features": [
+        "Search and filter by description, category, source, or date range",
+        "Quick period selectors (this month, last month, this year, etc.)",
+        "Sortable columns (date, description, amount, category)",
+        "Inline category assignment via dropdown",
+        "Auto-categorize based on keyword rules",
+        "Add keywords directly from a transaction",
+        "Transaction notes"
+      ],
+      "steps": [
+        "Use the filter bar to narrow down transactions by text, category, source, or date",
+        "Click a column header to sort ascending or descending",
+        "To categorize a transaction, click its category dropdown and select a category",
+        "To auto-categorize all uncategorized transactions, click the Auto-categorize button",
+        "To add a keyword rule from a transaction, click the + icon and enter the keyword"
+      ],
+      "tips": [
+        "Use the quick period buttons (This month, Last month, etc.) for fast date filtering",
+        "Auto-categorize only affects uncategorized transactions — it won't overwrite manual assignments",
+        "Adding a keyword from a transaction pre-fills the category so you can quickly build rules"
+      ]
+    },
+    "categories": {
+      "title": "Categories",
+      "overview": "Manage your category tree with subcategories, keyword rules for auto-categorization, and custom colors.",
+      "features": [
+        "Hierarchical categories with parent/child relationships",
+        "Three category types: Expense, Income, Transfer",
+        "Keyword rules with priority levels for auto-categorization",
+        "Custom colors for chart display",
+        "Toggle categories as inputable or non-inputable",
+        "Re-initialize categories to defaults"
+      ],
+      "steps": [
+        "Click Add Category to create a new category — choose a name, type, and optional parent",
+        "Select a category in the tree to view its details and keyword list",
+        "Add keywords that match transaction descriptions for auto-categorization",
+        "Set keyword priority to resolve conflicts when multiple categories match",
+        "Use the color picker to assign a custom color for charts"
+      ],
+      "tips": [
+        "Non-inputable categories are hidden from budget and transaction dropdowns but still visible in reports",
+        "Higher priority keywords win when multiple categories match the same transaction",
+        "Use Re-initialize to reset categories to defaults — this will unlink all transaction categories"
+      ]
+    },
+    "adjustments": {
+      "title": "Adjustments",
+      "overview": "Add manual entries that don't come from bank imports — useful for expected expenses, income, or corrections not yet in your statements.",
+      "features": [
+        "Create named adjustment groups with multiple entries",
+        "Assign a category to each entry",
+        "Mark adjustments as recurring"
+      ],
+      "steps": [
+        "Click New Adjustment to create an adjustment group",
+        "Add entries with a description, amount, date, and category",
+        "Toggle the recurring flag if the adjustment should repeat each period"
+      ],
+      "tips": [
+        "Adjustments appear in your budget actuals alongside imported transactions",
+        "Use adjustments for planned expenses that haven't hit your bank account yet"
+      ]
+    },
+    "budget": {
+      "title": "Budget",
+      "overview": "Plan your monthly budget for each category and track planned vs. actual spending throughout the year.",
+      "features": [
+        "Monthly budget grid for all categories",
+        "Annual column with automatic totals",
+        "Split annual amount evenly across 12 months",
+        "Budget templates to save and apply configurations",
+        "Parent category subtotals"
+      ],
+      "steps": [
+        "Use the year navigator to select the budget year",
+        "Click on any month cell to enter a planned amount",
+        "Press Enter to save, Escape to cancel, or Tab to move to the next month",
+        "Use the split button (on the Annual column) to distribute evenly across all months",
+        "Save your budget as a template to reuse it in future years"
+      ],
+      "tips": [
+        "The Annual column auto-sums all 12 months — a warning appears if monthly totals don't match",
+        "Templates can be applied to specific months or all 12 at once",
+        "Parent categories show subtotals aggregated from their children"
+      ]
+    },
+    "reports": {
+      "title": "Reports",
+      "overview": "Visualize your financial data with interactive charts and compare your budget plan against actual spending.",
+      "features": [
+        "Monthly Trends: income vs. expenses over time (bar chart)",
+        "Expenses by Category: spending breakdown (pie chart)",
+        "Category Over Time: track how each category evolves (line chart)",
+        "Budget vs Actual: monthly and year-to-date comparison table"
+      ],
+      "steps": [
+        "Use the tabs to switch between Trends, By Category, Over Time, and Budget vs Actual views",
+        "Adjust the time period using the period selector",
+        "In the pie chart, click a category to hide/show it",
+        "In Budget vs Actual, toggle between Monthly and Year-to-Date views"
+      ],
+      "tips": [
+        "Hidden categories are remembered while you stay on the page — click Show All to reset",
+        "The period selector applies to all chart tabs simultaneously",
+        "Budget vs Actual shows dollar and percentage variance for each category"
+      ]
+    },
+    "settings": {
+      "title": "Settings",
+      "overview": "Configure app preferences, check for updates, and manage your data with export/import tools.",
+      "features": [
+        "App version display",
+        "Automatic update checker with one-click install",
+        "Data export (transactions, categories, or both) in JSON or CSV format",
+        "Data import from a previously exported file",
+        "Optional encryption for exported files"
+      ],
+      "steps": [
+        "Click Check for Updates to see if a new version is available",
+        "Use the Data Management section to export or import your data",
+        "When exporting, choose what to include and optionally set a password for encryption",
+        "When importing, select a previously exported file — encrypted files will prompt for the password"
+      ],
+      "tips": [
+        "Updates only replace the app binary — your database is never modified",
+        "Change the app language using the language selector in the sidebar",
+        "Export regularly to keep a backup of your data"
+      ]
+    }
   },
   "common": {
     "save": "Save",
