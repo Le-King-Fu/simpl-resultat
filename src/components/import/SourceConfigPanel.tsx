@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Wand2, Check, Save, RefreshCw, X } from "lucide-react";
+import { Wand2, Check, Save, X } from "lucide-react";
 import type {
   ScannedSource,
   ScannedFile,
@@ -107,7 +107,7 @@ export default function SourceConfigPanel({
                 title={t("import.config.updateTemplate")}
                 className="p-1.5 rounded-lg text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
               >
-                <RefreshCw size={16} />
+                <Save size={16} />
               </button>
               <button
                 onClick={() => onDeleteTemplate(selectedTemplateId)}
