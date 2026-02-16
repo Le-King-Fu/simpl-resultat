@@ -25,8 +25,6 @@ export default function ProfileSwitcher() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  if (profiles.length <= 1) return null;
-
   const handleSelect = (profile: Profile) => {
     setOpen(false);
     if (profile.id === activeProfile?.id) return;
