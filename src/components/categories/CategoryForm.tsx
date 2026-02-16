@@ -131,16 +131,6 @@ export default function CategoryForm({
         <span className="text-xs text-[var(--muted-foreground)]">{t("categories.isInputableHint")}</span>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">{t("categories.sortOrder")}</label>
-        <input
-          type="number"
-          value={form.sort_order}
-          onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
-          className="w-24 px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--card)] text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-        />
-      </div>
-
       <div className="flex items-center gap-2 pt-2">
         <button
           type="submit"

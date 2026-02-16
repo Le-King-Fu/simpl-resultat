@@ -16,6 +16,10 @@ import {
   updateKeyword,
   deactivateKeyword,
   reinitializeCategories as reinitializeCategoriesSvc,
+  hasDuplicateSortOrders,
+  fixDuplicateSortOrders,
+  getNextSortOrder,
+  updateCategorySortOrders,
 } from "../services/categoryService";
 
 interface CategoriesState {
@@ -35,6 +39,7 @@ type CategoriesAction =
   | { type: "SET_SAVING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null }
   | { type: "SET_CATEGORIES"; payload: { flat: CategoryTreeNode[]; tree: CategoryTreeNode[] } }
+  | { type: "SET_TREE"; payload: CategoryTreeNode[] }
   | { type: "SELECT_CATEGORY"; payload: number | null }
   | { type: "SET_KEYWORDS"; payload: Keyword[] }
   | { type: "START_CREATING" }
@@ -72,6 +77,17 @@ function buildTree(flat: CategoryTreeNode[]): CategoryTreeNode[] {
   return roots;
 }
 
+function flattenTreeToCategories(tree: CategoryTreeNode[]): CategoryTreeNode[] {
+  const result: CategoryTreeNode[] = [];
+  for (const node of tree) {
+    result.push(node);
+    for (const child of node.children) {
+      result.push(child);
+    }
+  }
+  return result;
+}
+
 function reducer(state: CategoriesState, action: CategoriesAction): CategoriesState {
   switch (action.type) {
     case "SET_LOADING":
@@ -82,6 +98,8 @@ function reducer(state: CategoriesState, action: CategoriesAction): CategoriesSt
       return { ...state, error: action.payload, isLoading: false, isSaving: false };
     case "SET_CATEGORIES":
       return { ...state, categories: action.payload.flat, tree: action.payload.tree, isLoading: false };
+    case "SET_TREE":
+      return { ...state, tree: action.payload, categories: flattenTreeToCategories(action.payload) };
     case "SELECT_CATEGORY":
       return { ...state, selectedCategoryId: action.payload, editingCategory: null, isCreating: false, keywords: [] };
     case "SET_KEYWORDS":
@@ -106,6 +124,7 @@ function reducer(state: CategoriesState, action: CategoriesAction): CategoriesSt
 export function useCategories() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const fetchIdRef = useRef(0);
+  const duplicateCheckDone = useRef(false);
 
   const loadCategories = useCallback(async () => {
     const fetchId = ++fetchIdRef.current;
@@ -113,6 +132,14 @@ export function useCategories() {
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
+      if (!duplicateCheckDone.current) {
+        duplicateCheckDone.current = true;
+        const hasDups = await hasDuplicateSortOrders();
+        if (hasDups) {
+          await fixDuplicateSortOrders();
+        }
+      }
+
       const rows = await getAllCategoriesWithCounts();
       if (fetchId !== fetchIdRef.current) return;
       const flat = rows.map((r) => ({ ...r, children: [] as CategoryTreeNode[] }));
@@ -171,7 +198,8 @@ export function useCategories() {
 
       try {
         if (state.isCreating) {
-          const newId = await createCategory(formData);
+          const sortOrder = await getNextSortOrder(formData.parent_id);
+          const newId = await createCategory({ ...formData, sort_order: sortOrder });
           await loadCategories();
           await selectCategory(newId);
         } else if (state.selectedCategoryId !== null) {
@@ -225,6 +253,79 @@ export function useCategories() {
       dispatch({ type: "SET_ERROR", payload: e instanceof Error ? e.message : String(e) });
     }
   }, [loadCategories]);
+
+  const moveCategory = useCallback(
+    async (categoryId: number, newParentId: number | null, newIndex: number) => {
+      // Clone current tree
+      const cloneNode = (n: CategoryTreeNode): CategoryTreeNode => ({
+        ...n,
+        children: n.children.map(cloneNode),
+      });
+      const newTree = state.tree.map(cloneNode);
+
+      // Find and remove the category from its current position
+      let movedNode: CategoryTreeNode | null = null;
+
+      // Search in roots
+      const rootIdx = newTree.findIndex((n) => n.id === categoryId);
+      if (rootIdx !== -1) {
+        movedNode = newTree.splice(rootIdx, 1)[0];
+      } else {
+        // Search in children
+        for (const parent of newTree) {
+          const childIdx = parent.children.findIndex((c) => c.id === categoryId);
+          if (childIdx !== -1) {
+            movedNode = parent.children.splice(childIdx, 1)[0];
+            break;
+          }
+        }
+      }
+
+      if (!movedNode) return;
+
+      // Update parent_id
+      movedNode.parent_id = newParentId;
+
+      // Insert at new position
+      if (newParentId === null) {
+        newTree.splice(newIndex, 0, movedNode);
+      } else {
+        const newParent = newTree.find((n) => n.id === newParentId);
+        if (!newParent) return;
+        newParent.children.splice(newIndex, 0, movedNode);
+      }
+
+      // Optimistic update
+      dispatch({ type: "SET_TREE", payload: newTree });
+
+      // Compute batch updates for affected sibling groups
+      const updates: Array<{ id: number; sort_order: number; parent_id: number | null }> = [];
+
+      // Collect all affected sibling groups
+      const affectedGroups = new Set<number | null>();
+      affectedGroups.add(newParentId);
+      // Also include the old parent group (category may have moved away)
+      // We recompute all roots and all children groups to be safe
+      // Roots
+      newTree.forEach((n, i) => {
+        updates.push({ id: n.id, sort_order: i + 1, parent_id: null });
+      });
+      // Children
+      for (const parent of newTree) {
+        parent.children.forEach((c, i) => {
+          updates.push({ id: c.id, sort_order: i + 1, parent_id: parent.id });
+        });
+      }
+
+      try {
+        await updateCategorySortOrders(updates);
+      } catch {
+        // Revert on error
+        await loadCategories();
+      }
+    },
+    [state.tree, loadCategories]
+  );
 
   const loadKeywords = useCallback(async (categoryId: number) => {
     try {
@@ -290,5 +391,6 @@ export function useCategories() {
     editKeyword,
     removeKeyword,
     reinitializeCategories,
+    moveCategory,
   };
 }

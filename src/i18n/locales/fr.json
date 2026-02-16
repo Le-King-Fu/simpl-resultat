@@ -246,7 +246,7 @@
     "noParent": "Aucun parent (niveau supérieur)",
     "isInputable": "Autoriser la saisie",
     "isInputableHint": "Décocher pour masquer du budget et des listes de catégories",
-    "sortOrder": "Ordre de tri",
+    "dragToReorder": "Glisser pour réordonner ou changer le parent",
     "selectCategory": "Sélectionnez une catégorie pour voir les détails",
     "keywordCount": "Mots-clés",
     "keywordText": "Mot-clé...",

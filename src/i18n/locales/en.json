@@ -246,7 +246,7 @@
     "noParent": "No parent (top-level)",
     "isInputable": "Allow input",
     "isInputableHint": "Uncheck to hide from budget and transaction dropdowns",
-    "sortOrder": "Sort Order",
+    "dragToReorder": "Drag to reorder or change parent",
     "selectCategory": "Select a category to view details",
     "keywordCount": "Keywords",
     "keywordText": "Keyword...",

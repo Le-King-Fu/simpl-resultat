@@ -134,10 +134,6 @@ export default function CategoryDetailPanel({
           <p className="font-medium capitalize">{t(`categories.${selectedCategory.type}`)}</p>
         </div>
         <div>
-          <span className="text-[var(--muted-foreground)]">{t("categories.sortOrder")}</span>
-          <p className="font-medium">{selectedCategory.sort_order}</p>
-        </div>
-        <div>
           <span className="text-[var(--muted-foreground)]">{t("categories.parent")}</span>
           <p className="font-medium">
             {selectedCategory.parent_id

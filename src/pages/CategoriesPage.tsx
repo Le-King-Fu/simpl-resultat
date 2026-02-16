@@ -23,6 +23,7 @@ export default function CategoriesPage() {
     editKeyword,
     removeKeyword,
     reinitializeCategories,
+    moveCategory,
   } = useCategories();
 
   const handleReinitialize = async () => {
@@ -94,6 +95,7 @@ export default function CategoriesPage() {
               tree={state.tree}
               selectedId={state.selectedCategoryId}
               onSelect={selectCategory}
+              onMoveCategory={moveCategory}
             />
           </div>
           <CategoryDetailPanel

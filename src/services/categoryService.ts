@@ -60,6 +60,63 @@ export async function updateCategory(
   );
 }
 
+export async function getNextSortOrder(parentId: number | null): Promise<number> {
+  const db = await getDb();
+  const rows = parentId === null
+    ? await db.select<Array<{ max_sort: number | null }>>(
+        `SELECT MAX(sort_order) AS max_sort FROM categories WHERE is_active = 1 AND parent_id IS NULL`
+      )
+    : await db.select<Array<{ max_sort: number | null }>>(
+        `SELECT MAX(sort_order) AS max_sort FROM categories WHERE is_active = 1 AND parent_id = $1`,
+        [parentId]
+      );
+  return (rows[0]?.max_sort ?? 0) + 1;
+}
+
+export async function hasDuplicateSortOrders(): Promise<boolean> {
+  const db = await getDb();
+  const rows = await db.select<Array<{ cnt: number }>>(
+    `SELECT COUNT(*) AS cnt FROM (
+       SELECT parent_id, sort_order FROM categories WHERE is_active = 1
+       GROUP BY parent_id, sort_order HAVING COUNT(*) > 1
+     )`
+  );
+  return (rows[0]?.cnt ?? 0) > 0;
+}
+
+export async function fixDuplicateSortOrders(): Promise<void> {
+  const db = await getDb();
+  const rows = await db.select<Array<{ id: number; parent_id: number | null }>>(
+    `SELECT id, parent_id FROM categories WHERE is_active = 1 ORDER BY parent_id, sort_order, name`
+  );
+
+  let currentParentId: number | null | undefined = undefined;
+  let seq = 0;
+  for (const row of rows) {
+    if (row.parent_id !== currentParentId) {
+      currentParentId = row.parent_id;
+      seq = 0;
+    }
+    seq++;
+    await db.execute(
+      `UPDATE categories SET sort_order = $1 WHERE id = $2`,
+      [seq, row.id]
+    );
+  }
+}
+
+export async function updateCategorySortOrders(
+  updates: Array<{ id: number; sort_order: number; parent_id: number | null }>
+): Promise<void> {
+  const db = await getDb();
+  for (const u of updates) {
+    await db.execute(
+      `UPDATE categories SET sort_order = $1, parent_id = $2 WHERE id = $3`,
+      [u.sort_order, u.parent_id, u.id]
+    );
+  }
+}
+
 export async function deactivateCategory(id: number): Promise<void> {
   const db = await getDb();
   // Promote children to root level so they don't become orphans
