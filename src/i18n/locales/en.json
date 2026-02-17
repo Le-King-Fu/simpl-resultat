@@ -290,6 +290,7 @@
     "selectAdjustment": "Select an adjustment",
     "category": "Category",
     "noEntries": "No entries yet",
+    "splitTransactions": "Transaction splits",
     "help": {
       "title": "How to use Adjustments",
       "tips": [

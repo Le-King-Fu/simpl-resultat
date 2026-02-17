@@ -290,6 +290,7 @@
     "selectAdjustment": "Sélectionnez un ajustement",
     "category": "Catégorie",
     "noEntries": "Aucune entrée",
+    "splitTransactions": "Répartitions de transactions",
     "help": {
       "title": "Comment utiliser les Ajustements",
       "tips": [

@@ -272,6 +272,21 @@ export async function autoCategorizeTransactions(): Promise<number> {
   return count;
 }
 
+export async function getSplitParentTransactions(): Promise<TransactionRow[]> {
+  const db = await getDb();
+  return db.select<TransactionRow[]>(
+    `SELECT t.id, t.date, t.description, t.amount, t.category_id,
+            c.name AS category_name, c.color AS category_color,
+            s.name AS source_name, t.notes, t.is_manually_categorized,
+            t.is_split
+     FROM transactions t
+     LEFT JOIN categories c ON t.category_id = c.id
+     LEFT JOIN import_sources s ON t.source_id = s.id
+     WHERE t.is_split = 1 AND t.parent_transaction_id IS NULL
+     ORDER BY t.date DESC`
+  );
+}
+
 export async function getSplitChildren(parentId: number): Promise<SplitChild[]> {
   const db = await getDb();
   return db.select<SplitChild[]>(

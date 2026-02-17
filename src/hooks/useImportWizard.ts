@@ -880,8 +880,7 @@ export function useImportWizard() {
         encoding: state.sourceConfig.encoding,
       });
 
-      const preprocessed = preprocessQuotedCSV(content);
-      const result = runAutoDetect(preprocessed);
+      const result = runAutoDetect(content);
 
       if (result) {
         const newConfig = {

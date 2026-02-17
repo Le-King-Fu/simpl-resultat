@@ -67,32 +67,80 @@ export function autoDetectConfig(rawContent: string): AutoDetectResult | null {
   const data = parsed.data as string[][];
   if (data.length < 2) return null;
 
+  // Step 1b: Detect preamble lines to skip
+  // Find the expected column count (most frequent count > 1)
+  const colCountFreq = new Map<number, number>();
+  for (const row of data) {
+    const len = row.length;
+    if (len <= 1) continue;
+    colCountFreq.set(len, (colCountFreq.get(len) || 0) + 1);
+  }
+  let expectedColCount = 0;
+  let maxColFreq = 0;
+  for (const [count, freq] of colCountFreq) {
+    if (freq > maxColFreq) {
+      maxColFreq = freq;
+      expectedColCount = count;
+    }
+  }
+
+  // Skip leading rows that don't match the expected column count
+  let skipLines = 0;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].length >= expectedColCount) break;
+    skipLines++;
+  }
+
+  const effectiveData = data.slice(skipLines);
+  if (effectiveData.length < 2) return null;
+
   // Step 2: Detect header
-  const hasHeader = detectHeader(data[0]);
+  const hasHeader = detectHeader(effectiveData[0]);
 
   const dataStartIdx = hasHeader ? 1 : 0;
-  const sampleRows = data.slice(dataStartIdx, dataStartIdx + 20);
+  const sampleRows = effectiveData.slice(dataStartIdx, dataStartIdx + 20);
   if (sampleRows.length === 0) return null;
 
-  const colCount = Math.max(...data.slice(0, 10).map((r) => r.length));
+  const colCount = Math.max(...effectiveData.slice(0, 10).map((r) => r.length));
 
   // Step 3: Detect date column + format
   const dateResult = detectDateColumn(sampleRows, colCount);
   if (!dateResult) return null;
 
+  // Step 3b: Find ALL date-like columns (to exclude from amount candidates)
+  const dateLikeCols = new Set<number>();
+  for (let col = 0; col < colCount; col++) {
+    for (const fmt of DATE_FORMATS) {
+      let success = 0;
+      let total = 0;
+      for (const row of sampleRows) {
+        const cell = row[col]?.trim();
+        if (!cell) continue;
+        total++;
+        if (parseDate(cell, fmt)) success++;
+      }
+      if (total > 0 && success / total >= 0.8) {
+        dateLikeCols.add(col);
+        break;
+      }
+    }
+  }
+
   // Step 4: Detect numeric columns
   const numericCols = detectNumericColumns(sampleRows, colCount);
 
-  // Step 5: Detect balance columns and exclude them
+  // Step 5: Detect balance columns and exclude them + date-like columns
   const balanceCols = detectBalanceColumns(sampleRows, numericCols);
-  const amountCandidates = numericCols.filter((c) => !balanceCols.has(c));
+  const amountCandidates = numericCols.filter(
+    (c) => !balanceCols.has(c) && !dateLikeCols.has(c)
+  );
 
   // Step 6: Detect description column
   const descriptionCol = detectDescriptionColumn(
     sampleRows,
     colCount,
     dateResult.column,
-    new Set([...numericCols])
+    new Set([...numericCols, ...dateLikeCols])
   );
 
   // Step 7: Determine amount mode
@@ -117,7 +165,7 @@ export function autoDetectConfig(rawContent: string): AutoDetectResult | null {
   return {
     delimiter,
     hasHeader,
-    skipLines: 0,
+    skipLines,
     dateFormat: dateResult.format,
     columnMapping: mapping,
     amountMode: amountResult.mode,
@@ -135,12 +183,24 @@ function detectDelimiter(lines: string[]): string | null {
         Papa.parse(line, { delimiter: delim }).data[0] as string[]
     ).map((row) => row.length);
 
-    // All lines should give consistent column count > 1
-    if (counts.length === 0 || counts[0] <= 1) continue;
+    // Find the most frequent column count > 1 (tolerates preamble lines)
+    const countFreq = new Map<number, number>();
+    for (const c of counts) {
+      if (c <= 1) continue;
+      countFreq.set(c, (countFreq.get(c) || 0) + 1);
+    }
+    if (countFreq.size === 0) continue;
 
-    const firstCount = counts[0];
-    const consistent = counts.filter((c) => c === firstCount).length;
-    const score = (consistent / counts.length) * firstCount;
+    let modeCount = 0;
+    let modeFreq = 0;
+    for (const [count, freq] of countFreq) {
+      if (freq > modeFreq || (freq === modeFreq && count > modeCount)) {
+        modeFreq = freq;
+        modeCount = count;
+      }
+    }
+
+    const score = (modeFreq / counts.length) * modeCount;
 
     if (score > bestScore) {
       bestScore = score;
@@ -409,8 +469,39 @@ function detectAmountMode(
     }
   }
 
-  // No complementary pair found — use first candidate as single amount
-  return detectSingleAmount(rows, amountCandidates[0]);
+  // No complementary pair found — pick best single amount column
+  const bestCol = pickBestAmountColumn(rows, amountCandidates);
+  return detectSingleAmount(rows, bestCol);
+}
+
+/** Pick the best amount column: prefer columns with decimal values (cents). */
+function pickBestAmountColumn(rows: string[][], candidates: number[]): number {
+  let bestCol = candidates[0];
+  let bestScore = -1;
+
+  for (const col of candidates) {
+    let decimalCount = 0;
+    let nonEmpty = 0;
+
+    for (const row of rows) {
+      const cell = row[col]?.trim();
+      if (!cell) continue;
+      const val = parseFrenchAmount(cell);
+      if (isNaN(val)) continue;
+      nonEmpty++;
+      if (!Number.isInteger(val)) {
+        decimalCount++;
+      }
+    }
+
+    const score = nonEmpty > 0 ? decimalCount / nonEmpty : 0;
+    if (score > bestScore) {
+      bestScore = score;
+      bestCol = col;
+    }
+  }
+
+  return bestCol;
 }
 
 function detectSingleAmount(
