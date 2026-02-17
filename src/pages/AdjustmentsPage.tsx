@@ -112,16 +112,21 @@ export default function AdjustmentsPage() {
       ) : (
         <div className="flex gap-6" style={{ minHeight: "calc(100vh - 180px)" }}>
           <div className="w-1/3 bg-[var(--card)] rounded-xl border border-[var(--border)] p-3 overflow-y-auto">
-            <AdjustmentListPanel
-              adjustments={state.adjustments}
-              selectedId={state.selectedAdjustmentId}
-              onSelect={selectAdjustment}
-              entriesByAdjustment={entriesMap}
-            />
+            {state.adjustments.length > 0 && (
+              <AdjustmentListPanel
+                adjustments={state.adjustments}
+                selectedId={state.selectedAdjustmentId}
+                onSelect={selectAdjustment}
+                entriesByAdjustment={entriesMap}
+              />
+            )}
 
             {splitTransactions.length > 0 && (
               <>
-                <div className="flex items-center gap-2 mt-4 mb-2 px-1">
+                {state.adjustments.length > 0 && (
+                  <div className="border-t border-[var(--border)] my-3" />
+                )}
+                <div className="flex items-center gap-2 mb-2 px-1">
                   <Split size={14} className="text-[var(--foreground)]" />
                   <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wide">
                     {t("adjustments.splitTransactions")}
@@ -150,6 +155,12 @@ export default function AdjustmentsPage() {
                   ))}
                 </div>
               </>
+            )}
+
+            {state.adjustments.length === 0 && splitTransactions.length === 0 && (
+              <div className="flex items-center justify-center h-full text-[var(--muted-foreground)] text-sm">
+                {t("common.noResults")}
+              </div>
             )}
           </div>
           <AdjustmentDetailPanel

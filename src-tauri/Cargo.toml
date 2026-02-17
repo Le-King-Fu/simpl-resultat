@@ -1,6 +1,6 @@
 [package]
 name = "simpl-result"
-version = "0.3.4"
+version = "0.3.5"
 description = "Personal finance management app"
 authors = ["you"]
 edition = "2021"

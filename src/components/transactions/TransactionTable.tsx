@@ -180,7 +180,7 @@ export default function TransactionTable({
                           onClick={() => setSplitRow(row)}
                           className={`p-1 rounded hover:bg-[var(--muted)] transition-colors shrink-0 ${
                             row.is_split
-                              ? "text-[var(--primary)]"
+                              ? "text-orange-500"
                               : "text-[var(--muted-foreground)]"
                           }`}
                           title={t("transactions.splitAdjustment")}
