@@ -9,15 +9,57 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: windows-latest
-          - platform: ubuntu-22.04
+  build-windows:
+    runs-on: windows-latest
 
-    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Simpl'Résultat ${{ github.ref_name }}"
+          releaseBody: |
+            ## Installation
+
+            **Windows** : Téléchargez le fichier `.exe` ci-dessous et lancez l'installation.
+
+            > **Note :** Windows SmartScreen peut afficher un avertissement car l'application n'est pas signée.
+            > Cliquez sur **« Informations complémentaires »** puis **« Exécuter quand même »**.
+
+            > **Important :** Si vous aviez installé une version précédente via le fichier `.msi`, veuillez d'abord la désinstaller (Paramètres Windows > Applications) avant d'installer cette version.
+
+            **Linux** : Téléchargez le fichier `.deb` ou `.AppImage` ci-dessous.
+          releaseDraft: false
+          prerelease: false
+          updaterJsonPreferNsis: true
+
+  build-linux:
+    needs: build-windows
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -38,7 +80,6 @@ jobs:
           workspaces: src-tauri
 
       - name: Install Linux dependencies
-        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
@@ -58,10 +99,12 @@ jobs:
           releaseBody: |
             ## Installation
 
-            **Windows** : Téléchargez le fichier `.msi` ou `.exe` ci-dessous et lancez l'installation.
+            **Windows** : Téléchargez le fichier `.exe` ci-dessous et lancez l'installation.
 
             > **Note :** Windows SmartScreen peut afficher un avertissement car l'application n'est pas signée.
             > Cliquez sur **« Informations complémentaires »** puis **« Exécuter quand même »**.
+
+            > **Important :** Si vous aviez installé une version précédente via le fichier `.msi`, veuillez d'abord la désinstaller (Paramètres Windows > Applications) avant d'installer cette version.
 
             **Linux** : Téléchargez le fichier `.deb` ou `.AppImage` ci-dessous.
           releaseDraft: false
