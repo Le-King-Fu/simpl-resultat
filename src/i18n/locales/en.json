@@ -468,14 +468,19 @@
     "tipsHeader": "Tips",
     "gettingStarted": {
       "title": "Getting Started",
-      "overview": "Simpl'Result helps you track your personal finances by importing bank statements, categorizing transactions, setting budgets, and generating reports.",
+      "overview": "Simpl'Result helps you track your personal finances by importing bank statements, categorizing transactions, setting budgets, and generating reports. The app is available on Windows and Linux.",
       "features": [
         "Import CSV bank statements from multiple sources",
         "Automatic and manual transaction categorization",
+        "Split a transaction across multiple categories",
         "Budget planning with monthly and annual views",
-        "Visual reports and trend analysis"
+        "Visual reports and interactive charts with context menu",
+        "Multiple profiles with separate databases and optional PIN",
+        "Dark mode with warm gray palette",
+        "Data export and import with optional AES-256 encryption"
       ],
       "steps": [
+        "On first launch, choose or create a profile — each profile has its own database",
         "Go to Settings and set your import folder — create one subfolder per bank account",
         "Place your CSV bank statements in the corresponding subfolder",
         "Open the Import page and configure your source (column mapping, delimiter, date format)",
@@ -485,8 +490,31 @@
       ],
       "tips": [
         "You can switch between English and French using the language selector in the sidebar",
+        "Toggle dark mode using the button in the sidebar",
         "Each page has a help icon (?) in the header with quick tips",
         "Your data is stored locally on your computer — nothing is sent to the cloud"
+      ]
+    },
+    "profiles": {
+      "title": "Profiles",
+      "overview": "Manage multiple independent profiles, each with its own database. Ideal for separating personal and business finances, or for multiple users on the same computer.",
+      "features": [
+        "Create multiple profiles with custom names and colors",
+        "Each profile has its own separate database",
+        "Optional PIN protection (numeric code)",
+        "Quick profile switching from the sidebar",
+        "Delete a profile along with all its data"
+      ],
+      "steps": [
+        "Click the profile selector in the sidebar to see available profiles",
+        "Click Manage Profiles to create, edit, or delete profiles",
+        "Create a new profile by choosing a name, color, and optional PIN",
+        "Switch between profiles by clicking the one you want in the selector"
+      ],
+      "tips": [
+        "A default profile is automatically created on first launch",
+        "The PIN is requested each time you access a protected profile",
+        "Deleting a profile permanently removes all its data — this action cannot be undone"
       ]
     },
     "dashboard": {
@@ -494,19 +522,22 @@
       "overview": "The Dashboard gives you an at-a-glance summary of your financial situation for a selected time period.",
       "features": [
         "Balance, income, and expense summary cards",
-        "Expense breakdown by category (pie chart)",
+        "Expense breakdown by category (pie chart with SVG patterns)",
         "Recent transactions list",
-        "Adjustable time period selector"
+        "Adjustable time period selector",
+        "Context menu (right-click) to hide a category or view its transactions"
       ],
       "steps": [
         "Use the period selector in the top-right to choose a time range (month, 3 months, year, etc.)",
         "Review the summary cards for your balance, total income, and total expenses",
         "Check the pie chart to see how your spending is distributed across categories",
+        "Right-click a category in the chart to hide it or view its transaction details",
         "Scroll down to see your most recent transactions"
       ],
       "tips": [
         "The balance is calculated as income minus expenses for the selected period",
-        "Click on a category in the pie chart to view its transactions"
+        "Hidden categories appear as dismissible chips above the chart — click Show All to restore them",
+        "SVG patterns (lines, dots, crosshatch) help distinguish categories beyond just color"
       ]
     },
     "import": {
@@ -543,6 +574,7 @@
         "Inline category assignment via dropdown",
         "Auto-categorize based on keyword rules",
         "Add keywords directly from a transaction",
+        "Split a transaction across multiple categories",
         "Transaction notes"
       ],
       "steps": [
@@ -550,12 +582,14 @@
         "Click a column header to sort ascending or descending",
         "To categorize a transaction, click its category dropdown and select a category",
         "To auto-categorize all uncategorized transactions, click the Auto-categorize button",
-        "To add a keyword rule from a transaction, click the + icon and enter the keyword"
+        "To add a keyword rule from a transaction, click the + icon and enter the keyword",
+        "To split a transaction across categories, use the Split button and add amounts per category"
       ],
       "tips": [
         "Use the quick period buttons (This month, Last month, etc.) for fast date filtering",
         "Auto-categorize only affects uncategorized transactions — it won't overwrite manual assignments",
-        "Adding a keyword from a transaction pre-fills the category so you can quickly build rules"
+        "Adding a keyword from a transaction pre-fills the category so you can quickly build rules",
+        "Split transactions display a visual indicator and show the breakdown details"
       ]
     },
     "categories": {
@@ -566,12 +600,15 @@
         "Three category types: Expense, Income, Transfer",
         "Keyword rules with priority levels for auto-categorization",
         "Custom colors for chart display",
+        "Drag-and-drop to reorder categories or change their parent",
         "Toggle categories as inputable or non-inputable",
+        "All Keywords view to see all rules at a glance",
         "Re-initialize categories to defaults"
       ],
       "steps": [
         "Click Add Category to create a new category — choose a name, type, and optional parent",
         "Select a category in the tree to view its details and keyword list",
+        "Drag and drop a category in the tree to reorder it or move it under a different parent",
         "Add keywords that match transaction descriptions for auto-categorization",
         "Set keyword priority to resolve conflicts when multiple categories match",
         "Use the color picker to assign a custom color for charts"
@@ -579,25 +616,29 @@
       "tips": [
         "Non-inputable categories are hidden from budget and transaction dropdowns but still visible in reports",
         "Higher priority keywords win when multiple categories match the same transaction",
+        "Use the All Keywords view to get a global overview of your categorization rules",
         "Use Re-initialize to reset categories to defaults — this will unlink all transaction categories"
       ]
     },
     "adjustments": {
       "title": "Adjustments",
-      "overview": "Add manual entries that don't come from bank imports — useful for expected expenses, income, or corrections not yet in your statements.",
+      "overview": "Add manual entries that don't come from bank imports, and view transaction splits created from the Transactions page.",
       "features": [
         "Create named adjustment groups with multiple entries",
         "Assign a category to each entry",
-        "Mark adjustments as recurring"
+        "Mark adjustments as recurring",
+        "View transaction splits in a dedicated section"
       ],
       "steps": [
         "Click New Adjustment to create an adjustment group",
         "Add entries with a description, amount, date, and category",
-        "Toggle the recurring flag if the adjustment should repeat each period"
+        "Toggle the recurring flag if the adjustment should repeat each period",
+        "View the Transaction Splits section to see splits created from the Transactions page"
       ],
       "tips": [
         "Adjustments appear in your budget actuals alongside imported transactions",
-        "Use adjustments for planned expenses that haven't hit your bank account yet"
+        "Use adjustments for planned expenses that haven't hit your bank account yet",
+        "Transaction splits are created from the Transactions page and appear here automatically"
       ]
     },
     "budget": {
@@ -630,31 +671,37 @@
         "Monthly Trends: income vs. expenses over time (bar chart)",
         "Expenses by Category: spending breakdown (pie chart)",
         "Category Over Time: track how each category evolves (line chart)",
-        "Budget vs Actual: monthly and year-to-date comparison table"
+        "Budget vs Actual: monthly and year-to-date comparison table",
+        "SVG patterns (lines, dots, crosshatch) to distinguish categories",
+        "Context menu (right-click) to hide a category or view its transactions"
       ],
       "steps": [
         "Use the tabs to switch between Trends, By Category, Over Time, and Budget vs Actual views",
         "Adjust the time period using the period selector",
-        "In the pie chart, click a category to hide/show it",
+        "Right-click a category in any chart to hide it or view its transaction details",
+        "Hidden categories appear as dismissible chips above the chart — click them to show again",
         "In Budget vs Actual, toggle between Monthly and Year-to-Date views"
       ],
       "tips": [
         "Hidden categories are remembered while you stay on the page — click Show All to reset",
         "The period selector applies to all chart tabs simultaneously",
-        "Budget vs Actual shows dollar and percentage variance for each category"
+        "Budget vs Actual shows dollar and percentage variance for each category",
+        "SVG patterns help colorblind users distinguish categories in charts"
       ]
     },
     "settings": {
       "title": "Settings",
-      "overview": "Configure app preferences, check for updates, and manage your data with export/import tools.",
+      "overview": "Configure app preferences, check for updates, access the user guide, and manage your data with export/import tools.",
       "features": [
         "App version display",
+        "Complete user guide accessible directly from settings",
         "Automatic update checker with one-click install",
         "Data export (transactions, categories, or both) in JSON or CSV format",
         "Data import from a previously exported file",
-        "Optional encryption for exported files"
+        "Optional AES-256-GCM encryption for exported files"
       ],
       "steps": [
+        "Click User Guide to access the full documentation",
         "Click Check for Updates to see if a new version is available",
         "Use the Data Management section to export or import your data",
         "When exporting, choose what to include and optionally set a password for encryption",
@@ -663,7 +710,8 @@
       "tips": [
         "Updates only replace the app binary — your database is never modified",
         "Change the app language using the language selector in the sidebar",
-        "Export regularly to keep a backup of your data"
+        "Export regularly to keep a backup of your data",
+        "The user guide can be printed or exported to PDF via the Print button"
       ]
     }
   },

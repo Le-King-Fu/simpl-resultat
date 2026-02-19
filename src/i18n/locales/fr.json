@@ -468,14 +468,19 @@
     "tipsHeader": "Astuces",
     "gettingStarted": {
       "title": "Premiers pas",
-      "overview": "Simpl'Résultat vous aide à suivre vos finances personnelles en important des relevés bancaires, en catégorisant les transactions, en planifiant des budgets et en générant des rapports.",
+      "overview": "Simpl'Résultat vous aide à suivre vos finances personnelles en important des relevés bancaires, en catégorisant les transactions, en planifiant des budgets et en générant des rapports. L'application est disponible sur Windows et Linux.",
       "features": [
         "Importation de relevés bancaires CSV depuis plusieurs sources",
         "Catégorisation automatique et manuelle des transactions",
+        "Répartition (split) d'une transaction sur plusieurs catégories",
         "Planification budgétaire avec vues mensuelles et annuelles",
-        "Rapports visuels et analyse des tendances"
+        "Rapports visuels et graphiques interactifs avec menu contextuel",
+        "Profils multiples avec bases de données séparées et NIP optionnel",
+        "Mode sombre avec palette gris chaud",
+        "Export et import de données avec chiffrement AES-256 optionnel"
       ],
       "steps": [
+        "Au premier lancement, choisissez ou créez un profil — chaque profil a sa propre base de données",
         "Allez dans Paramètres et définissez votre dossier d'import — créez un sous-dossier par compte bancaire",
         "Placez vos relevés bancaires CSV dans le sous-dossier correspondant",
         "Ouvrez la page Import et configurez votre source (mapping des colonnes, délimiteur, format de date)",
@@ -485,8 +490,31 @@
       ],
       "tips": [
         "Vous pouvez basculer entre le français et l'anglais via le sélecteur de langue dans la barre latérale",
+        "Activez le mode sombre via le bouton dans la barre latérale",
         "Chaque page a une icône d'aide (?) dans l'en-tête avec des astuces rapides",
         "Vos données sont stockées localement sur votre ordinateur — rien n'est envoyé vers le cloud"
+      ]
+    },
+    "profiles": {
+      "title": "Profils",
+      "overview": "Gérez plusieurs profils indépendants, chacun avec sa propre base de données. Idéal pour séparer les finances personnelles et professionnelles, ou pour plusieurs utilisateurs sur un même ordinateur.",
+      "features": [
+        "Création de profils multiples avec noms et couleurs personnalisés",
+        "Chaque profil possède sa propre base de données séparée",
+        "Protection optionnelle par NIP (code numérique)",
+        "Changement de profil rapide depuis la barre latérale",
+        "Suppression de profil avec toutes ses données"
+      ],
+      "steps": [
+        "Cliquez sur le sélecteur de profil dans la barre latérale pour voir les profils disponibles",
+        "Cliquez sur Gérer les profils pour créer, modifier ou supprimer des profils",
+        "Créez un nouveau profil en choisissant un nom, une couleur et un NIP optionnel",
+        "Basculez entre les profils en cliquant sur celui de votre choix dans le sélecteur"
+      ],
+      "tips": [
+        "Un profil par défaut est créé automatiquement au premier lancement",
+        "Le NIP est demandé à chaque fois que vous accédez à un profil protégé",
+        "La suppression d'un profil supprime définitivement toutes ses données — cette action est irréversible"
       ]
     },
     "dashboard": {
@@ -494,19 +522,22 @@
       "overview": "Le tableau de bord vous donne un aperçu rapide de votre situation financière pour une période sélectionnée.",
       "features": [
         "Cartes résumées du solde, des revenus et des dépenses",
-        "Répartition des dépenses par catégorie (graphique circulaire)",
+        "Répartition des dépenses par catégorie (graphique circulaire avec motifs SVG)",
         "Liste des transactions récentes",
-        "Sélecteur de période ajustable"
+        "Sélecteur de période ajustable",
+        "Menu contextuel (clic droit) pour masquer une catégorie ou voir ses transactions"
       ],
       "steps": [
         "Utilisez le sélecteur de période en haut à droite pour choisir une plage de temps (mois, 3 mois, année, etc.)",
         "Consultez les cartes résumées pour votre solde, revenus totaux et dépenses totales",
         "Vérifiez le graphique circulaire pour voir comment vos dépenses sont réparties par catégorie",
+        "Cliquez droit sur une catégorie dans le graphique pour la masquer ou voir le détail de ses transactions",
         "Faites défiler vers le bas pour voir vos transactions les plus récentes"
       ],
       "tips": [
         "Le solde est calculé comme les revenus moins les dépenses pour la période sélectionnée",
-        "Cliquez sur une catégorie dans le graphique circulaire pour voir ses transactions"
+        "Les catégories masquées apparaissent sous forme de pastilles au-dessus du graphique — cliquez sur Tout afficher pour les restaurer",
+        "Les motifs SVG (lignes, points, hachures) aident à distinguer les catégories au-delà des couleurs"
       ]
     },
     "import": {
@@ -543,6 +574,7 @@
         "Assignation de catégorie en ligne via menu déroulant",
         "Auto-catégorisation basée sur les règles de mots-clés",
         "Ajout de mots-clés directement depuis une transaction",
+        "Répartition (split) d'une transaction sur plusieurs catégories",
         "Notes sur les transactions"
       ],
       "steps": [
@@ -550,12 +582,14 @@
         "Cliquez sur un en-tête de colonne pour trier par ordre croissant ou décroissant",
         "Pour catégoriser une transaction, cliquez sur son menu déroulant de catégorie et sélectionnez une catégorie",
         "Pour auto-catégoriser toutes les transactions non catégorisées, cliquez sur le bouton Auto-catégoriser",
-        "Pour ajouter une règle de mot-clé depuis une transaction, cliquez sur l'icône + et entrez le mot-clé"
+        "Pour ajouter une règle de mot-clé depuis une transaction, cliquez sur l'icône + et entrez le mot-clé",
+        "Pour répartir une transaction sur plusieurs catégories, utilisez le bouton Répartition et ajoutez les montants par catégorie"
       ],
       "tips": [
         "Utilisez les boutons de période rapide (Ce mois, Mois dernier, etc.) pour filtrer rapidement par date",
         "L'auto-catégorisation n'affecte que les transactions non catégorisées — elle n'écrase pas les assignations manuelles",
-        "Ajouter un mot-clé depuis une transaction pré-remplit la catégorie pour construire rapidement vos règles"
+        "Ajouter un mot-clé depuis une transaction pré-remplit la catégorie pour construire rapidement vos règles",
+        "Les transactions réparties affichent un indicateur visuel et le détail de la répartition"
       ]
     },
     "categories": {
@@ -566,12 +600,15 @@
         "Trois types de catégories : Dépense, Revenu, Transfert",
         "Règles de mots-clés avec niveaux de priorité pour l'auto-catégorisation",
         "Couleurs personnalisées pour l'affichage des graphiques",
+        "Glisser-déposer pour réordonner les catégories ou changer leur parent",
         "Basculer les catégories en saisissable ou non-saisissable",
+        "Vue « Tous les mots-clés » pour voir l'ensemble des règles",
         "Réinitialiser les catégories aux valeurs par défaut"
       ],
       "steps": [
         "Cliquez sur Ajouter une catégorie pour créer une nouvelle catégorie — choisissez un nom, un type et un parent optionnel",
         "Sélectionnez une catégorie dans l'arbre pour voir ses détails et sa liste de mots-clés",
+        "Glissez-déposez une catégorie dans l'arbre pour la réordonner ou la déplacer sous un autre parent",
         "Ajoutez des mots-clés correspondant aux descriptions des transactions pour l'auto-catégorisation",
         "Définissez la priorité des mots-clés pour résoudre les conflits quand plusieurs catégories correspondent",
         "Utilisez le sélecteur de couleur pour assigner une couleur personnalisée pour les graphiques"
@@ -579,25 +616,29 @@
       "tips": [
         "Les catégories non-saisissables sont masquées du budget et des menus déroulants mais restent visibles dans les rapports",
         "Les mots-clés de priorité supérieure l'emportent quand plusieurs catégories correspondent à la même transaction",
+        "Utilisez la vue Tous les mots-clés pour avoir un aperçu global de vos règles de catégorisation",
         "Utilisez Réinitialiser pour revenir aux catégories par défaut — cela dissociera toutes les catégories des transactions"
       ]
     },
     "adjustments": {
       "title": "Ajustements",
-      "overview": "Ajoutez des entrées manuelles non issues de vos relevés bancaires — utile pour les dépenses prévues, revenus ou corrections pas encore dans vos relevés.",
+      "overview": "Ajoutez des entrées manuelles non issues de vos relevés bancaires, et consultez les répartitions de transactions créées depuis la page Transactions.",
       "features": [
         "Créer des groupes d'ajustement nommés avec plusieurs entrées",
         "Assigner une catégorie à chaque entrée",
-        "Marquer des ajustements comme récurrents"
+        "Marquer des ajustements comme récurrents",
+        "Consultation des répartitions (splits) de transactions dans une section dédiée"
       ],
       "steps": [
         "Cliquez sur Nouvel ajustement pour créer un groupe d'ajustement",
         "Ajoutez des entrées avec une description, un montant, une date et une catégorie",
-        "Activez le drapeau récurrent si l'ajustement doit se répéter à chaque période"
+        "Activez le drapeau récurrent si l'ajustement doit se répéter à chaque période",
+        "Consultez la section Répartitions de transactions pour voir les splits créés depuis la page Transactions"
       ],
       "tips": [
         "Les ajustements apparaissent dans vos réels de budget aux côtés des transactions importées",
-        "Utilisez les ajustements pour les dépenses prévues qui n'ont pas encore été débitées de votre compte"
+        "Utilisez les ajustements pour les dépenses prévues qui n'ont pas encore été débitées de votre compte",
+        "Les répartitions de transactions sont créées depuis la page Transactions et apparaissent automatiquement ici"
       ]
     },
     "budget": {
@@ -630,31 +671,37 @@
         "Tendances mensuelles : revenus vs dépenses dans le temps (graphique en barres)",
         "Dépenses par catégorie : répartition des dépenses (graphique circulaire)",
         "Catégories dans le temps : suivez l'évolution de chaque catégorie (graphique en ligne)",
-        "Budget vs Réel : tableau comparatif mensuel et cumul annuel"
+        "Budget vs Réel : tableau comparatif mensuel et cumul annuel",
+        "Motifs SVG (lignes, points, hachures) pour distinguer les catégories",
+        "Menu contextuel (clic droit) pour masquer une catégorie ou voir ses transactions"
       ],
       "steps": [
         "Utilisez les onglets pour basculer entre Tendances, Par catégorie, Dans le temps et Budget vs Réel",
         "Ajustez la période avec le sélecteur de période",
-        "Dans le graphique circulaire, cliquez sur une catégorie pour la masquer/afficher",
+        "Cliquez droit sur une catégorie dans un graphique pour la masquer ou voir le détail de ses transactions",
+        "Les catégories masquées apparaissent comme pastilles au-dessus du graphique — cliquez dessus pour les réafficher",
         "Dans Budget vs Réel, basculez entre les vues Mensuel et Cumul annuel"
       ],
       "tips": [
         "Les catégories masquées sont mémorisées tant que vous restez sur la page — cliquez sur Tout afficher pour réinitialiser",
         "Le sélecteur de période s'applique à tous les onglets de graphiques simultanément",
-        "Budget vs Réel affiche l'écart en dollars et en pourcentage pour chaque catégorie"
+        "Budget vs Réel affiche l'écart en dollars et en pourcentage pour chaque catégorie",
+        "Les motifs SVG aident les personnes daltoniennes à distinguer les catégories dans les graphiques"
       ]
     },
     "settings": {
       "title": "Paramètres",
-      "overview": "Configurez les préférences de l'application, vérifiez les mises à jour et gérez vos données avec les outils d'export/import.",
+      "overview": "Configurez les préférences de l'application, vérifiez les mises à jour, accédez au guide utilisateur et gérez vos données avec les outils d'export/import.",
       "features": [
         "Affichage de la version de l'application",
+        "Guide d'utilisation complet accessible directement depuis les paramètres",
         "Vérification automatique des mises à jour avec installation en un clic",
         "Export des données (transactions, catégories, ou les deux) en format JSON ou CSV",
         "Import des données depuis un fichier exporté précédemment",
-        "Chiffrement optionnel pour les fichiers exportés"
+        "Chiffrement AES-256-GCM optionnel pour les fichiers exportés"
       ],
       "steps": [
+        "Cliquez sur Guide d'utilisation pour accéder à la documentation complète",
         "Cliquez sur Vérifier les mises à jour pour voir si une nouvelle version est disponible",
         "Utilisez la section Gestion des données pour exporter ou importer vos données",
         "Lors de l'export, choisissez ce qu'il faut inclure et définissez optionnellement un mot de passe pour le chiffrement",
@@ -663,7 +710,8 @@
       "tips": [
         "Les mises à jour ne remplacent que le programme — votre base de données n'est jamais modifiée",
         "Changez la langue de l'application via le sélecteur de langue dans la barre latérale",
-        "Exportez régulièrement pour garder une sauvegarde de vos données"
+        "Exportez régulièrement pour garder une sauvegarde de vos données",
+        "Le guide d'utilisation peut être imprimé ou exporté en PDF via le bouton Imprimer"
       ]
     }
   },

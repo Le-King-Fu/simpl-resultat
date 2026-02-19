@@ -16,10 +16,12 @@ import {
   ListChecks,
   Footprints,
   Printer,
+  Users,
 } from "lucide-react";
 
 const SECTIONS = [
   { key: "gettingStarted", icon: Rocket },
+  { key: "profiles", icon: Users },
   { key: "dashboard", icon: LayoutDashboard },
   { key: "import", icon: Upload },
   { key: "transactions", icon: ArrowLeftRight },
