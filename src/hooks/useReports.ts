@@ -14,6 +14,8 @@ import { getBudgetVsActualData } from "../services/budgetService";
 interface ReportsState {
   tab: ReportTab;
   period: DashboardPeriod;
+  customDateFrom: string;
+  customDateTo: string;
   monthlyTrends: MonthlyTrendItem[];
   categorySpending: CategoryBreakdownItem[];
   categoryOverTime: CategoryOverTimeData;
@@ -33,13 +35,18 @@ type ReportsAction =
   | { type: "SET_CATEGORY_SPENDING"; payload: CategoryBreakdownItem[] }
   | { type: "SET_CATEGORY_OVER_TIME"; payload: CategoryOverTimeData }
   | { type: "SET_BUDGET_MONTH"; payload: { year: number; month: number } }
-  | { type: "SET_BUDGET_VS_ACTUAL"; payload: BudgetVsActualRow[] };
+  | { type: "SET_BUDGET_VS_ACTUAL"; payload: BudgetVsActualRow[] }
+  | { type: "SET_CUSTOM_DATES"; payload: { dateFrom: string; dateTo: string } };
 
 const now = new Date();
+const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
 const initialState: ReportsState = {
   tab: "trends",
   period: "6months",
+  customDateFrom: monthStartStr,
+  customDateTo: todayStr,
   monthlyTrends: [],
   categorySpending: [],
   categoryOverTime: { categories: [], data: [], colors: {}, categoryIds: {} },
@@ -70,13 +77,22 @@ function reducer(state: ReportsState, action: ReportsAction): ReportsState {
       return { ...state, budgetYear: action.payload.year, budgetMonth: action.payload.month };
     case "SET_BUDGET_VS_ACTUAL":
       return { ...state, budgetVsActual: action.payload, isLoading: false };
+    case "SET_CUSTOM_DATES":
+      return { ...state, period: "custom" as DashboardPeriod, customDateFrom: action.payload.dateFrom, customDateTo: action.payload.dateTo };
     default:
       return state;
   }
 }
 
-function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?: string } {
+function computeDateRange(
+  period: DashboardPeriod,
+  customDateFrom?: string,
+  customDateTo?: string,
+): { dateFrom?: string; dateTo?: string } {
   if (period === "all") return {};
+  if (period === "custom" && customDateFrom && customDateTo) {
+    return { dateFrom: customDateFrom, dateTo: customDateTo };
+  }
 
   const now = new Date();
   const year = now.getFullYear();
@@ -99,6 +115,9 @@ function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?
     case "12months":
       from = new Date(year, month - 11, 1);
       break;
+    default:
+      from = new Date(year, month, 1);
+      break;
   }
 
   const dateFrom = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, "0")}-${String(from.getDate()).padStart(2, "0")}`;
@@ -115,6 +134,8 @@ export function useReports() {
     period: DashboardPeriod,
     budgetYear: number,
     budgetMonth: number,
+    customFrom?: string,
+    customTo?: string,
   ) => {
     const fetchId = ++fetchIdRef.current;
     dispatch({ type: "SET_LOADING", payload: true });
@@ -123,21 +144,21 @@ export function useReports() {
     try {
       switch (tab) {
         case "trends": {
-          const { dateFrom, dateTo } = computeDateRange(period);
+          const { dateFrom, dateTo } = computeDateRange(period, customFrom, customTo);
           const data = await getMonthlyTrends(dateFrom, dateTo);
           if (fetchId !== fetchIdRef.current) return;
           dispatch({ type: "SET_MONTHLY_TRENDS", payload: data });
           break;
         }
         case "byCategory": {
-          const { dateFrom, dateTo } = computeDateRange(period);
+          const { dateFrom, dateTo } = computeDateRange(period, customFrom, customTo);
           const data = await getExpensesByCategory(dateFrom, dateTo);
           if (fetchId !== fetchIdRef.current) return;
           dispatch({ type: "SET_CATEGORY_SPENDING", payload: data });
           break;
         }
         case "overTime": {
-          const { dateFrom, dateTo } = computeDateRange(period);
+          const { dateFrom, dateTo } = computeDateRange(period, customFrom, customTo);
           const data = await getCategoryOverTime(dateFrom, dateTo);
           if (fetchId !== fetchIdRef.current) return;
           dispatch({ type: "SET_CATEGORY_OVER_TIME", payload: data });
@@ -160,8 +181,8 @@ export function useReports() {
   }, []);
 
   useEffect(() => {
-    fetchData(state.tab, state.period, state.budgetYear, state.budgetMonth);
-  }, [state.tab, state.period, state.budgetYear, state.budgetMonth, fetchData]);
+    fetchData(state.tab, state.period, state.budgetYear, state.budgetMonth, state.customDateFrom, state.customDateTo);
+  }, [state.tab, state.period, state.budgetYear, state.budgetMonth, state.customDateFrom, state.customDateTo, fetchData]);
 
   const setTab = useCallback((tab: ReportTab) => {
     dispatch({ type: "SET_TAB", payload: tab });
@@ -184,5 +205,9 @@ export function useReports() {
     dispatch({ type: "SET_BUDGET_MONTH", payload: { year: newYear, month: newMonth } });
   }, [state.budgetYear, state.budgetMonth]);
 
-  return { state, setTab, setPeriod, navigateBudgetMonth };
+  const setCustomDates = useCallback((dateFrom: string, dateTo: string) => {
+    dispatch({ type: "SET_CUSTOM_DATES", payload: { dateFrom, dateTo } });
+  }, []);
+
+  return { state, setTab, setPeriod, setCustomDates, navigateBudgetMonth };
 }

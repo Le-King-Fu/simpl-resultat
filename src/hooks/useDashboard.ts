@@ -16,6 +16,8 @@ interface DashboardState {
   categoryBreakdown: CategoryBreakdownItem[];
   recentTransactions: RecentTransaction[];
   period: DashboardPeriod;
+  customDateFrom: string;
+  customDateTo: string;
   isLoading: boolean;
   error: string | null;
 }
@@ -31,13 +33,20 @@ type DashboardAction =
         recentTransactions: RecentTransaction[];
       };
     }
-  | { type: "SET_PERIOD"; payload: DashboardPeriod };
+  | { type: "SET_PERIOD"; payload: DashboardPeriod }
+  | { type: "SET_CUSTOM_DATES"; payload: { dateFrom: string; dateTo: string } };
+
+const now = new Date();
+const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
 const initialState: DashboardState = {
   summary: { totalCount: 0, totalAmount: 0, incomeTotal: 0, expenseTotal: 0 },
   categoryBreakdown: [],
   recentTransactions: [],
   period: "month",
+  customDateFrom: monthStartStr,
+  customDateTo: todayStr,
   isLoading: false,
   error: null,
 };
@@ -58,13 +67,22 @@ function reducer(state: DashboardState, action: DashboardAction): DashboardState
       };
     case "SET_PERIOD":
       return { ...state, period: action.payload };
+    case "SET_CUSTOM_DATES":
+      return { ...state, period: "custom" as DashboardPeriod, customDateFrom: action.payload.dateFrom, customDateTo: action.payload.dateTo };
     default:
       return state;
   }
 }
 
-function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?: string } {
+function computeDateRange(
+  period: DashboardPeriod,
+  customDateFrom?: string,
+  customDateTo?: string,
+): { dateFrom?: string; dateTo?: string } {
   if (period === "all") return {};
+  if (period === "custom" && customDateFrom && customDateTo) {
+    return { dateFrom: customDateFrom, dateTo: customDateTo };
+  }
 
   const now = new Date();
   const year = now.getFullYear();
@@ -87,6 +105,9 @@ function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?
     case "12months":
       from = new Date(year, month - 11, 1);
       break;
+    default:
+      from = new Date(year, month, 1);
+      break;
   }
 
   const dateFrom = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, "0")}-${String(from.getDate()).padStart(2, "0")}`;
@@ -98,13 +119,13 @@ export function useDashboard() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const fetchIdRef = useRef(0);
 
-  const fetchData = useCallback(async (period: DashboardPeriod) => {
+  const fetchData = useCallback(async (period: DashboardPeriod, customFrom?: string, customTo?: string) => {
     const fetchId = ++fetchIdRef.current;
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
 
     try {
-      const { dateFrom, dateTo } = computeDateRange(period);
+      const { dateFrom, dateTo } = computeDateRange(period, customFrom, customTo);
       const [summary, categoryBreakdown, recentTransactions] = await Promise.all([
         getDashboardSummary(dateFrom, dateTo),
         getExpensesByCategory(dateFrom, dateTo),
@@ -123,12 +144,16 @@ export function useDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchData(state.period);
-  }, [state.period, fetchData]);
+    fetchData(state.period, state.customDateFrom, state.customDateTo);
+  }, [state.period, state.customDateFrom, state.customDateTo, fetchData]);
 
   const setPeriod = useCallback((period: DashboardPeriod) => {
     dispatch({ type: "SET_PERIOD", payload: period });
   }, []);
 
-  return { state, setPeriod };
+  const setCustomDates = useCallback((dateFrom: string, dateTo: string) => {
+    dispatch({ type: "SET_CUSTOM_DATES", payload: { dateFrom, dateTo } });
+  }, []);
+
+  return { state, setPeriod, setCustomDates };
 }

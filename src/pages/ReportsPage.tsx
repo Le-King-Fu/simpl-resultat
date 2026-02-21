@@ -13,8 +13,15 @@ import TransactionDetailModal from "../components/shared/TransactionDetailModal"
 
 const TABS: ReportTab[] = ["trends", "byCategory", "overTime", "budgetVsActual"];
 
-function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?: string } {
+function computeDateRange(
+  period: DashboardPeriod,
+  customDateFrom?: string,
+  customDateTo?: string,
+): { dateFrom?: string; dateTo?: string } {
   if (period === "all") return {};
+  if (period === "custom" && customDateFrom && customDateTo) {
+    return { dateFrom: customDateFrom, dateTo: customDateTo };
+  }
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -26,6 +33,7 @@ function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?
     case "3months": from = new Date(year, month - 2, 1); break;
     case "6months": from = new Date(year, month - 5, 1); break;
     case "12months": from = new Date(year, month - 11, 1); break;
+    default: from = new Date(year, month, 1); break;
   }
   const dateFrom = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, "0")}-${String(from.getDate()).padStart(2, "0")}`;
   return { dateFrom, dateTo };
@@ -33,7 +41,7 @@ function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?
 
 export default function ReportsPage() {
   const { t } = useTranslation();
-  const { state, setTab, setPeriod, navigateBudgetMonth } = useReports();
+  const { state, setTab, setPeriod, setCustomDates, navigateBudgetMonth } = useReports();
 
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
   const [detailModal, setDetailModal] = useState<CategoryBreakdownItem | null>(null);
@@ -53,7 +61,7 @@ export default function ReportsPage() {
     setDetailModal(item);
   }, []);
 
-  const { dateFrom, dateTo } = computeDateRange(state.period);
+  const { dateFrom, dateTo } = computeDateRange(state.period, state.customDateFrom, state.customDateTo);
 
   return (
     <div className={state.isLoading ? "opacity-50 pointer-events-none" : ""}>
@@ -69,7 +77,13 @@ export default function ReportsPage() {
             onNavigate={navigateBudgetMonth}
           />
         ) : (
-          <PeriodSelector value={state.period} onChange={setPeriod} />
+          <PeriodSelector
+            value={state.period}
+            onChange={setPeriod}
+            customDateFrom={state.customDateFrom}
+            customDateTo={state.customDateTo}
+            onCustomDateChange={setCustomDates}
+          />
         )}
       </div>
 

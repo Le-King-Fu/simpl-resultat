@@ -11,8 +11,15 @@ import type { CategoryBreakdownItem, DashboardPeriod } from "../shared/types";
 
 const fmt = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
 
-function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?: string } {
+function computeDateRange(
+  period: DashboardPeriod,
+  customDateFrom?: string,
+  customDateTo?: string,
+): { dateFrom?: string; dateTo?: string } {
   if (period === "all") return {};
+  if (period === "custom" && customDateFrom && customDateTo) {
+    return { dateFrom: customDateFrom, dateTo: customDateTo };
+  }
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -24,6 +31,7 @@ function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?
     case "3months": from = new Date(year, month - 2, 1); break;
     case "6months": from = new Date(year, month - 5, 1); break;
     case "12months": from = new Date(year, month - 11, 1); break;
+    default: from = new Date(year, month, 1); break;
   }
   const dateFrom = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, "0")}-${String(from.getDate()).padStart(2, "0")}`;
   return { dateFrom, dateTo };
@@ -31,7 +39,7 @@ function computeDateRange(period: DashboardPeriod): { dateFrom?: string; dateTo?
 
 export default function DashboardPage() {
   const { t } = useTranslation();
-  const { state, setPeriod } = useDashboard();
+  const { state, setPeriod, setCustomDates } = useDashboard();
   const { summary, categoryBreakdown, recentTransactions, period, isLoading } = state;
 
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
@@ -81,7 +89,7 @@ export default function DashboardPage() {
     },
   ];
 
-  const { dateFrom, dateTo } = computeDateRange(period);
+  const { dateFrom, dateTo } = computeDateRange(period, state.customDateFrom, state.customDateTo);
 
   return (
     <div className={isLoading ? "opacity-50 pointer-events-none" : ""}>
@@ -90,7 +98,13 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
           <PageHelp helpKey="dashboard" />
         </div>
-        <PeriodSelector value={period} onChange={setPeriod} />
+        <PeriodSelector
+          value={period}
+          onChange={setPeriod}
+          customDateFrom={state.customDateFrom}
+          customDateTo={state.customDateTo}
+          onCustomDateChange={setCustomDates}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
