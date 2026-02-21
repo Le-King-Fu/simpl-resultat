@@ -26,8 +26,12 @@
       "6months": "6 mois",
       "12months": "12 mois",
       "year": "Cette année",
-      "all": "Tout"
+      "all": "Tout",
+      "custom": "Personnalisé"
     },
+    "dateFrom": "Du",
+    "dateTo": "Au",
+    "apply": "Appliquer",
     "help": {
       "title": "Comment utiliser le tableau de bord",
       "tips": [
@@ -343,6 +347,8 @@
     "overTime": "Catégories dans le temps",
     "trends": "Tendances mensuelles",
     "budgetVsActual": "Budget vs R\u00e9el",
+    "subtotalsOnTop": "Sous-totaux en haut",
+    "subtotalsOnBottom": "Sous-totaux en bas",
     "bva": {
       "monthly": "Mensuel",
       "ytd": "Cumul annuel",

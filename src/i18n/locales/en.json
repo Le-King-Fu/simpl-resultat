@@ -26,8 +26,12 @@
       "6months": "6 months",
       "12months": "12 months",
       "year": "This year",
-      "all": "All"
+      "all": "All",
+      "custom": "Custom"
     },
+    "dateFrom": "From",
+    "dateTo": "To",
+    "apply": "Apply",
     "help": {
       "title": "How to use the Dashboard",
       "tips": [
@@ -343,6 +347,8 @@
     "overTime": "Category Over Time",
     "trends": "Monthly Trends",
     "budgetVsActual": "Budget vs Actual",
+    "subtotalsOnTop": "Subtotals on top",
+    "subtotalsOnBottom": "Subtotals on bottom",
     "bva": {
       "monthly": "Monthly",
       "ytd": "Year-to-Date",

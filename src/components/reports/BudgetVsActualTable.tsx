@@ -1,5 +1,6 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ArrowUpDown } from "lucide-react";
 import type { BudgetVsActualRow } from "../../shared/types";
 
 const cadFormatter = (value: number) =>
@@ -22,8 +23,46 @@ interface BudgetVsActualTableProps {
   data: BudgetVsActualRow[];
 }
 
+const STORAGE_KEY = "subtotals-position";
+
+function reorderRows<T extends { is_parent: boolean; parent_id: number | null; category_id: number }>(
+  rows: T[],
+  subtotalsOnTop: boolean,
+): T[] {
+  if (subtotalsOnTop) return rows;
+  const groups: { parent: T | null; children: T[] }[] = [];
+  let current: { parent: T | null; children: T[] } | null = null;
+  for (const row of rows) {
+    if (row.is_parent) {
+      if (current) groups.push(current);
+      current = { parent: row, children: [] };
+    } else if (current && row.parent_id === current.parent?.category_id) {
+      current.children.push(row);
+    } else {
+      if (current) groups.push(current);
+      current = { parent: null, children: [row] };
+    }
+  }
+  if (current) groups.push(current);
+  return groups.flatMap(({ parent, children }) =>
+    parent ? [...children, parent] : children,
+  );
+}
+
 export default function BudgetVsActualTable({ data }: BudgetVsActualTableProps) {
   const { t } = useTranslation();
+  const [subtotalsOnTop, setSubtotalsOnTop] = useState(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === null ? true : stored === "top";
+  });
+
+  const toggleSubtotals = () => {
+    setSubtotalsOnTop((prev) => {
+      const next = !prev;
+      localStorage.setItem(STORAGE_KEY, next ? "top" : "bottom");
+      return next;
+    });
+  };
 
   if (data.length === 0) {
     return (
@@ -68,7 +107,17 @@ export default function BudgetVsActualTable({ data }: BudgetVsActualTableProps) 
   const totalYtdPct = totals.ytdBudget !== 0 ? totals.ytdVariation / Math.abs(totals.ytdBudget) : null;
 
   return (
-    <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-x-auto">
+    <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden">
+      <div className="flex justify-end px-3 py-2 border-b border-[var(--border)]">
+        <button
+          onClick={toggleSubtotals}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-[var(--muted-foreground)] hover:bg-[var(--muted)] transition-colors"
+        >
+          <ArrowUpDown size={13} />
+          {subtotalsOnTop ? t("reports.subtotalsOnTop") : t("reports.subtotalsOnBottom")}
+        </button>
+      </div>
+      <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-[var(--border)]">
@@ -117,7 +166,7 @@ export default function BudgetVsActualTable({ data }: BudgetVsActualTableProps) 
                   {section.label}
                 </td>
               </tr>
-              {section.rows.map((row) => {
+              {reorderRows(section.rows, subtotalsOnTop).map((row) => {
                 const isParent = row.is_parent;
                 const isChild = row.parent_id !== null && !row.is_parent;
                 return (
@@ -187,6 +236,7 @@ export default function BudgetVsActualTable({ data }: BudgetVsActualTableProps) 
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

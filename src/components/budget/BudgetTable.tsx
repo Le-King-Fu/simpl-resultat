@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowUpDown } from "lucide-react";
 import type { BudgetYearRow } from "../../shared/types";
 
 const fmt = new Intl.NumberFormat("en-CA", {
@@ -16,6 +16,32 @@ const MONTH_KEYS = [
   "months.sep", "months.oct", "months.nov", "months.dec",
 ] as const;
 
+const STORAGE_KEY = "subtotals-position";
+
+function reorderRows<T extends { is_parent: boolean; parent_id: number | null; category_id: number }>(
+  rows: T[],
+  subtotalsOnTop: boolean,
+): T[] {
+  if (subtotalsOnTop) return rows;
+  const groups: { parent: T | null; children: T[] }[] = [];
+  let current: { parent: T | null; children: T[] } | null = null;
+  for (const row of rows) {
+    if (row.is_parent) {
+      if (current) groups.push(current);
+      current = { parent: row, children: [] };
+    } else if (current && row.parent_id === current.parent?.category_id) {
+      current.children.push(row);
+    } else {
+      if (current) groups.push(current);
+      current = { parent: null, children: [row] };
+    }
+  }
+  if (current) groups.push(current);
+  return groups.flatMap(({ parent, children }) =>
+    parent ? [...children, parent] : children,
+  );
+}
+
 interface BudgetTableProps {
   rows: BudgetYearRow[];
   onUpdatePlanned: (categoryId: number, month: number, amount: number) => void;
@@ -27,6 +53,18 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
   const [editingCell, setEditingCell] = useState<{ categoryId: number; monthIdx: number } | null>(null);
   const [editingAnnual, setEditingAnnual] = useState<{ categoryId: number } | null>(null);
   const [editingValue, setEditingValue] = useState("");
+  const [subtotalsOnTop, setSubtotalsOnTop] = useState(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === null ? true : stored === "top";
+  });
+
+  const toggleSubtotals = () => {
+    setSubtotalsOnTop((prev) => {
+      const next = !prev;
+      localStorage.setItem(STORAGE_KEY, next ? "top" : "bottom");
+      return next;
+    });
+  };
   const inputRef = useRef<HTMLInputElement>(null);
   const annualInputRef = useRef<HTMLInputElement>(null);
 
@@ -258,7 +296,17 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
   };
 
   return (
-    <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-x-auto">
+    <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-hidden">
+      <div className="flex justify-end px-3 py-2 border-b border-[var(--border)]">
+        <button
+          onClick={toggleSubtotals}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-[var(--muted-foreground)] hover:bg-[var(--muted)] transition-colors"
+        >
+          <ArrowUpDown size={13} />
+          {subtotalsOnTop ? t("reports.subtotalsOnTop") : t("reports.subtotalsOnBottom")}
+        </button>
+      </div>
+      <div className="overflow-x-auto">
       <table className="w-full text-sm whitespace-nowrap">
         <thead>
           <tr className="border-b border-[var(--border)]">
@@ -289,7 +337,7 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
                     {t(typeLabelKeys[type])}
                   </td>
                 </tr>
-                {group.map((row) => renderRow(row))}
+                {reorderRows(group, subtotalsOnTop).map((row) => renderRow(row))}
               </Fragment>
             );
           })}
@@ -305,6 +353,7 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
