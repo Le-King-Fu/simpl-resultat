@@ -9,7 +9,7 @@
 **Stockage :** SQLite local (tauri-plugin-sql)
 **Langues supportées :** Français (FR) et Anglais (EN)
 **Plateformes :** Windows, Linux
-**Version actuelle :** 0.3.7
+**Version actuelle :** 0.3.8
 
 ---
 
