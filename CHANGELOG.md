@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.3.8]
+
+### Added
+- Custom date range picker for reports and dashboard
+- Toggle to position subtotals above or below detail rows
+- Display release notes from CHANGELOG in GitHub releases and in-app updater
+
 ## [0.3.7]
 
 ### Fixes
