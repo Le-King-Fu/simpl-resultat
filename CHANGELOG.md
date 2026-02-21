@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.3.7
+## [Unreleased]
+
+## [0.3.7]
 
 ### Fixes
 - Remove MSI bundle to prevent updater install path conflict

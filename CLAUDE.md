@@ -134,6 +134,10 @@ La documentation technique est centralisée dans `docs/` :
 - Décision technique structurante (choix de librairie, pattern architectural, changement de stratégie) → créer un nouvel ADR dans `docs/adr/`
 - Changement affectant l'utilisation de l'app → mettre à jour `docs/guide-utilisateur.md` et les traductions i18n correspondantes (`src/i18n/locales/fr.json`, `src/i18n/locales/en.json`, clés sous `docs.*`)
 
+**Règle CHANGELOG :** tout changement affectant le comportement utilisateur → ajouter une entrée sous `## [Unreleased]` dans `CHANGELOG.md`
+- Catégories : Added, Changed, Fixed, Removed
+- Format [Keep a Changelog](https://keepachangelog.com/). Le contenu est extrait automatiquement par le CI pour les release notes GitHub et affiché dans l'app.
+
 ---
 
 ## Points d'attention RS&DE / CRIC

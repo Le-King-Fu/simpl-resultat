@@ -15,6 +15,7 @@ type UpdateStatus =
 interface UpdaterState {
   status: UpdateStatus;
   version: string | null;
+  body: string | null;
   progress: number;
   contentLength: number | null;
   error: string | null;
@@ -23,7 +24,7 @@ interface UpdaterState {
 type UpdaterAction =
   | { type: "CHECK_START" }
   | { type: "UP_TO_DATE" }
-  | { type: "AVAILABLE"; version: string }
+  | { type: "AVAILABLE"; version: string; body: string | null }
   | { type: "DOWNLOAD_START" }
   | { type: "DOWNLOAD_PROGRESS"; downloaded: number; contentLength: number | null }
   | { type: "READY_TO_INSTALL" }
@@ -33,6 +34,7 @@ type UpdaterAction =
 const initialState: UpdaterState = {
   status: "idle",
   version: null,
+  body: null,
   progress: 0,
   contentLength: null,
   error: null,
@@ -45,7 +47,7 @@ function reducer(state: UpdaterState, action: UpdaterAction): UpdaterState {
     case "UP_TO_DATE":
       return { ...state, status: "upToDate", error: null };
     case "AVAILABLE":
-      return { ...state, status: "available", version: action.version, error: null };
+      return { ...state, status: "available", version: action.version, body: action.body, error: null };
     case "DOWNLOAD_START":
       return { ...state, status: "downloading", progress: 0, contentLength: null, error: null };
     case "DOWNLOAD_PROGRESS":
@@ -69,7 +71,7 @@ export function useUpdater() {
       const update = await check();
       if (update) {
         updateRef.current = update;
-        dispatch({ type: "AVAILABLE", version: update.version });
+        dispatch({ type: "AVAILABLE", version: update.version, body: update.body ?? null });
       } else {
         dispatch({ type: "UP_TO_DATE" });
       }

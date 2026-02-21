@@ -382,7 +382,8 @@
       "installButton": "Install and restart",
       "installing": "Installing...",
       "error": "Update failed",
-      "retryButton": "Retry"
+      "retryButton": "Retry",
+      "releaseNotes": "What's New"
     },
     "dataManagement": {
       "title": "Data Management",

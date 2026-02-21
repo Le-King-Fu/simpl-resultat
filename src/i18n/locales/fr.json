@@ -382,7 +382,8 @@
       "installButton": "Installer et redémarrer",
       "installing": "Installation en cours...",
       "error": "Erreur lors de la mise à jour",
-      "retryButton": "Réessayer"
+      "retryButton": "Réessayer",
+      "releaseNotes": "Nouveautés"
     },
     "dataManagement": {
       "title": "Gestion des données",

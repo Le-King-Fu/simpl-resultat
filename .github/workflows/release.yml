@@ -33,6 +33,25 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Extract changelog
+        id: changelog
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          # Extract section between ## [TAG] (or ## TAG) and next ## header
+          NOTES=$(sed -n "/^## \[${TAG}\]/,/^## /{/^## \[${TAG}\]/d;/^## /d;p}" CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            NOTES=$(sed -n "/^## ${TAG}/,/^## /{/^## ${TAG}/d;/^## /d;p}" CHANGELOG.md)
+          fi
+          # Trim leading/trailing blank lines
+          NOTES=$(echo "$NOTES" | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba}')
+          # Write to multiline output
+          {
+            echo "notes<<CHANGELOG_EOF"
+            echo "$NOTES"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -43,6 +62,10 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "Simpl'Résultat ${{ github.ref_name }}"
           releaseBody: |
+            ${{ steps.changelog.outputs.notes }}
+
+            ---
+
             ## Installation
 
             **Windows** : Téléchargez le fichier `.exe` ci-dessous et lancez l'installation.
@@ -87,6 +110,22 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Extract changelog
+        id: changelog
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          NOTES=$(sed -n "/^## \[${TAG}\]/,/^## /{/^## \[${TAG}\]/d;/^## /d;p}" CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            NOTES=$(sed -n "/^## ${TAG}/,/^## /{/^## ${TAG}/d;/^## /d;p}" CHANGELOG.md)
+          fi
+          NOTES=$(echo "$NOTES" | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba}')
+          {
+            echo "notes<<CHANGELOG_EOF"
+            echo "$NOTES"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -97,6 +136,10 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "Simpl'Résultat ${{ github.ref_name }}"
           releaseBody: |
+            ${{ steps.changelog.outputs.notes }}
+
+            ---
+
             ## Installation
 
             **Windows** : Téléchargez le fichier `.exe` ci-dessous et lancez l'installation.
