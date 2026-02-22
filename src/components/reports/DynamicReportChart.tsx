@@ -36,19 +36,25 @@ export default function DynamicReportChart({ config, result }: DynamicReportChar
       return { chartData: [], seriesKeys: [], seriesColors: {} };
     }
 
-    const colDim = config.columns[0];
+    const colDims = config.columns;
     const rowDim = config.rows[0];
     const measure = config.values[0] || "periodic";
 
-    // X-axis = first column dimension (or first row dimension if no columns)
-    const xDim = colDim || rowDim;
-    if (!xDim) return { chartData: [], seriesKeys: [], seriesColors: {} };
+    // X-axis = composite column key (or first row dimension if no columns)
+    const hasColDims = colDims.length > 0;
+    if (!hasColDims && !rowDim) return { chartData: [], seriesKeys: [], seriesColors: {} };
+
+    // Build composite column key per row
+    const getColKey = (r: typeof result.rows[0]) =>
+      colDims.map((d) => r.keys[d] || "").join(" — ");
 
     // Series = first row dimension (or no stacking if no rows, or first row if columns exist)
-    const seriesDim = colDim ? rowDim : undefined;
+    const seriesDim = hasColDims ? rowDim : undefined;
 
     // Collect unique x and series values
-    const xValues = [...new Set(result.rows.map((r) => r.keys[xDim]))].sort();
+    const xValues = hasColDims
+      ? [...new Set(result.rows.map(getColKey))].sort()
+      : [...new Set(result.rows.map((r) => r.keys[rowDim]))].sort();
     const seriesVals = seriesDim
       ? [...new Set(result.rows.map((r) => r.keys[seriesDim]))].sort()
       : [measure];
@@ -59,12 +65,14 @@ export default function DynamicReportChart({ config, result }: DynamicReportChar
       if (seriesDim) {
         for (const sv of seriesVals) {
           const matchingRows = result.rows.filter(
-            (r) => r.keys[xDim] === xVal && r.keys[seriesDim] === sv
+            (r) => (hasColDims ? getColKey(r) : r.keys[rowDim]) === xVal && r.keys[seriesDim] === sv
           );
           entry[sv] = matchingRows.reduce((sum, r) => sum + (r.measures[measure] || 0), 0);
         }
       } else {
-        const matchingRows = result.rows.filter((r) => r.keys[xDim] === xVal);
+        const matchingRows = result.rows.filter((r) =>
+          hasColDims ? getColKey(r) === xVal : r.keys[rowDim] === xVal
+        );
         entry[measure] = matchingRows.reduce((sum, r) => sum + (r.measures[measure] || 0), 0);
       }
       return entry;

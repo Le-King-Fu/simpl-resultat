@@ -23,7 +23,7 @@ interface PivotedRow {
 function pivotRows(
   rows: PivotResultRow[],
   rowDims: string[],
-  colDim: string | undefined,
+  colDims: string[],
   measures: string[],
 ): PivotedRow[] {
   const map = new Map<string, PivotedRow>();
@@ -38,7 +38,9 @@ function pivotRows(
       map.set(rowKey, pivoted);
     }
 
-    const colKey = colDim ? (row.keys[colDim] || "") : "__all__";
+    const colKey = colDims.length > 0
+      ? colDims.map((d) => row.keys[d] || "").join("\0")
+      : "__all__";
     if (!pivoted.cells[colKey]) pivoted.cells[colKey] = {};
     for (const m of measures) {
       pivoted.cells[colKey][m] = (pivoted.cells[colKey][m] || 0) + (row.measures[m] || 0);
@@ -107,14 +109,17 @@ export default function DynamicReportTable({ config, result }: DynamicReportTabl
   };
 
   const rowDims = config.rows;
-  const colDim = config.columns[0] || undefined;
-  const colValues = colDim ? result.columnValues : ["__all__"];
+  const colDims = config.columns;
+  const colValues = colDims.length > 0 ? result.columnValues : ["__all__"];
   const measures = config.values;
+
+  // Display label for a composite column key (joined with \0)
+  const colLabel = (compositeKey: string) => compositeKey.split("\0").join(" — ");
 
   // Pivot the flat SQL rows into one PivotedRow per unique row-key combo
   const pivotedRows = useMemo(
-    () => pivotRows(result.rows, rowDims, colDim, measures),
-    [result.rows, rowDims, colDim, measures],
+    () => pivotRows(result.rows, rowDims, colDims, measures),
+    [result.rows, rowDims, colDims, measures],
   );
 
   if (pivotedRows.length === 0) {
@@ -156,7 +161,7 @@ export default function DynamicReportTable({ config, result }: DynamicReportTabl
               {colValues.map((colVal) =>
                 measures.map((m) => (
                   <th key={`${colVal}-${m}`} className="text-right px-3 py-2 font-medium text-[var(--muted-foreground)] border-l border-[var(--border)]">
-                    {colDim ? (measures.length > 1 ? `${colVal} — ${measureLabel(m)}` : colVal) : measureLabel(m)}
+                    {colDims.length > 0 ? (measures.length > 1 ? `${colLabel(colVal)} — ${measureLabel(m)}` : colLabel(colVal)) : measureLabel(m)}
                   </th>
                 ))
               )}

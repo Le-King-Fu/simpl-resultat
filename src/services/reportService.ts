@@ -308,10 +308,10 @@ export async function getDynamicReportData(
     }
   }
 
-  // Extract distinct column values
-  const columnDim = config.columns[0];
-  const columnValues = columnDim
-    ? [...new Set(rows.map((r) => r.keys[columnDim]))].sort()
+  // Extract distinct column values (composite key when multiple column dimensions)
+  const colDims = config.columns;
+  const columnValues = colDims.length > 0
+    ? [...new Set(rows.map((r) => colDims.map((d) => r.keys[d] || "").join("\0")))].sort()
     : [];
 
   // Dimension labels
