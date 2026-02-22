@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.3.11]
+
+### Added
+- Dynamic Report: support multiple column dimensions (composite column keys)
+
+### Fixed
+- Dynamic Report: no longer affected by global page date filters — uses only its own panel filters
+
 ## [0.3.10]
 
 ### Added
