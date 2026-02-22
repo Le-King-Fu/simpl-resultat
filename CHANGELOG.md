@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Delete keywords from the "All Keywords" view
+
 ## [0.3.8]
 
 ### Added

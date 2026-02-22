@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import {
   getAllKeywordsWithCategory,
   type KeywordWithCategory,
@@ -15,10 +15,12 @@ function normalize(str: string): string {
 
 interface AllKeywordsPanelProps {
   onSelectCategory: (id: number) => void;
+  onRemove: (id: number) => void;
 }
 
 export default function AllKeywordsPanel({
   onSelectCategory,
+  onRemove,
 }: AllKeywordsPanelProps) {
   const { t } = useTranslation();
   const [keywords, setKeywords] = useState<KeywordWithCategory[]>([]);
@@ -89,6 +91,7 @@ export default function AllKeywordsPanel({
               </th>
               <th className="pb-2 font-medium">{t("categories.priority")}</th>
               <th className="pb-2 font-medium">{t("transactions.category")}</th>
+              <th className="pb-2 w-8"></th>
             </tr>
           </thead>
           <tbody>
@@ -109,6 +112,17 @@ export default function AllKeywordsPanel({
                       style={{ backgroundColor: k.category_color || "#6b7280" }}
                     />
                     {k.category_name}
+                  </button>
+                </td>
+                <td className="py-2">
+                  <button
+                    onClick={() => {
+                      onRemove(k.id);
+                      setKeywords((prev) => prev.filter((kw) => kw.id !== k.id));
+                    }}
+                    className="p-1 text-[var(--muted-foreground)] hover:text-[var(--negative)] transition-colors"
+                  >
+                    <X size={14} />
                   </button>
                 </td>
               </tr>

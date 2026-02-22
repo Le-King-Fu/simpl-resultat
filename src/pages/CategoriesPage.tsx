@@ -87,6 +87,7 @@ export default function CategoriesPage() {
             setShowAllKeywords(false);
             selectCategory(id);
           }}
+          onRemove={removeKeyword}
         />
       ) : (
         <div className="flex gap-6" style={{ minHeight: "calc(100vh - 180px)" }}>
