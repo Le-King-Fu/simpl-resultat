@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
-import type { PivotConfig, PivotFieldId, PivotMeasureId, PivotZone } from "../../shared/types";
+import type { PivotConfig, PivotFieldId, PivotFilterEntry, PivotMeasureId, PivotZone } from "../../shared/types";
 import { getDynamicFilterValues } from "../../services/reportService";
 
 const ALL_FIELDS: PivotFieldId[] = ["year", "month", "type", "level1", "level2"];
@@ -20,8 +20,13 @@ export default function DynamicReportPanel({ config, onChange, dateFrom, dateTo 
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Fields currently assigned somewhere
-  const assignedFields = new Set([...config.rows, ...config.columns, ...Object.keys(config.filters) as PivotFieldId[]]);
+  // A field is only "exhausted" if it's in all 3 zones (rows + columns + filters)
+  const inRows = new Set(config.rows);
+  const inColumns = new Set(config.columns);
+  const inFilters = new Set(Object.keys(config.filters) as PivotFieldId[]);
+  const assignedFields = new Set(
+    ALL_FIELDS.filter((f) => inRows.has(f) && inColumns.has(f) && inFilters.has(f))
+  );
   const assignedMeasures = new Set(config.values);
   const availableFields = ALL_FIELDS.filter((f) => !assignedFields.has(f));
   const availableMeasures = ALL_MEASURES.filter((m) => !assignedMeasures.has(m));
@@ -66,7 +71,7 @@ export default function DynamicReportPanel({ config, onChange, dateFrom, dateTo 
       const fieldId = menuTarget.id as PivotFieldId;
       if (zone === "rows") next.rows = [...next.rows, fieldId];
       else if (zone === "columns") next.columns = [...next.columns, fieldId];
-      else if (zone === "filters") next.filters = { ...next.filters, [fieldId]: [] };
+      else if (zone === "filters") next.filters = { ...next.filters, [fieldId]: { include: [], exclude: [] } };
     }
 
     setMenuTarget(null);
@@ -84,21 +89,42 @@ export default function DynamicReportPanel({ config, onChange, dateFrom, dateTo 
     onChange(next);
   };
 
-  const toggleFilterValue = (fieldId: string, value: string) => {
-    const current = config.filters[fieldId] || [];
-    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
-    onChange({ ...config, filters: { ...config.filters, [fieldId]: next } });
+  const toggleFilterInclude = (fieldId: string, value: string) => {
+    const entry: PivotFilterEntry = config.filters[fieldId] || { include: [], exclude: [] };
+    const isIncluded = entry.include.includes(value);
+    const newInclude = isIncluded ? entry.include.filter((v) => v !== value) : [...entry.include, value];
+    // Remove from exclude if adding to include
+    const newExclude = isIncluded ? entry.exclude : entry.exclude.filter((v) => v !== value);
+    onChange({ ...config, filters: { ...config.filters, [fieldId]: { include: newInclude, exclude: newExclude } } });
+  };
+
+  const toggleFilterExclude = (fieldId: string, value: string) => {
+    const entry: PivotFilterEntry = config.filters[fieldId] || { include: [], exclude: [] };
+    const isExcluded = entry.exclude.includes(value);
+    const newExclude = isExcluded ? entry.exclude.filter((v) => v !== value) : [...entry.exclude, value];
+    // Remove from include if adding to exclude
+    const newInclude = isExcluded ? entry.include : entry.include.filter((v) => v !== value);
+    onChange({ ...config, filters: { ...config.filters, [fieldId]: { include: newInclude, exclude: newExclude } } });
   };
 
   const fieldLabel = (id: string) => t(`reports.pivot.${id === "level1" ? "level1" : id === "level2" ? "level2" : id === "type" ? "categoryType" : id}`);
   const measureLabel = (id: string) => t(`reports.pivot.${id}`);
 
-  const zoneOptions: { zone: PivotZone; label: string; forMeasure: boolean }[] = [
-    { zone: "rows", label: t("reports.pivot.rows"), forMeasure: false },
-    { zone: "columns", label: t("reports.pivot.columns"), forMeasure: false },
-    { zone: "filters", label: t("reports.pivot.filters"), forMeasure: false },
-    { zone: "values", label: t("reports.pivot.values"), forMeasure: true },
-  ];
+  // Context menu only shows zones where the field is NOT already assigned
+  const getAvailableZones = (fieldId: string): PivotZone[] => {
+    const zones: PivotZone[] = [];
+    if (!inRows.has(fieldId as PivotFieldId)) zones.push("rows");
+    if (!inColumns.has(fieldId as PivotFieldId)) zones.push("columns");
+    if (!inFilters.has(fieldId as PivotFieldId)) zones.push("filters");
+    return zones;
+  };
+
+  const zoneLabels: Record<PivotZone, string> = {
+    rows: t("reports.pivot.rows"),
+    columns: t("reports.pivot.columns"),
+    filters: t("reports.pivot.filters"),
+    values: t("reports.pivot.values"),
+  };
 
   return (
     <div className="w-64 shrink-0 bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 space-y-4 text-sm h-fit sticky top-4">
@@ -153,37 +179,48 @@ export default function DynamicReportPanel({ config, onChange, dateFrom, dateTo 
           <span className="text-xs text-[var(--muted-foreground)]">—</span>
         ) : (
           <div className="space-y-2">
-            {filterFieldIds.map((fieldId) => (
-              <div key={fieldId}>
-                <div className="flex items-center gap-1 mb-1">
-                  <span className="text-xs font-medium">{fieldLabel(fieldId)}</span>
-                  <button onClick={() => removeFrom("filters", fieldId)} className="text-[var(--muted-foreground)] hover:text-[var(--negative)]">
-                    <X size={12} />
-                  </button>
+            {filterFieldIds.map((fieldId) => {
+              const entry = config.filters[fieldId] || { include: [], exclude: [] };
+              const hasActive = entry.include.length > 0 || entry.exclude.length > 0;
+              return (
+                <div key={fieldId}>
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className="text-xs font-medium">{fieldLabel(fieldId)}</span>
+                    <button onClick={() => removeFrom("filters", fieldId)} className="text-[var(--muted-foreground)] hover:text-[var(--negative)]">
+                      <X size={12} />
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {(filterValues[fieldId] || []).map((val) => {
+                      const isIncluded = entry.include.includes(val);
+                      const isExcluded = entry.exclude.includes(val);
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => toggleFilterInclude(fieldId, val)}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            toggleFilterExclude(fieldId, val);
+                          }}
+                          className={`px-2 py-0.5 rounded text-xs transition-colors ${
+                            isIncluded
+                              ? "bg-[var(--primary)] text-white"
+                              : isExcluded
+                                ? "bg-[var(--negative)] text-white line-through"
+                                : hasActive
+                                  ? "bg-[var(--muted)] text-[var(--muted-foreground)] opacity-50"
+                                  : "bg-[var(--muted)] text-[var(--foreground)]"
+                          }`}
+                          title={t("reports.pivot.rightClickExclude")}
+                        >
+                          {val}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {(filterValues[fieldId] || []).map((val) => {
-                    const selected = (config.filters[fieldId] || []).includes(val);
-                    const isActiveFilter = (config.filters[fieldId] || []).length > 0;
-                    return (
-                      <button
-                        key={val}
-                        onClick={() => toggleFilterValue(fieldId, val)}
-                        className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                          selected
-                            ? "bg-[var(--primary)] text-white"
-                            : isActiveFilter
-                              ? "bg-[var(--muted)] text-[var(--muted-foreground)] opacity-50"
-                              : "bg-[var(--muted)] text-[var(--foreground)]"
-                        }`}
-                      >
-                        {val}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -205,17 +242,24 @@ export default function DynamicReportPanel({ config, onChange, dateFrom, dateTo 
           style={{ left: menuTarget.x, top: menuTarget.y }}
         >
           <div className="px-3 py-1 text-xs text-[var(--muted-foreground)]">{t("reports.pivot.addTo")}</div>
-          {zoneOptions
-            .filter((opt) => (menuTarget.type === "measure") === opt.forMeasure)
-            .map((opt) => (
+          {menuTarget.type === "measure" ? (
+            <button
+              onClick={() => assignTo("values")}
+              className="w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--muted)] transition-colors"
+            >
+              {zoneLabels.values}
+            </button>
+          ) : (
+            getAvailableZones(menuTarget.id).map((zone) => (
               <button
-                key={opt.zone}
-                onClick={() => assignTo(opt.zone)}
+                key={zone}
+                onClick={() => assignTo(zone)}
                 className="w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--muted)] transition-colors"
               >
-                {opt.label}
+                {zoneLabels[zone]}
               </button>
-            ))}
+            ))
+          )}
         </div>
       )}
     </div>

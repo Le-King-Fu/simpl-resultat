@@ -213,18 +213,28 @@ export async function getDynamicReportData(
     paramIndex++;
   }
 
-  // Apply filter values
+  // Apply filter values (include / exclude)
   for (const fieldId of filterFields) {
-    const values = config.filters[fieldId];
-    if (values && values.length > 0) {
-      const def = FIELD_SQL[fieldId as PivotFieldId];
-      const placeholders = values.map(() => {
+    const entry = config.filters[fieldId];
+    if (!entry) continue;
+    const def = FIELD_SQL[fieldId as PivotFieldId];
+    if (entry.include && entry.include.length > 0) {
+      const placeholders = entry.include.map(() => {
         const p = `$${paramIndex}`;
         paramIndex++;
         return p;
       });
       whereClauses.push(`${def.select} IN (${placeholders.join(", ")})`);
-      params.push(...values);
+      params.push(...entry.include);
+    }
+    if (entry.exclude && entry.exclude.length > 0) {
+      const placeholders = entry.exclude.map(() => {
+        const p = `$${paramIndex}`;
+        paramIndex++;
+        return p;
+      });
+      whereClauses.push(`${def.select} NOT IN (${placeholders.join(", ")})`);
+      params.push(...entry.exclude);
     }
   }
 

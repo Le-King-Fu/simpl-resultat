@@ -282,10 +282,15 @@ export type PivotFieldId = "year" | "month" | "type" | "level1" | "level2";
 export type PivotMeasureId = "periodic" | "ytd";
 export type PivotZone = "rows" | "columns" | "filters" | "values";
 
+export interface PivotFilterEntry {
+  include: string[];  // included values (empty = all)
+  exclude: string[];  // excluded values
+}
+
 export interface PivotConfig {
   rows: PivotFieldId[];
   columns: PivotFieldId[];
-  filters: Record<string, string[]>; // field → selected values (empty = all)
+  filters: Record<string, PivotFilterEntry>;  // field → include/exclude entries
   values: PivotMeasureId[];
 }
 

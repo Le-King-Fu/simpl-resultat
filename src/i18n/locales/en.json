@@ -380,7 +380,8 @@
       "noConfig": "Add fields to generate the report",
       "noData": "No data for this configuration",
       "fullscreen": "Full screen",
-      "exitFullscreen": "Exit full screen"
+      "exitFullscreen": "Exit full screen",
+      "rightClickExclude": "Right-click to exclude"
     },
     "help": {
       "title": "How to use Reports",

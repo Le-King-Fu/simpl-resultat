@@ -380,7 +380,8 @@
       "noConfig": "Ajoutez des champs pour générer le rapport",
       "noData": "Aucune donnée pour cette configuration",
       "fullscreen": "Plein écran",
-      "exitFullscreen": "Quitter plein écran"
+      "exitFullscreen": "Quitter plein écran",
+      "rightClickExclude": "Clic-droit pour exclure"
     },
     "help": {
       "title": "Comment utiliser les Rapports",
