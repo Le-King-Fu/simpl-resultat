@@ -410,7 +410,13 @@
       "installing": "Installation en cours...",
       "error": "Erreur lors de la mise à jour",
       "retryButton": "Réessayer",
-      "releaseNotes": "Nouveautés"
+      "releaseNotes": "Nouveautés",
+      "notes": {
+        "0.3.11": "### Ajouté\n- Rapport dynamique : support de plusieurs dimensions en colonnes (clés composites)\n\n### Corrigé\n- Rapport dynamique : n'est plus affecté par les filtres de date globaux — utilise uniquement ses propres filtres du panneau",
+        "0.3.10": "### Ajouté\n- Rapport dynamique : les champs peuvent maintenant être utilisés dans plusieurs zones simultanément (lignes + filtres, colonnes + filtres)\n- Rapport dynamique : clic-droit sur une valeur de filtre pour l'exclure (affiché barré en rouge)\n- Option de période « Cette année » dans les rapports et le tableau de bord (du 1er janvier à aujourd'hui)",
+        "0.3.9": "### Ajouté\n- Rapport dynamique (tableau croisé) : composez des rapports personnalisés en assignant des dimensions aux lignes, colonnes, filtres et mesures aux valeurs\n- Suppression de mots-clés depuis la vue « Tous les mots-clés »",
+        "0.3.8": "### Ajouté\n- Sélecteur de plage de dates personnalisée pour les rapports et le tableau de bord\n- Bascule pour positionner les sous-totaux au-dessus ou en dessous des lignes de détail\n- Affichage des notes de version du CHANGELOG dans les releases GitHub et le système de mise à jour"
+      }
     },
     "dataManagement": {
       "title": "Gestion des données",

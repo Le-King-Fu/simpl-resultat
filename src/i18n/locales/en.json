@@ -410,7 +410,13 @@
       "installing": "Installing...",
       "error": "Update failed",
       "retryButton": "Retry",
-      "releaseNotes": "What's New"
+      "releaseNotes": "What's New",
+      "notes": {
+        "0.3.11": "### Added\n- Dynamic Report: support multiple column dimensions (composite column keys)\n\n### Fixed\n- Dynamic Report: no longer affected by global page date filters — uses only its own panel filters",
+        "0.3.10": "### Added\n- Dynamic Report: fields can now be used in multiple zones simultaneously (rows + filters, columns + filters)\n- Dynamic Report: right-click on a filter value to exclude it (shown with strikethrough in red)\n- \"This year\" period option in reports and dashboard (Jan 1 to today)",
+        "0.3.9": "### Added\n- Dynamic Report (pivot table): compose custom reports by assigning dimensions to rows, columns, filters and measures to values\n- Delete keywords from the \"All Keywords\" view",
+        "0.3.8": "### Added\n- Custom date range picker for reports and dashboard\n- Toggle to position subtotals above or below detail rows\n- Display release notes from CHANGELOG in GitHub releases and in-app updater"
+      }
     },
     "dataManagement": {
       "title": "Data Management",

@@ -125,26 +125,32 @@ export default function SettingsPage() {
             <p>
               {t("settings.updates.available", { version: state.version })}
             </p>
-            {state.body && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-[var(--foreground)]">
-                  {t("settings.updates.releaseNotes")}
-                </h3>
-                <div className="max-h-48 overflow-y-auto rounded-lg bg-[var(--background)] border border-[var(--border)] p-3 text-sm text-[var(--muted-foreground)] space-y-1">
-                  {state.body.split("\n").map((line, i) => {
-                    const trimmed = line.trim();
-                    if (!trimmed) return <div key={i} className="h-2" />;
-                    if (trimmed.startsWith("### "))
-                      return <p key={i} className="font-semibold text-[var(--foreground)] mt-2">{trimmed.slice(4)}</p>;
-                    if (trimmed.startsWith("## "))
-                      return <p key={i} className="font-bold text-[var(--foreground)] mt-2">{trimmed.slice(3)}</p>;
-                    if (trimmed.startsWith("- "))
-                      return <p key={i} className="pl-3">{"\u2022 "}{trimmed.slice(2).replace(/\*\*(.+?)\*\*/g, "$1")}</p>;
-                    return <p key={i}>{trimmed}</p>;
-                  })}
+            {(() => {
+              const notesKey = `settings.updates.notes.${state.version}`;
+              const i18nNotes = t(notesKey, { defaultValue: "" });
+              const notes = i18nNotes || state.body;
+              if (!notes) return null;
+              return (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-[var(--foreground)]">
+                    {t("settings.updates.releaseNotes")}
+                  </h3>
+                  <div className="max-h-48 overflow-y-auto rounded-lg bg-[var(--background)] border border-[var(--border)] p-3 text-sm text-[var(--muted-foreground)] space-y-1">
+                    {notes.split("\n").map((line, i) => {
+                      const trimmed = line.trim();
+                      if (!trimmed) return <div key={i} className="h-2" />;
+                      if (trimmed.startsWith("### "))
+                        return <p key={i} className="font-semibold text-[var(--foreground)] mt-2">{trimmed.slice(4)}</p>;
+                      if (trimmed.startsWith("## "))
+                        return <p key={i} className="font-bold text-[var(--foreground)] mt-2">{trimmed.slice(3)}</p>;
+                      if (trimmed.startsWith("- "))
+                        return <p key={i} className="pl-3">{"\u2022 "}{trimmed.slice(2).replace(/\*\*(.+?)\*\*/g, "$1")}</p>;
+                      return <p key={i}>{trimmed}</p>;
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
             <button
               onClick={downloadAndInstall}
               className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:opacity-90 transition-opacity"
