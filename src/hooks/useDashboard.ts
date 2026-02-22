@@ -102,6 +102,9 @@ function computeDateRange(
     case "6months":
       from = new Date(year, month - 5, 1);
       break;
+    case "year":
+      from = new Date(year, 0, 1);
+      break;
     case "12months":
       from = new Date(year, month - 11, 1);
       break;

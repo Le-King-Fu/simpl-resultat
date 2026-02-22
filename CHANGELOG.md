@@ -5,6 +5,7 @@
 ### Added
 - Dynamic Report: fields can now be used in multiple zones simultaneously (rows + filters, columns + filters)
 - Dynamic Report: right-click on a filter value to exclude it (shown with strikethrough in red)
+- "This year" period option in reports and dashboard (Jan 1 to today)
 
 ## [0.3.9]
 

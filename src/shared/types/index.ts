@@ -247,7 +247,7 @@ export interface ImportReport {
 
 // --- Dashboard Types ---
 
-export type DashboardPeriod = "month" | "3months" | "6months" | "12months" | "all" | "custom";
+export type DashboardPeriod = "month" | "3months" | "6months" | "year" | "12months" | "all" | "custom";
 
 export interface DashboardSummary {
   totalCount: number;

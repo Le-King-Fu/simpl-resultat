@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Calendar } from "lucide-react";
 import type { DashboardPeriod } from "../../shared/types";
 
-const PERIODS: DashboardPeriod[] = ["month", "3months", "6months", "12months", "all"];
+const PERIODS: DashboardPeriod[] = ["month", "3months", "6months", "year", "12months", "all"];
 
 interface PeriodSelectorProps {
   value: DashboardPeriod;
