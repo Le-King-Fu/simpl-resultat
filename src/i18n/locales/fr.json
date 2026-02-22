@@ -378,7 +378,9 @@
       "viewChart": "Graphique",
       "viewBoth": "Les deux",
       "noConfig": "Ajoutez des champs pour générer le rapport",
-      "noData": "Aucune donnée pour cette configuration"
+      "noData": "Aucune donnée pour cette configuration",
+      "fullscreen": "Plein écran",
+      "exitFullscreen": "Quitter plein écran"
     },
     "help": {
       "title": "Comment utiliser les Rapports",

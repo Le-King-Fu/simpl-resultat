@@ -378,7 +378,9 @@
       "viewChart": "Chart",
       "viewBoth": "Both",
       "noConfig": "Add fields to generate the report",
-      "noData": "No data for this configuration"
+      "noData": "No data for this configuration",
+      "fullscreen": "Full screen",
+      "exitFullscreen": "Exit full screen"
     },
     "help": {
       "title": "How to use Reports",
