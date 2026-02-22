@@ -274,7 +274,31 @@ export interface RecentTransaction {
 
 // --- Report Types ---
 
-export type ReportTab = "trends" | "byCategory" | "overTime" | "budgetVsActual";
+export type ReportTab = "trends" | "byCategory" | "overTime" | "budgetVsActual" | "dynamic";
+
+// --- Pivot / Dynamic Report Types ---
+
+export type PivotFieldId = "year" | "month" | "type" | "level1" | "level2";
+export type PivotMeasureId = "periodic" | "ytd";
+export type PivotZone = "rows" | "columns" | "filters" | "values";
+
+export interface PivotConfig {
+  rows: PivotFieldId[];
+  columns: PivotFieldId[];
+  filters: Record<string, string[]>; // field → selected values (empty = all)
+  values: PivotMeasureId[];
+}
+
+export interface PivotResultRow {
+  keys: Record<string, string>;    // dimension values
+  measures: Record<string, number>; // measure values
+}
+
+export interface PivotResult {
+  rows: PivotResultRow[];
+  columnValues: string[];          // distinct values for column dimension
+  dimensionLabels: Record<string, string>; // field id → display label
+}
 
 export interface MonthlyTrendItem {
   month: string;       // "2025-01"

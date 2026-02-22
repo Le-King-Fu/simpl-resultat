@@ -6,8 +6,10 @@ import type {
   CategoryBreakdownItem,
   CategoryOverTimeData,
   BudgetVsActualRow,
+  PivotConfig,
+  PivotResult,
 } from "../shared/types";
-import { getMonthlyTrends, getCategoryOverTime } from "../services/reportService";
+import { getMonthlyTrends, getCategoryOverTime, getDynamicReportData } from "../services/reportService";
 import { getExpensesByCategory } from "../services/dashboardService";
 import { getBudgetVsActualData } from "../services/budgetService";
 
@@ -22,6 +24,8 @@ interface ReportsState {
   budgetYear: number;
   budgetMonth: number;
   budgetVsActual: BudgetVsActualRow[];
+  pivotConfig: PivotConfig;
+  pivotResult: PivotResult;
   isLoading: boolean;
   error: string | null;
 }
@@ -36,6 +40,8 @@ type ReportsAction =
   | { type: "SET_CATEGORY_OVER_TIME"; payload: CategoryOverTimeData }
   | { type: "SET_BUDGET_MONTH"; payload: { year: number; month: number } }
   | { type: "SET_BUDGET_VS_ACTUAL"; payload: BudgetVsActualRow[] }
+  | { type: "SET_PIVOT_CONFIG"; payload: PivotConfig }
+  | { type: "SET_PIVOT_RESULT"; payload: PivotResult }
   | { type: "SET_CUSTOM_DATES"; payload: { dateFrom: string; dateTo: string } };
 
 const now = new Date();
@@ -53,6 +59,8 @@ const initialState: ReportsState = {
   budgetYear: now.getFullYear(),
   budgetMonth: now.getMonth() + 1,
   budgetVsActual: [],
+  pivotConfig: { rows: [], columns: [], filters: {}, values: [] },
+  pivotResult: { rows: [], columnValues: [], dimensionLabels: {} },
   isLoading: false,
   error: null,
 };
@@ -77,6 +85,10 @@ function reducer(state: ReportsState, action: ReportsAction): ReportsState {
       return { ...state, budgetYear: action.payload.year, budgetMonth: action.payload.month };
     case "SET_BUDGET_VS_ACTUAL":
       return { ...state, budgetVsActual: action.payload, isLoading: false };
+    case "SET_PIVOT_CONFIG":
+      return { ...state, pivotConfig: action.payload };
+    case "SET_PIVOT_RESULT":
+      return { ...state, pivotResult: action.payload, isLoading: false };
     case "SET_CUSTOM_DATES":
       return { ...state, period: "custom" as DashboardPeriod, customDateFrom: action.payload.dateFrom, customDateTo: action.payload.dateTo };
     default:
@@ -136,6 +148,7 @@ export function useReports() {
     budgetMonth: number,
     customFrom?: string,
     customTo?: string,
+    pivotCfg?: PivotConfig,
   ) => {
     const fetchId = ++fetchIdRef.current;
     dispatch({ type: "SET_LOADING", payload: true });
@@ -170,6 +183,17 @@ export function useReports() {
           dispatch({ type: "SET_BUDGET_VS_ACTUAL", payload: data });
           break;
         }
+        case "dynamic": {
+          if (!pivotCfg || (pivotCfg.rows.length === 0 && pivotCfg.columns.length === 0) || pivotCfg.values.length === 0) {
+            dispatch({ type: "SET_PIVOT_RESULT", payload: { rows: [], columnValues: [], dimensionLabels: {} } });
+            break;
+          }
+          const { dateFrom, dateTo } = computeDateRange(period, customFrom, customTo);
+          const data = await getDynamicReportData(pivotCfg, dateFrom, dateTo);
+          if (fetchId !== fetchIdRef.current) return;
+          dispatch({ type: "SET_PIVOT_RESULT", payload: data });
+          break;
+        }
       }
     } catch (e) {
       if (fetchId !== fetchIdRef.current) return;
@@ -181,8 +205,8 @@ export function useReports() {
   }, []);
 
   useEffect(() => {
-    fetchData(state.tab, state.period, state.budgetYear, state.budgetMonth, state.customDateFrom, state.customDateTo);
-  }, [state.tab, state.period, state.budgetYear, state.budgetMonth, state.customDateFrom, state.customDateTo, fetchData]);
+    fetchData(state.tab, state.period, state.budgetYear, state.budgetMonth, state.customDateFrom, state.customDateTo, state.pivotConfig);
+  }, [state.tab, state.period, state.budgetYear, state.budgetMonth, state.customDateFrom, state.customDateTo, state.pivotConfig, fetchData]);
 
   const setTab = useCallback((tab: ReportTab) => {
     dispatch({ type: "SET_TAB", payload: tab });
@@ -209,5 +233,9 @@ export function useReports() {
     dispatch({ type: "SET_CUSTOM_DATES", payload: { dateFrom, dateTo } });
   }, []);
 
-  return { state, setTab, setPeriod, setCustomDates, navigateBudgetMonth };
+  const setPivotConfig = useCallback((config: PivotConfig) => {
+    dispatch({ type: "SET_PIVOT_CONFIG", payload: config });
+  }, []);
+
+  return { state, setTab, setPeriod, setCustomDates, navigateBudgetMonth, setPivotConfig };
 }

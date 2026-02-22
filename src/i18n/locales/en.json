@@ -356,14 +356,38 @@
       "pctVar": "% Var",
       "noData": "No budget or transaction data for this period."
     },
+    "dynamic": "Dynamic Report",
     "export": "Export",
+    "pivot": {
+      "availableFields": "Available Fields",
+      "rows": "Rows",
+      "columns": "Columns",
+      "filters": "Filters",
+      "values": "Values",
+      "addTo": "Add to...",
+      "year": "Year",
+      "month": "Month",
+      "categoryType": "Type",
+      "level1": "Category (Level 1)",
+      "level2": "Category (Level 2)",
+      "periodic": "Periodic Amount",
+      "ytd": "Year-to-Date (YTD)",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "viewTable": "Table",
+      "viewChart": "Chart",
+      "viewBoth": "Both",
+      "noConfig": "Add fields to generate the report",
+      "noData": "No data for this configuration"
+    },
     "help": {
       "title": "How to use Reports",
       "tips": [
         "Switch between Trends, By Category, and Over Time views using the tabs",
         "Use the period selector to adjust the time range for all charts",
         "Monthly Trends shows your income and expenses over time",
-        "Category Over Time tracks how spending in each category evolves"
+        "Category Over Time tracks how spending in each category evolves",
+        "Dynamic Report lets you build custom pivot tables by assigning dimensions to rows, columns, and filters"
       ]
     }
   },

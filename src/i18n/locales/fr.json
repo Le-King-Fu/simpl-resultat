@@ -356,14 +356,38 @@
       "pctVar": "% \u00c9cart",
       "noData": "Aucune donn\u00e9e de budget ou de transaction pour cette p\u00e9riode."
     },
+    "dynamic": "Rapport dynamique",
     "export": "Exporter",
+    "pivot": {
+      "availableFields": "Champs disponibles",
+      "rows": "Lignes",
+      "columns": "Colonnes",
+      "filters": "Filtres",
+      "values": "Valeurs",
+      "addTo": "Ajouter à...",
+      "year": "Année",
+      "month": "Mois",
+      "categoryType": "Type",
+      "level1": "Catégorie (Niveau 1)",
+      "level2": "Catégorie (Niveau 2)",
+      "periodic": "Montant périodique",
+      "ytd": "Cumul annuel (YTD)",
+      "subtotal": "Sous-total",
+      "total": "Total",
+      "viewTable": "Tableau",
+      "viewChart": "Graphique",
+      "viewBoth": "Les deux",
+      "noConfig": "Ajoutez des champs pour générer le rapport",
+      "noData": "Aucune donnée pour cette configuration"
+    },
     "help": {
       "title": "Comment utiliser les Rapports",
       "tips": [
         "Basculez entre les vues Tendances, Par catégorie et Dans le temps via les onglets",
         "Utilisez le sélecteur de période pour ajuster la plage de dates de tous les graphiques",
         "Les tendances mensuelles montrent vos revenus et dépenses au fil du temps",
-        "Catégories dans le temps suit l'évolution des dépenses par catégorie"
+        "Catégories dans le temps suit l'évolution des dépenses par catégorie",
+        "Le Rapport dynamique permet de créer des tableaux croisés personnalisés en assignant des dimensions aux lignes, colonnes et filtres"
       ]
     }
   },

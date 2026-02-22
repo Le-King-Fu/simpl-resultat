@@ -34,7 +34,7 @@ simpl-resultat/
 │   │   ├── import/               # 13 composants (wizard d'import)
 │   │   ├── layout/               # AppShell, Sidebar
 │   │   ├── profile/              # 3 composants (PIN, formulaire, switcher)
-│   │   ├── reports/              # 4 composants (graphiques)
+│   │   ├── reports/              # 8 composants (graphiques + rapport dynamique)
 │   │   ├── settings/             # 2 composants
 │   │   ├── shared/               # 4 composants réutilisables
 │   │   └── transactions/         # 5 composants

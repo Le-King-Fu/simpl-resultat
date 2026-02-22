@@ -250,6 +250,7 @@ Visualisez vos données financières avec des graphiques interactifs et comparez
 - Dépenses par catégorie : répartition des dépenses (graphique circulaire)
 - Catégories dans le temps : suivez l'évolution de chaque catégorie (graphique en ligne)
 - Budget vs Réel : tableau comparatif mensuel et cumul annuel
+- Rapport dynamique : tableau croisé dynamique (pivot table) personnalisable
 - Motifs SVG (lignes, points, hachures) pour distinguer les catégories
 - Menu contextuel (clic droit) pour masquer une catégorie ou voir ses transactions
 
@@ -267,6 +268,21 @@ Visualisez vos données financières avec des graphiques interactifs et comparez
 - Le sélecteur de période s'applique à tous les onglets de graphiques simultanément
 - Budget vs Réel affiche l'écart en dollars et en pourcentage pour chaque catégorie
 - Les motifs SVG aident les personnes daltoniennes à distinguer les catégories dans les graphiques
+
+### Rapport dynamique
+
+Le rapport dynamique fonctionne comme un tableau croisé dynamique (pivot table). Vous composez votre propre rapport en assignant des dimensions et des mesures.
+
+**Dimensions disponibles :** Année, Mois, Type (dépense/revenu/transfert), Catégorie Niveau 1 (parent), Catégorie Niveau 2 (enfant).
+
+**Mesures :** Montant périodique (somme), Cumul annuel (YTD).
+
+1. Cliquez sur un champ disponible dans le panneau de droite
+2. Choisissez où le placer : Lignes, Colonnes, Filtres ou Valeurs
+3. Le tableau et/ou le graphique se mettent à jour automatiquement
+4. Utilisez les filtres pour restreindre les données (ex : Type = dépense uniquement)
+5. Basculez entre les vues Tableau, Graphique ou Les deux
+6. Cliquez sur le X pour retirer un champ d'une zone
 
 ---
 

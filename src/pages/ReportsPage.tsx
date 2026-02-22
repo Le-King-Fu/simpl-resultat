@@ -9,9 +9,10 @@ import MonthlyTrendsChart from "../components/reports/MonthlyTrendsChart";
 import CategoryBarChart from "../components/reports/CategoryBarChart";
 import CategoryOverTimeChart from "../components/reports/CategoryOverTimeChart";
 import BudgetVsActualTable from "../components/reports/BudgetVsActualTable";
+import DynamicReport from "../components/reports/DynamicReport";
 import TransactionDetailModal from "../components/shared/TransactionDetailModal";
 
-const TABS: ReportTab[] = ["trends", "byCategory", "overTime", "budgetVsActual"];
+const TABS: ReportTab[] = ["trends", "byCategory", "overTime", "budgetVsActual", "dynamic"];
 
 function computeDateRange(
   period: DashboardPeriod,
@@ -41,7 +42,7 @@ function computeDateRange(
 
 export default function ReportsPage() {
   const { t } = useTranslation();
-  const { state, setTab, setPeriod, setCustomDates, navigateBudgetMonth } = useReports();
+  const { state, setTab, setPeriod, setCustomDates, navigateBudgetMonth, setPivotConfig } = useReports();
 
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
   const [detailModal, setDetailModal] = useState<CategoryBreakdownItem | null>(null);
@@ -130,6 +131,15 @@ export default function ReportsPage() {
       )}
       {state.tab === "budgetVsActual" && (
         <BudgetVsActualTable data={state.budgetVsActual} />
+      )}
+      {state.tab === "dynamic" && (
+        <DynamicReport
+          config={state.pivotConfig}
+          result={state.pivotResult}
+          onConfigChange={setPivotConfig}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+        />
       )}
 
       {detailModal && (
