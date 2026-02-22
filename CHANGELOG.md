@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.9]
+
 ### Added
 - Dynamic Report (pivot table): compose custom reports by assigning dimensions to rows, columns, filters and measures to values
 - Delete keywords from the "All Keywords" view
