@@ -10,11 +10,9 @@ const ALL_MEASURES: PivotMeasureId[] = ["periodic", "ytd"];
 interface DynamicReportPanelProps {
   config: PivotConfig;
   onChange: (config: PivotConfig) => void;
-  dateFrom?: string;
-  dateTo?: string;
 }
 
-export default function DynamicReportPanel({ config, onChange, dateFrom, dateTo }: DynamicReportPanelProps) {
+export default function DynamicReportPanel({ config, onChange }: DynamicReportPanelProps) {
   const { t } = useTranslation();
   const [menuTarget, setMenuTarget] = useState<{ id: string; type: "field" | "measure"; x: number; y: number } | null>(null);
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
@@ -36,12 +34,12 @@ export default function DynamicReportPanel({ config, onChange, dateFrom, dateTo 
   useEffect(() => {
     for (const fieldId of filterFieldIds) {
       if (!filterValues[fieldId]) {
-        getDynamicFilterValues(fieldId as PivotFieldId, dateFrom, dateTo).then((vals) => {
+        getDynamicFilterValues(fieldId as PivotFieldId).then((vals) => {
           setFilterValues((prev) => ({ ...prev, [fieldId]: vals }));
         });
       }
     }
-  }, [filterFieldIds.join(","), dateFrom, dateTo]);
+  }, [filterFieldIds.join(",")]);
 
   // Close menu on outside click
   useEffect(() => {

@@ -138,8 +138,6 @@ export default function ReportsPage() {
           config={state.pivotConfig}
           result={state.pivotResult}
           onConfigChange={setPivotConfig}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
         />
       )}
 

@@ -168,8 +168,6 @@ function needsCategoryJoin(fields: PivotFieldId[]): boolean {
 
 export async function getDynamicReportData(
   config: PivotConfig,
-  dateFrom?: string,
-  dateTo?: string,
 ): Promise<PivotResult> {
   const db = await getDb();
 
@@ -201,17 +199,6 @@ export async function getDynamicReportData(
   const whereClauses: string[] = [];
   const params: unknown[] = [];
   let paramIndex = 1;
-
-  if (dateFrom) {
-    whereClauses.push(`t.date >= $${paramIndex}`);
-    params.push(dateFrom);
-    paramIndex++;
-  }
-  if (dateTo) {
-    whereClauses.push(`t.date <= $${paramIndex}`);
-    params.push(dateTo);
-    paramIndex++;
-  }
 
   // Apply filter values (include / exclude)
   for (const fieldId of filterFields) {
@@ -330,37 +317,19 @@ export async function getDynamicReportData(
 
 export async function getDynamicFilterValues(
   fieldId: PivotFieldId,
-  dateFrom?: string,
-  dateTo?: string,
 ): Promise<string[]> {
   const db = await getDb();
   const def = FIELD_SQL[fieldId];
   const useCatJoin = needsCategoryJoin([fieldId]);
 
-  const whereClauses: string[] = [];
-  const params: unknown[] = [];
-  let paramIndex = 1;
-
-  if (dateFrom) {
-    whereClauses.push(`t.date >= $${paramIndex}`);
-    params.push(dateFrom);
-    paramIndex++;
-  }
-  if (dateTo) {
-    whereClauses.push(`t.date <= $${paramIndex}`);
-    params.push(dateTo);
-    paramIndex++;
-  }
-
-  const whereSQL = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
   const joinSQL = useCatJoin
     ? `LEFT JOIN categories c ON t.category_id = c.id
        LEFT JOIN categories parent_cat ON c.parent_id = parent_cat.id`
     : "";
 
   const rows = await db.select<Array<{ val: string }>>(
-    `SELECT DISTINCT ${def.select} AS val FROM transactions t ${joinSQL} ${whereSQL} ORDER BY val`,
-    params,
+    `SELECT DISTINCT ${def.select} AS val FROM transactions t ${joinSQL} ORDER BY val`,
+    [],
   );
   return rows.map((r) => r.val);
 }

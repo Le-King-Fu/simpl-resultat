@@ -191,8 +191,7 @@ export function useReports() {
             dispatch({ type: "SET_PIVOT_RESULT", payload: { rows: [], columnValues: [], dimensionLabels: {} } });
             break;
           }
-          const { dateFrom, dateTo } = computeDateRange(period, customFrom, customTo);
-          const data = await getDynamicReportData(pivotCfg, dateFrom, dateTo);
+          const data = await getDynamicReportData(pivotCfg);
           if (fetchId !== fetchIdRef.current) return;
           dispatch({ type: "SET_PIVOT_RESULT", payload: data });
           break;

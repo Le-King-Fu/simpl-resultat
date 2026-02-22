@@ -12,11 +12,9 @@ interface DynamicReportProps {
   config: PivotConfig;
   result: PivotResult;
   onConfigChange: (config: PivotConfig) => void;
-  dateFrom?: string;
-  dateTo?: string;
 }
 
-export default function DynamicReport({ config, result, onConfigChange, dateFrom, dateTo }: DynamicReportProps) {
+export default function DynamicReport({ config, result, onConfigChange }: DynamicReportProps) {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [fullscreen, setFullscreen] = useState(false);
@@ -101,8 +99,6 @@ export default function DynamicReport({ config, result, onConfigChange, dateFrom
         <DynamicReportPanel
           config={config}
           onChange={onConfigChange}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
         />
       </div>
     </div>
