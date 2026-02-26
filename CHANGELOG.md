@@ -10,6 +10,10 @@
 - Categories: depth validation prevents creating a 4th level
 - Seed data: Assurances split into Assurance-auto, Assurance-habitation, Assurance-vie
 
+### Fixed
+- Auto-categorization: keywords starting/ending with special characters (`[`, `]`, `(`, `)`, `-`, etc.) now match correctly
+- Auto-categorization: pre-compile regex patterns for better batch performance
+
 ## [0.3.11]
 
 ### Added
