@@ -18,18 +18,19 @@ const MONTH_KEYS = [
 
 const STORAGE_KEY = "subtotals-position";
 
-function reorderRows<T extends { is_parent: boolean; parent_id: number | null; category_id: number }>(
+function reorderRows<T extends { is_parent: boolean; parent_id: number | null; category_id: number; depth?: 0 | 1 | 2 }>(
   rows: T[],
   subtotalsOnTop: boolean,
 ): T[] {
   if (subtotalsOnTop) return rows;
+  // Group depth-0 parents with all their descendants, then move subtotals to bottom
   const groups: { parent: T | null; children: T[] }[] = [];
   let current: { parent: T | null; children: T[] } | null = null;
   for (const row of rows) {
-    if (row.is_parent) {
+    if (row.is_parent && (row.depth ?? 0) === 0) {
       if (current) groups.push(current);
       current = { parent: row, children: [] };
-    } else if (current && row.parent_id === current.parent?.category_id) {
+    } else if (current) {
       current.children.push(row);
     } else {
       if (current) groups.push(current);
@@ -37,9 +38,36 @@ function reorderRows<T extends { is_parent: boolean; parent_id: number | null; c
     }
   }
   if (current) groups.push(current);
-  return groups.flatMap(({ parent, children }) =>
-    parent ? [...children, parent] : children,
-  );
+  return groups.flatMap(({ parent, children }) => {
+    if (!parent) return children;
+    // Also move intermediate subtotals (depth-1 parents) to bottom of their sub-groups
+    const reorderedChildren: T[] = [];
+    let subParent: T | null = null;
+    const subChildren: T[] = [];
+    for (const child of children) {
+      if (child.is_parent && (child.depth ?? 0) === 1) {
+        // Flush previous sub-group
+        if (subParent) {
+          reorderedChildren.push(...subChildren, subParent);
+          subChildren.length = 0;
+        }
+        subParent = child;
+      } else if (subParent && child.parent_id === subParent.category_id) {
+        subChildren.push(child);
+      } else {
+        if (subParent) {
+          reorderedChildren.push(...subChildren, subParent);
+          subParent = null;
+          subChildren.length = 0;
+        }
+        reorderedChildren.push(child);
+      }
+    }
+    if (subParent) {
+      reorderedChildren.push(...subChildren, subParent);
+    }
+    return [...reorderedChildren, parent];
+  });
 }
 
 interface BudgetTableProps {
@@ -188,30 +216,33 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
   const renderRow = (row: BudgetYearRow) => {
     const sign = signFor(row.category_type);
     const isChild = row.parent_id !== null && !row.is_parent;
+    const depth = row.depth ?? (isChild ? 1 : 0);
     // Unique key: parent rows and "(direct)" fake children can share the same category_id
     const rowKey = row.is_parent ? `parent-${row.category_id}` : `leaf-${row.category_id}-${row.category_name}`;
 
     if (row.is_parent) {
       // Parent subtotal row: read-only, bold, distinct background
+      const parentDepth = row.depth ?? 0;
+      const isIntermediateParent = parentDepth === 1;
       return (
         <tr
           key={rowKey}
-          className="border-b border-[var(--border)] bg-[var(--muted)]/30"
+          className={`border-b border-[var(--border)] ${isIntermediateParent ? "bg-[var(--muted)]/15" : "bg-[var(--muted)]/30"}`}
         >
-          <td className="py-2 px-3 sticky left-0 bg-[var(--muted)]/30 z-10">
+          <td className={`py-2 sticky left-0 z-10 ${isIntermediateParent ? "pl-8 pr-3 bg-[var(--muted)]/15" : "px-3 bg-[var(--muted)]/30"}`}>
             <div className="flex items-center gap-2">
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"
                 style={{ backgroundColor: row.category_color }}
               />
-              <span className="truncate text-xs font-semibold">{row.category_name}</span>
+              <span className={`truncate text-xs ${isIntermediateParent ? "font-medium" : "font-semibold"}`}>{row.category_name}</span>
             </div>
           </td>
-          <td className="py-2 px-2 text-right text-xs font-semibold">
+          <td className={`py-2 px-2 text-right text-xs ${isIntermediateParent ? "font-medium" : "font-semibold"}`}>
             {formatSigned(row.annual * sign)}
           </td>
           {row.months.map((val, mIdx) => (
-            <td key={mIdx} className="py-2 px-2 text-right text-xs font-semibold">
+            <td key={mIdx} className={`py-2 px-2 text-right text-xs ${isIntermediateParent ? "font-medium" : "font-semibold"}`}>
               {formatSigned(val * sign)}
             </td>
           ))}
@@ -226,7 +257,7 @@ export default function BudgetTable({ rows, onUpdatePlanned, onSplitEvenly }: Bu
         className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)]/50 transition-colors"
       >
         {/* Category name - sticky */}
-        <td className={`py-2 sticky left-0 bg-[var(--card)] z-10 ${isChild ? "pl-8 pr-3" : "px-3"}`}>
+        <td className={`py-2 sticky left-0 bg-[var(--card)] z-10 ${depth === 2 ? "pl-14 pr-3" : depth === 1 ? "pl-8 pr-3" : "px-3"}`}>
           <div className="flex items-center gap-2">
             <span
               className="w-2.5 h-2.5 rounded-full shrink-0"

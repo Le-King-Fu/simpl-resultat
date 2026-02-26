@@ -139,6 +139,7 @@ export interface BudgetYearRow {
   category_type: "expense" | "income" | "transfer";
   parent_id: number | null;
   is_parent: boolean;
+  depth?: 0 | 1 | 2;
   months: number[]; // index 0-11 = Jan-Dec planned amounts
   annual: number;   // computed sum
 }
@@ -278,7 +279,7 @@ export type ReportTab = "trends" | "byCategory" | "overTime" | "budgetVsActual" 
 
 // --- Pivot / Dynamic Report Types ---
 
-export type PivotFieldId = "year" | "month" | "type" | "level1" | "level2";
+export type PivotFieldId = "year" | "month" | "type" | "level1" | "level2" | "level3";
 export type PivotMeasureId = "periodic" | "ytd";
 export type PivotZone = "rows" | "columns" | "filters" | "values";
 
@@ -330,6 +331,7 @@ export interface BudgetVsActualRow {
   category_type: "expense" | "income" | "transfer";
   parent_id: number | null;
   is_parent: boolean;
+  depth?: 0 | 1 | 2;
   monthActual: number;
   monthBudget: number;
   monthVariation: number;

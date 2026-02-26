@@ -244,7 +244,7 @@ export async function getBudgetVsActualData(
   const signFor = (type: string) => (type === "expense" ? -1 : 1);
 
   // Compute leaf row values
-  function buildLeaf(cat: Category, parentId: number | null): BudgetVsActualRow {
+  function buildLeaf(cat: Category, parentId: number | null, depth: 0 | 1 | 2): BudgetVsActualRow {
     const sign = signFor(cat.type);
     const monthMap = entryMap.get(cat.id);
     const rawMonthBudget = monthMap?.get(month) ?? 0;
@@ -269,6 +269,7 @@ export async function getBudgetVsActualData(
       category_type: cat.type,
       parent_id: parentId,
       is_parent: false,
+      depth,
       monthActual,
       monthBudget,
       monthVariation,
@@ -280,6 +281,39 @@ export async function getBudgetVsActualData(
     };
   }
 
+  function buildSubtotal(cat: Category, childRows: BudgetVsActualRow[], parentId: number | null, depth: 0 | 1 | 2): BudgetVsActualRow {
+    const row: BudgetVsActualRow = {
+      category_id: cat.id,
+      category_name: cat.name,
+      category_color: cat.color || "#9ca3af",
+      category_type: cat.type,
+      parent_id: parentId,
+      is_parent: true,
+      depth,
+      monthActual: 0,
+      monthBudget: 0,
+      monthVariation: 0,
+      monthVariationPct: null,
+      ytdActual: 0,
+      ytdBudget: 0,
+      ytdVariation: 0,
+      ytdVariationPct: null,
+    };
+    for (const cr of childRows) {
+      row.monthActual += cr.monthActual;
+      row.monthBudget += cr.monthBudget;
+      row.monthVariation += cr.monthVariation;
+      row.ytdActual += cr.ytdActual;
+      row.ytdBudget += cr.ytdBudget;
+      row.ytdVariation += cr.ytdVariation;
+    }
+    row.monthVariationPct =
+      row.monthBudget !== 0 ? row.monthVariation / Math.abs(row.monthBudget) : null;
+    row.ytdVariationPct =
+      row.ytdBudget !== 0 ? row.ytdVariation / Math.abs(row.ytdBudget) : null;
+    return row;
+  }
+
   function isRowAllZero(r: BudgetVsActualRow): boolean {
     return (
       r.monthActual === 0 &&
@@ -289,73 +323,94 @@ export async function getBudgetVsActualData(
     );
   }
 
+  // Build rows for a level-2 parent (intermediate parent with grandchildren)
+  function buildLevel2Group(cat: Category, grandparentId: number): BudgetVsActualRow[] {
+    const grandchildren = (childrenByParent.get(cat.id) || []).filter((c) => c.is_inputable);
+    if (grandchildren.length === 0 && cat.is_inputable) {
+      // Leaf at level 2
+      const leaf = buildLeaf(cat, grandparentId, 2);
+      return isRowAllZero(leaf) ? [] : [leaf];
+    }
+    if (grandchildren.length === 0) return [];
+
+    const gcRows: BudgetVsActualRow[] = [];
+    if (cat.is_inputable) {
+      const direct = buildLeaf(cat, cat.id, 2);
+      direct.category_name = `${cat.name} (direct)`;
+      if (!isRowAllZero(direct)) gcRows.push(direct);
+    }
+    for (const gc of grandchildren) {
+      const leaf = buildLeaf(gc, cat.id, 2);
+      if (!isRowAllZero(leaf)) gcRows.push(leaf);
+    }
+    if (gcRows.length === 0) return [];
+
+    const subtotal = buildSubtotal(cat, gcRows, grandparentId, 1);
+    gcRows.sort((a, b) => {
+      if (a.category_id === cat.id) return -1;
+      if (b.category_id === cat.id) return 1;
+      return a.category_name.localeCompare(b.category_name);
+    });
+    return [subtotal, ...gcRows];
+  }
+
   const rows: BudgetVsActualRow[] = [];
   const topLevel = allCategories.filter((c) => !c.parent_id);
 
   for (const cat of topLevel) {
-    const children = (childrenByParent.get(cat.id) || []).filter((c) => c.is_inputable);
+    const children = childrenByParent.get(cat.id) || [];
+    const inputableChildren = children.filter((c) => c.is_inputable);
+    // Also check for non-inputable intermediate parents that have their own children
+    const intermediateParents = children.filter((c) => !c.is_inputable && (childrenByParent.get(c.id) || []).length > 0);
 
-    if (children.length === 0 && cat.is_inputable) {
-      // Standalone leaf
-      const leaf = buildLeaf(cat, null);
+    if (inputableChildren.length === 0 && intermediateParents.length === 0 && cat.is_inputable) {
+      // Standalone leaf at level 0
+      const leaf = buildLeaf(cat, null, 0);
       if (!isRowAllZero(leaf)) rows.push(leaf);
-    } else if (children.length > 0) {
-      const childRows: BudgetVsActualRow[] = [];
+    } else if (inputableChildren.length > 0 || intermediateParents.length > 0) {
+      const allChildRows: BudgetVsActualRow[] = [];
 
-      // If parent is also inputable, create a "(direct)" child row
+      // Direct transactions on the parent itself
       if (cat.is_inputable) {
-        const direct = buildLeaf(cat, cat.id);
+        const direct = buildLeaf(cat, cat.id, 1);
         direct.category_name = `${cat.name} (direct)`;
-        if (!isRowAllZero(direct)) childRows.push(direct);
+        if (!isRowAllZero(direct)) allChildRows.push(direct);
       }
 
-      for (const child of children) {
-        const leaf = buildLeaf(child, cat.id);
-        if (!isRowAllZero(leaf)) childRows.push(leaf);
+      // Level-2 leaves (direct children that are inputable and have no children)
+      for (const child of inputableChildren) {
+        const grandchildren = childrenByParent.get(child.id) || [];
+        if (grandchildren.length === 0) {
+          const leaf = buildLeaf(child, cat.id, 1);
+          if (!isRowAllZero(leaf)) allChildRows.push(leaf);
+        } else {
+          // This child has its own children — it's an intermediate parent at level 1
+          const subRows = buildLevel2Group(child, cat.id);
+          allChildRows.push(...subRows);
+        }
       }
 
-      // Skip parent entirely if all children were filtered out
-      if (childRows.length === 0) continue;
-
-      // Build parent subtotal from kept children
-      const parent: BudgetVsActualRow = {
-        category_id: cat.id,
-        category_name: cat.name,
-        category_color: cat.color || "#9ca3af",
-        category_type: cat.type,
-        parent_id: null,
-        is_parent: true,
-        monthActual: 0,
-        monthBudget: 0,
-        monthVariation: 0,
-        monthVariationPct: null,
-        ytdActual: 0,
-        ytdBudget: 0,
-        ytdVariation: 0,
-        ytdVariationPct: null,
-      };
-      for (const cr of childRows) {
-        parent.monthActual += cr.monthActual;
-        parent.monthBudget += cr.monthBudget;
-        parent.monthVariation += cr.monthVariation;
-        parent.ytdActual += cr.ytdActual;
-        parent.ytdBudget += cr.ytdBudget;
-        parent.ytdVariation += cr.ytdVariation;
+      // Non-inputable intermediate parents at level 1
+      for (const ip of intermediateParents) {
+        const subRows = buildLevel2Group(ip, cat.id);
+        allChildRows.push(...subRows);
       }
-      parent.monthVariationPct =
-        parent.monthBudget !== 0 ? parent.monthVariation / Math.abs(parent.monthBudget) : null;
-      parent.ytdVariationPct =
-        parent.ytdBudget !== 0 ? parent.ytdVariation / Math.abs(parent.ytdBudget) : null;
+
+      if (allChildRows.length === 0) continue;
+
+      // Collect only leaf rows for parent subtotal (avoid double-counting)
+      const leafRows = allChildRows.filter((r) => !r.is_parent);
+      const parent = buildSubtotal(cat, leafRows, null, 0);
 
       rows.push(parent);
 
-      // Sort children: "(direct)" first, then alphabetical
-      childRows.sort((a, b) => {
-        if (a.category_id === cat.id) return -1;
-        if (b.category_id === cat.id) return 1;
+      // Sort: "(direct)" first, then subtotals with their children, then alphabetical leaves
+      allChildRows.sort((a, b) => {
+        if (a.category_id === cat.id && !a.is_parent) return -1;
+        if (b.category_id === cat.id && !b.is_parent) return 1;
         return a.category_name.localeCompare(b.category_name);
       });
-      rows.push(...childRows);
+      rows.push(...allChildRows);
     }
   }
 
@@ -364,8 +419,21 @@ export async function getBudgetVsActualData(
     const typeA = TYPE_ORDER[a.category_type] ?? 9;
     const typeB = TYPE_ORDER[b.category_type] ?? 9;
     if (typeA !== typeB) return typeA - typeB;
-    const groupA = a.is_parent ? a.category_id : (a.parent_id ?? a.category_id);
-    const groupB = b.is_parent ? b.category_id : (b.parent_id ?? b.category_id);
+    // Find the top-level group id
+    function getGroupId(r: BudgetVsActualRow): number {
+      if (r.depth === 0) return r.category_id;
+      if (r.is_parent && r.parent_id === null) return r.category_id;
+      // Walk up to find the root
+      let pid = r.parent_id;
+      while (pid !== null) {
+        const pCat = catById.get(pid);
+        if (!pCat || !pCat.parent_id) return pid;
+        pid = pCat.parent_id;
+      }
+      return r.category_id;
+    }
+    const groupA = getGroupId(a);
+    const groupB = getGroupId(b);
     if (groupA !== groupB) {
       const catA = catById.get(groupA);
       const catB = catById.get(groupB);
@@ -374,7 +442,9 @@ export async function getBudgetVsActualData(
       if (orderA !== orderB) return orderA - orderB;
       return (catA?.name ?? "").localeCompare(catB?.name ?? "");
     }
-    if (a.is_parent !== b.is_parent) return a.is_parent ? -1 : 1;
+    // Within same group: sort by depth, then parent before children
+    if (a.is_parent !== b.is_parent && (a.depth ?? 0) === (b.depth ?? 0)) return a.is_parent ? -1 : 1;
+    if ((a.depth ?? 0) !== (b.depth ?? 0)) return (a.depth ?? 0) - (b.depth ?? 0);
     if (a.parent_id && a.category_id === a.parent_id) return -1;
     if (b.parent_id && b.category_id === b.parent_id) return 1;
     return a.category_name.localeCompare(b.category_name);

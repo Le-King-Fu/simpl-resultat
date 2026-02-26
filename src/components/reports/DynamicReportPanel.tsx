@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import type { PivotConfig, PivotFieldId, PivotFilterEntry, PivotMeasureId, PivotZone } from "../../shared/types";
 import { getDynamicFilterValues } from "../../services/reportService";
 
-const ALL_FIELDS: PivotFieldId[] = ["year", "month", "type", "level1", "level2"];
+const ALL_FIELDS: PivotFieldId[] = ["year", "month", "type", "level1", "level2", "level3"];
 const ALL_MEASURES: PivotMeasureId[] = ["periodic", "ytd"];
 
 interface DynamicReportPanelProps {
@@ -105,7 +105,7 @@ export default function DynamicReportPanel({ config, onChange }: DynamicReportPa
     onChange({ ...config, filters: { ...config.filters, [fieldId]: { include: newInclude, exclude: newExclude } } });
   };
 
-  const fieldLabel = (id: string) => t(`reports.pivot.${id === "level1" ? "level1" : id === "level2" ? "level2" : id === "type" ? "categoryType" : id}`);
+  const fieldLabel = (id: string) => t(`reports.pivot.${id === "level1" ? "level1" : id === "level2" ? "level2" : id === "level3" ? "level3" : id === "type" ? "categoryType" : id}`);
   const measureLabel = (id: string) => t(`reports.pivot.${id}`);
 
   // Context menu only shows zones where the field is NOT already assigned

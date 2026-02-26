@@ -158,12 +158,13 @@ const FIELD_SQL: Record<PivotFieldId, { select: string; alias: string }> = {
   year:   { select: "strftime('%Y', t.date)", alias: "year" },
   month:  { select: "strftime('%Y-%m', t.date)", alias: "month" },
   type:   { select: "COALESCE(c.type, 'expense')", alias: "type" },
-  level1: { select: "COALESCE(parent_cat.name, c.name, 'Uncategorized')", alias: "level1" },
-  level2: { select: "COALESCE(CASE WHEN c.parent_id IS NOT NULL THEN c.name ELSE NULL END, 'Uncategorized')", alias: "level2" },
+  level1: { select: "COALESCE(grandparent_cat.name, parent_cat.name, c.name, 'Uncategorized')", alias: "level1" },
+  level2: { select: "CASE WHEN grandparent_cat.id IS NOT NULL THEN parent_cat.name WHEN parent_cat.id IS NOT NULL THEN c.name ELSE NULL END", alias: "level2" },
+  level3: { select: "CASE WHEN grandparent_cat.id IS NOT NULL THEN c.name ELSE NULL END", alias: "level3" },
 };
 
 function needsCategoryJoin(fields: PivotFieldId[]): boolean {
-  return fields.some((f) => f === "type" || f === "level1" || f === "level2");
+  return fields.some((f) => f === "type" || f === "level1" || f === "level2" || f === "level3");
 }
 
 export async function getDynamicReportData(
@@ -231,7 +232,8 @@ export async function getDynamicReportData(
 
   const joinSQL = useCatJoin
     ? `LEFT JOIN categories c ON t.category_id = c.id
-       LEFT JOIN categories parent_cat ON c.parent_id = parent_cat.id`
+       LEFT JOIN categories parent_cat ON c.parent_id = parent_cat.id
+       LEFT JOIN categories grandparent_cat ON parent_cat.parent_id = grandparent_cat.id`
     : "";
 
   const sql = `SELECT ${selectParts.join(", ")}
@@ -308,6 +310,7 @@ export async function getDynamicReportData(
     type: "Type",
     level1: "Catégorie (Niveau 1)",
     level2: "Catégorie (Niveau 2)",
+    level3: "Catégorie (Niveau 3)",
     periodic: "Montant périodique",
     ytd: "Cumul annuel (YTD)",
   };
@@ -324,7 +327,8 @@ export async function getDynamicFilterValues(
 
   const joinSQL = useCatJoin
     ? `LEFT JOIN categories c ON t.category_id = c.id
-       LEFT JOIN categories parent_cat ON c.parent_id = parent_cat.id`
+       LEFT JOIN categories parent_cat ON c.parent_id = parent_cat.id
+       LEFT JOIN categories grandparent_cat ON parent_cat.parent_id = grandparent_cat.id`
     : "";
 
   const rows = await db.select<Array<{ val: string }>>(

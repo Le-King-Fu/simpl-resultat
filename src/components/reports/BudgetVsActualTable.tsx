@@ -25,7 +25,7 @@ interface BudgetVsActualTableProps {
 
 const STORAGE_KEY = "subtotals-position";
 
-function reorderRows<T extends { is_parent: boolean; parent_id: number | null; category_id: number }>(
+function reorderRows<T extends { is_parent: boolean; parent_id: number | null; category_id: number; depth?: 0 | 1 | 2 }>(
   rows: T[],
   subtotalsOnTop: boolean,
 ): T[] {
@@ -33,10 +33,10 @@ function reorderRows<T extends { is_parent: boolean; parent_id: number | null; c
   const groups: { parent: T | null; children: T[] }[] = [];
   let current: { parent: T | null; children: T[] } | null = null;
   for (const row of rows) {
-    if (row.is_parent) {
+    if (row.is_parent && (row.depth ?? 0) === 0) {
       if (current) groups.push(current);
       current = { parent: row, children: [] };
-    } else if (current && row.parent_id === current.parent?.category_id) {
+    } else if (current) {
       current.children.push(row);
     } else {
       if (current) groups.push(current);
@@ -44,9 +44,34 @@ function reorderRows<T extends { is_parent: boolean; parent_id: number | null; c
     }
   }
   if (current) groups.push(current);
-  return groups.flatMap(({ parent, children }) =>
-    parent ? [...children, parent] : children,
-  );
+  return groups.flatMap(({ parent, children }) => {
+    if (!parent) return children;
+    const reorderedChildren: T[] = [];
+    let subParent: T | null = null;
+    const subChildren: T[] = [];
+    for (const child of children) {
+      if (child.is_parent && (child.depth ?? 0) === 1) {
+        if (subParent) {
+          reorderedChildren.push(...subChildren, subParent);
+          subChildren.length = 0;
+        }
+        subParent = child;
+      } else if (subParent && child.parent_id === subParent.category_id) {
+        subChildren.push(child);
+      } else {
+        if (subParent) {
+          reorderedChildren.push(...subChildren, subParent);
+          subParent = null;
+          subChildren.length = 0;
+        }
+        reorderedChildren.push(child);
+      }
+    }
+    if (subParent) {
+      reorderedChildren.push(...subChildren, subParent);
+    }
+    return [...reorderedChildren, parent];
+  });
 }
 
 export default function BudgetVsActualTable({ data }: BudgetVsActualTableProps) {
@@ -168,15 +193,18 @@ export default function BudgetVsActualTable({ data }: BudgetVsActualTableProps) 
               </tr>
               {reorderRows(section.rows, subtotalsOnTop).map((row) => {
                 const isParent = row.is_parent;
-                const isChild = row.parent_id !== null && !row.is_parent;
+                const depth = row.depth ?? (row.parent_id !== null && !row.is_parent ? 1 : 0);
+                const isIntermediateParent = isParent && depth === 1;
+                const paddingClass = depth === 2 ? "pl-14" : depth === 1 ? "pl-8" : "px-3";
                 return (
                   <tr
-                    key={`${row.category_id}-${row.is_parent}`}
+                    key={`${row.category_id}-${row.is_parent}-${depth}`}
                     className={`border-b border-[var(--border)]/50 ${
-                      isParent ? "bg-[var(--muted)]/30 font-semibold" : ""
+                      isParent && !isIntermediateParent ? "bg-[var(--muted)]/30 font-semibold" :
+                      isIntermediateParent ? "bg-[var(--muted)]/15 font-medium" : ""
                     }`}
                   >
-                    <td className={`px-3 py-1.5 ${isChild ? "pl-8" : ""}`}>
+                    <td className={`py-1.5 ${isParent && !isIntermediateParent ? "px-3" : paddingClass}`}>
                       <span className="flex items-center gap-2">
                         <span
                           className="w-2.5 h-2.5 rounded-full shrink-0"

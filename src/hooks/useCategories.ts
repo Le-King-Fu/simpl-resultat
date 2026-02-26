@@ -79,12 +79,15 @@ function buildTree(flat: CategoryTreeNode[]): CategoryTreeNode[] {
 
 function flattenTreeToCategories(tree: CategoryTreeNode[]): CategoryTreeNode[] {
   const result: CategoryTreeNode[] = [];
-  for (const node of tree) {
-    result.push(node);
-    for (const child of node.children) {
-      result.push(child);
+  function recurse(nodes: CategoryTreeNode[]) {
+    for (const node of nodes) {
+      result.push(node);
+      if (node.children.length > 0) {
+        recurse(node.children);
+      }
     }
   }
+  recurse(tree);
   return result;
 }
 
@@ -263,23 +266,19 @@ export function useCategories() {
       });
       const newTree = state.tree.map(cloneNode);
 
-      // Find and remove the category from its current position
-      let movedNode: CategoryTreeNode | null = null;
-
-      // Search in roots
-      const rootIdx = newTree.findIndex((n) => n.id === categoryId);
-      if (rootIdx !== -1) {
-        movedNode = newTree.splice(rootIdx, 1)[0];
-      } else {
-        // Search in children
-        for (const parent of newTree) {
-          const childIdx = parent.children.findIndex((c) => c.id === categoryId);
-          if (childIdx !== -1) {
-            movedNode = parent.children.splice(childIdx, 1)[0];
-            break;
-          }
+      // Recursively find and remove the category from its current position
+      function removeFromList(list: CategoryTreeNode[]): CategoryTreeNode | null {
+        const idx = list.findIndex((n) => n.id === categoryId);
+        if (idx !== -1) {
+          return list.splice(idx, 1)[0];
         }
+        for (const node of list) {
+          const found = removeFromList(node.children);
+          if (found) return found;
+        }
+        return null;
       }
+      const movedNode = removeFromList(newTree);
 
       if (!movedNode) return;
 
@@ -290,7 +289,16 @@ export function useCategories() {
       if (newParentId === null) {
         newTree.splice(newIndex, 0, movedNode);
       } else {
-        const newParent = newTree.find((n) => n.id === newParentId);
+        // Find parent anywhere in the tree
+        function findNode(list: CategoryTreeNode[], id: number): CategoryTreeNode | null {
+          for (const n of list) {
+            if (n.id === id) return n;
+            const found = findNode(n.children, id);
+            if (found) return found;
+          }
+          return null;
+        }
+        const newParent = findNode(newTree, newParentId);
         if (!newParent) return;
         newParent.children.splice(newIndex, 0, movedNode);
       }
@@ -298,24 +306,16 @@ export function useCategories() {
       // Optimistic update
       dispatch({ type: "SET_TREE", payload: newTree });
 
-      // Compute batch updates for affected sibling groups
+      // Compute batch updates for all nodes in the tree (3 levels)
       const updates: Array<{ id: number; sort_order: number; parent_id: number | null }> = [];
 
-      // Collect all affected sibling groups
-      const affectedGroups = new Set<number | null>();
-      affectedGroups.add(newParentId);
-      // Also include the old parent group (category may have moved away)
-      // We recompute all roots and all children groups to be safe
-      // Roots
-      newTree.forEach((n, i) => {
-        updates.push({ id: n.id, sort_order: i + 1, parent_id: null });
-      });
-      // Children
-      for (const parent of newTree) {
-        parent.children.forEach((c, i) => {
-          updates.push({ id: c.id, sort_order: i + 1, parent_id: parent.id });
+      function collectUpdates(nodes: CategoryTreeNode[], parentId: number | null) {
+        nodes.forEach((n, i) => {
+          updates.push({ id: n.id, sort_order: i + 1, parent_id: parentId });
+          collectUpdates(n.children, n.id);
         });
       }
+      collectUpdates(newTree, null);
 
       try {
         await updateCategorySortOrders(updates);

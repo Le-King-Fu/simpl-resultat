@@ -26,6 +26,22 @@ export async function getAllCategoriesWithCounts(): Promise<CategoryRow[]> {
   );
 }
 
+export async function getCategoryDepth(categoryId: number): Promise<number> {
+  const db = await getDb();
+  let depth = 0;
+  let currentId: number | null = categoryId;
+  while (currentId !== null) {
+    const parentRows: Array<{ parent_id: number | null }> = await db.select<Array<{ parent_id: number | null }>>(
+      `SELECT parent_id FROM categories WHERE id = $1 AND is_active = 1`,
+      [currentId]
+    );
+    if (parentRows.length === 0 || parentRows[0].parent_id === null) break;
+    currentId = parentRows[0].parent_id;
+    depth++;
+  }
+  return depth;
+}
+
 export async function createCategory(data: {
   name: string;
   type: string;
@@ -35,10 +51,28 @@ export async function createCategory(data: {
   sort_order: number;
 }): Promise<number> {
   const db = await getDb();
+
+  // Validate max depth: parent at depth 2 would create a 4th level
+  if (data.parent_id !== null) {
+    const parentDepth = await getCategoryDepth(data.parent_id);
+    if (parentDepth >= 2) {
+      throw new Error("Cannot create category: maximum depth of 3 levels reached");
+    }
+  }
+
   const result = await db.execute(
     `INSERT INTO categories (name, type, color, parent_id, is_inputable, sort_order) VALUES ($1, $2, $3, $4, $5, $6)`,
     [data.name, data.type, data.color, data.parent_id, data.is_inputable ? 1 : 0, data.sort_order]
   );
+
+  // Auto-manage is_inputable: when a child is created under a parent, set parent to is_inputable = 0
+  if (data.parent_id !== null) {
+    await db.execute(
+      `UPDATE categories SET is_inputable = 0 WHERE id = $1 AND is_inputable = 1`,
+      [data.parent_id]
+    );
+  }
+
   return result.lastInsertId as number;
 }
 
@@ -119,16 +153,37 @@ export async function updateCategorySortOrders(
 
 export async function deactivateCategory(id: number): Promise<void> {
   const db = await getDb();
-  // Promote children to root level so they don't become orphans
-  await db.execute(
-    `UPDATE categories SET parent_id = NULL WHERE parent_id = $1`,
+  // Remember the parent before deactivating
+  const rows = await db.select<Array<{ parent_id: number | null }>>(
+    `SELECT parent_id FROM categories WHERE id = $1`,
     [id]
+  );
+  const parentId = rows[0]?.parent_id ?? null;
+
+  // Promote children to parent level so they don't become orphans
+  await db.execute(
+    `UPDATE categories SET parent_id = $1 WHERE parent_id = $2`,
+    [parentId, id]
   );
   // Only deactivate the target category itself
   await db.execute(
     `UPDATE categories SET is_active = 0 WHERE id = $1`,
     [id]
   );
+
+  // Auto-manage is_inputable: if parent now has no active children, restore is_inputable
+  if (parentId !== null) {
+    const childCount = await db.select<Array<{ cnt: number }>>(
+      `SELECT COUNT(*) AS cnt FROM categories WHERE parent_id = $1 AND is_active = 1`,
+      [parentId]
+    );
+    if ((childCount[0]?.cnt ?? 0) === 0) {
+      await db.execute(
+        `UPDATE categories SET is_inputable = 1 WHERE id = $1`,
+        [parentId]
+      );
+    }
+  }
 }
 
 export async function getCategoryUsageCount(id: number): Promise<number> {
@@ -142,9 +197,15 @@ export async function getCategoryUsageCount(id: number): Promise<number> {
 
 export async function getChildrenUsageCount(parentId: number): Promise<number> {
   const db = await getDb();
+  // Check descendants recursively (up to 2 levels deep)
   const rows = await db.select<Array<{ cnt: number }>>(
-    `SELECT COUNT(*) AS cnt FROM transactions WHERE category_id IN
-     (SELECT id FROM categories WHERE parent_id = $1 AND is_active = 1)`,
+    `SELECT COUNT(*) AS cnt FROM transactions WHERE category_id IN (
+       SELECT id FROM categories WHERE parent_id = $1 AND is_active = 1
+       UNION
+       SELECT id FROM categories WHERE parent_id IN (
+         SELECT id FROM categories WHERE parent_id = $1 AND is_active = 1
+       ) AND is_active = 1
+     )`,
     [parentId]
   );
   return rows[0]?.cnt ?? 0;
@@ -173,47 +234,61 @@ export async function reinitializeCategories(): Promise<void> {
     );
   }
 
-  // Re-seed child categories
-  const children: Array<[number, string, number, string, string, number]> = [
-    [10, "Paie", 1, "income", "#22c55e", 1],
-    [11, "Autres revenus", 1, "income", "#4ade80", 2],
-    [20, "Loyer", 2, "expense", "#ef4444", 1],
-    [21, "Électricité", 2, "expense", "#f59e0b", 2],
-    [22, "Épicerie", 2, "expense", "#10b981", 3],
-    [23, "Dons", 2, "expense", "#ec4899", 4],
-    [24, "Restaurant", 2, "expense", "#f97316", 5],
-    [25, "Frais bancaires", 2, "expense", "#6b7280", 6],
-    [26, "Jeux, Films & Livres", 2, "expense", "#8b5cf6", 7],
-    [27, "Abonnements Musique", 2, "expense", "#06b6d4", 8],
-    [28, "Transport en commun", 2, "expense", "#3b82f6", 9],
-    [29, "Internet & Télécom", 2, "expense", "#6366f1", 10],
-    [30, "Animaux", 2, "expense", "#a855f7", 11],
-    [31, "Assurances", 2, "expense", "#14b8a6", 12],
-    [32, "Pharmacie", 2, "expense", "#f43f5e", 13],
-    [33, "Taxes municipales", 2, "expense", "#78716c", 14],
-    [40, "Voiture", 3, "expense", "#64748b", 1],
-    [41, "Amazon", 3, "expense", "#f59e0b", 2],
-    [42, "Électroniques", 3, "expense", "#3b82f6", 3],
-    [43, "Alcool", 3, "expense", "#7c3aed", 4],
-    [44, "Cadeaux", 3, "expense", "#ec4899", 5],
-    [45, "Vêtements", 3, "expense", "#d946ef", 6],
-    [46, "CPA", 3, "expense", "#0ea5e9", 7],
-    [47, "Voyage", 3, "expense", "#f97316", 8],
-    [48, "Sports & Plein air", 3, "expense", "#22c55e", 9],
-    [49, "Spectacles & sorties", 3, "expense", "#e11d48", 10],
-    [50, "Hypothèque", 4, "expense", "#dc2626", 1],
-    [51, "Achats maison", 4, "expense", "#ea580c", 2],
-    [52, "Entretien maison", 4, "expense", "#ca8a04", 3],
-    [53, "Électroménagers & Meubles", 4, "expense", "#0d9488", 4],
-    [54, "Outils", 4, "expense", "#b45309", 5],
-    [60, "Placements", 5, "transfer", "#2563eb", 1],
-    [61, "Transferts", 5, "transfer", "#7c3aed", 2],
-    [70, "Impôts", 6, "expense", "#dc2626", 1],
-    [71, "Paiement CC", 6, "transfer", "#6b7280", 2],
-    [72, "Retrait cash", 6, "expense", "#57534e", 3],
-    [73, "Projets", 6, "expense", "#0ea5e9", 4],
+  // Re-seed child categories (level 2)
+  // Note: Assurances (31) is now a non-inputable intermediate parent with level-3 children
+  const children: Array<[number, string, number, string, string, number, boolean]> = [
+    [10, "Paie", 1, "income", "#22c55e", 1, true],
+    [11, "Autres revenus", 1, "income", "#4ade80", 2, true],
+    [20, "Loyer", 2, "expense", "#ef4444", 1, true],
+    [21, "Électricité", 2, "expense", "#f59e0b", 2, true],
+    [22, "Épicerie", 2, "expense", "#10b981", 3, true],
+    [23, "Dons", 2, "expense", "#ec4899", 4, true],
+    [24, "Restaurant", 2, "expense", "#f97316", 5, true],
+    [25, "Frais bancaires", 2, "expense", "#6b7280", 6, true],
+    [26, "Jeux, Films & Livres", 2, "expense", "#8b5cf6", 7, true],
+    [27, "Abonnements Musique", 2, "expense", "#06b6d4", 8, true],
+    [28, "Transport en commun", 2, "expense", "#3b82f6", 9, true],
+    [29, "Internet & Télécom", 2, "expense", "#6366f1", 10, true],
+    [30, "Animaux", 2, "expense", "#a855f7", 11, true],
+    [31, "Assurances", 2, "expense", "#14b8a6", 12, false],  // intermediate parent
+    [32, "Pharmacie", 2, "expense", "#f43f5e", 13, true],
+    [33, "Taxes municipales", 2, "expense", "#78716c", 14, true],
+    [40, "Voiture", 3, "expense", "#64748b", 1, true],
+    [41, "Amazon", 3, "expense", "#f59e0b", 2, true],
+    [42, "Électroniques", 3, "expense", "#3b82f6", 3, true],
+    [43, "Alcool", 3, "expense", "#7c3aed", 4, true],
+    [44, "Cadeaux", 3, "expense", "#ec4899", 5, true],
+    [45, "Vêtements", 3, "expense", "#d946ef", 6, true],
+    [46, "CPA", 3, "expense", "#0ea5e9", 7, true],
+    [47, "Voyage", 3, "expense", "#f97316", 8, true],
+    [48, "Sports & Plein air", 3, "expense", "#22c55e", 9, true],
+    [49, "Spectacles & sorties", 3, "expense", "#e11d48", 10, true],
+    [50, "Hypothèque", 4, "expense", "#dc2626", 1, true],
+    [51, "Achats maison", 4, "expense", "#ea580c", 2, true],
+    [52, "Entretien maison", 4, "expense", "#ca8a04", 3, true],
+    [53, "Électroménagers & Meubles", 4, "expense", "#0d9488", 4, true],
+    [54, "Outils", 4, "expense", "#b45309", 5, true],
+    [60, "Placements", 5, "transfer", "#2563eb", 1, true],
+    [61, "Transferts", 5, "transfer", "#7c3aed", 2, true],
+    [70, "Impôts", 6, "expense", "#dc2626", 1, true],
+    [71, "Paiement CC", 6, "transfer", "#6b7280", 2, true],
+    [72, "Retrait cash", 6, "expense", "#57534e", 3, true],
+    [73, "Projets", 6, "expense", "#0ea5e9", 4, true],
   ];
-  for (const [id, name, parentId, type, color, sort] of children) {
+  for (const [id, name, parentId, type, color, sort, inputable] of children) {
+    await db.execute(
+      "INSERT INTO categories (id, name, parent_id, type, color, sort_order, is_inputable) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [id, name, parentId, type, color, sort, inputable ? 1 : 0]
+    );
+  }
+
+  // Re-seed grandchild categories (level 3) — under Assurances (31)
+  const grandchildren: Array<[number, string, number, string, string, number]> = [
+    [310, "Assurance-auto", 31, "expense", "#14b8a6", 1],
+    [311, "Assurance-habitation", 31, "expense", "#0d9488", 2],
+    [312, "Assurance-vie", 31, "expense", "#0f766e", 3],
+  ];
+  for (const [id, name, parentId, type, color, sort] of grandchildren) {
     await db.execute(
       "INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES ($1, $2, $3, $4, $5, $6)",
       [id, name, parentId, type, color, sort]
@@ -237,7 +312,7 @@ export async function reinitializeCategories(): Promise<void> {
     ["GARE CENTRALE", 28], ["REM", 28],
     ["VIDEOTRON", 29], ["ORICOM", 29],
     ["MONDOU", 30],
-    ["BELAIR", 31], ["PRYSM", 31], ["INS/ASS", 31],
+    ["BELAIR", 310], ["PRYSM", 311], ["INS/ASS", 312],
     ["JEAN COUTU", 32], ["FAMILIPRIX", 32], ["PHARMAPRIX", 32],
     ["M-ST-HILAIRE TX", 33], ["CSS PATRIOT", 33],
     ["SHELL", 40], ["ESSO", 40], ["ULTRAMAR", 40], ["PETRO-CANADA", 40],

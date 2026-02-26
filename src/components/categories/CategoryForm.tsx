@@ -41,9 +41,36 @@ export default function CategoryForm({
     setForm(initialData);
   }, [initialData]);
 
-  const parentOptions = categories.filter(
-    (c) => c.parent_id === null
-  );
+  // Allow level 0 and level 1 categories as parents (but not level 2, which would create a 4th level)
+  // Also build indentation info
+  const parentOptions: Array<CategoryTreeNode & { indent: number }> = [];
+  for (const cat of categories) {
+    if (cat.parent_id === null) {
+      // Level 0 — always allowed as parent
+      parentOptions.push({ ...cat, indent: 0 });
+    }
+  }
+  for (const cat of categories) {
+    if (cat.parent_id !== null) {
+      // Check if this category's parent is a root (making this level 1)
+      const parent = categories.find((c) => c.id === cat.parent_id);
+      if (parent && parent.parent_id === null) {
+        // Level 1 — allowed as parent (would create level 3 children)
+        parentOptions.push({ ...cat, indent: 1 });
+      }
+      // Level 2 categories are NOT shown (would create level 4)
+    }
+  }
+  // Sort to keep hierarchy order: group by root parent sort_order
+  parentOptions.sort((a, b) => {
+    const rootA = a.indent === 0 ? a : categories.find((c) => c.id === a.parent_id);
+    const rootB = b.indent === 0 ? b : categories.find((c) => c.id === b.parent_id);
+    const orderA = rootA?.sort_order ?? 999;
+    const orderB = rootB?.sort_order ?? 999;
+    if (orderA !== orderB) return orderA - orderB;
+    if (a.indent !== b.indent) return a.indent - b.indent;
+    return a.sort_order - b.sort_order;
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +140,7 @@ export default function CategoryForm({
           <option value="">{t("categories.noParent")}</option>
           {parentOptions.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {c.indent > 0 ? "\u00A0\u00A0\u00A0\u00A0" : ""}{c.name}
             </option>
           ))}
         </select>

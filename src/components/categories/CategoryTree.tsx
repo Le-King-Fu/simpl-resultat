@@ -35,25 +35,24 @@ interface Props {
   onMoveCategory: (id: number, newParentId: number | null, newIndex: number) => Promise<void>;
 }
 
+function getSubtreeDepth(node: CategoryTreeNode): number {
+  if (node.children.length === 0) return 0;
+  return 1 + Math.max(...node.children.map(getSubtreeDepth));
+}
+
 function flattenTree(tree: CategoryTreeNode[], expandedSet: Set<number>): FlatItem[] {
   const items: FlatItem[] = [];
-  for (const node of tree) {
-    const hasChildren = node.children.length > 0;
-    const isExpanded = expandedSet.has(node.id);
-    items.push({ id: node.id, node, depth: 0, parentId: null, isExpanded, hasChildren });
-    if (isExpanded) {
-      for (const child of node.children) {
-        items.push({
-          id: child.id,
-          node: child,
-          depth: 1,
-          parentId: node.id,
-          isExpanded: false,
-          hasChildren: false,
-        });
+  function recurse(nodes: CategoryTreeNode[], depth: number, parentId: number | null) {
+    for (const node of nodes) {
+      const hasChildren = node.children.length > 0;
+      const isExpanded = expandedSet.has(node.id);
+      items.push({ id: node.id, node, depth, parentId, isExpanded, hasChildren });
+      if (isExpanded && hasChildren) {
+        recurse(node.children, depth + 1, node.id);
       }
     }
   }
+  recurse(tree, 0, null);
   return items;
 }
 
@@ -191,9 +190,15 @@ function SortableTreeRow({
 export default function CategoryTree({ tree, selectedId, onSelect, onMoveCategory }: Props) {
   const [expanded, setExpanded] = useState<Set<number>>(() => {
     const ids = new Set<number>();
-    for (const node of tree) {
-      if (node.children.length > 0) ids.add(node.id);
+    function collectExpandable(nodes: CategoryTreeNode[]) {
+      for (const node of nodes) {
+        if (node.children.length > 0) {
+          ids.add(node.id);
+          collectExpandable(node.children);
+        }
+      }
     }
+    collectExpandable(tree);
     return ids;
   });
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -238,40 +243,31 @@ export default function CategoryTree({ tree, selectedId, onSelect, onMoveCategor
       const activeItem = flatItems[activeIdx];
       const overItem = flatItems[overIdx];
 
+      // Compute the depth of the active item's subtree
+      const activeSubtreeDepth = getSubtreeDepth(activeItem.node);
+
       // Determine the new parent and index
       let newParentId: number | null;
       let newIndex: number;
 
       if (overItem.depth === 0) {
-        // Dropping onto/near a root item
+        // Dropping onto/near a root item — same depth reorder or moving to root
+        newParentId = null;
+        const rootItems = flatItems.filter((i) => i.depth === 0);
+        const overRootIdx = rootItems.findIndex((i) => i.id === over.id);
         if (activeItem.depth === 0) {
-          // Root reorder: keep as root
-          newParentId = null;
-          // Count the root index of the over item
-          const rootItems = flatItems.filter((i) => i.depth === 0);
-          const overRootIdx = rootItems.findIndex((i) => i.id === over.id);
           newIndex = overRootIdx;
         } else {
-          // Child moving to root level
-          newParentId = null;
-          const rootItems = flatItems.filter((i) => i.depth === 0);
-          const overRootIdx = rootItems.findIndex((i) => i.id === over.id);
           newIndex = overIdx > activeIdx ? overRootIdx + 1 : overRootIdx;
         }
       } else {
-        // Dropping onto/near a child item
-        if (activeItem.hasChildren) {
-          // Block: moving a root with children to become a child (would create 3 levels)
-          return;
-        }
+        // Dropping onto/near a non-root item — adopt same parent
         newParentId = overItem.parentId;
-        // Find the index within that parent's children
         const siblings = flatItems.filter(
-          (i) => i.depth === 1 && i.parentId === overItem.parentId
+          (i) => i.depth === overItem.depth && i.parentId === overItem.parentId
         );
         const overSiblingIdx = siblings.findIndex((i) => i.id === over.id);
         newIndex = overIdx > activeIdx ? overSiblingIdx + 1 : overSiblingIdx;
-        // If moving from same parent, adjust index
         if (activeItem.parentId === newParentId) {
           const activeSiblingIdx = siblings.findIndex((i) => i.id === active.id);
           if (activeSiblingIdx < overSiblingIdx) {
@@ -282,8 +278,9 @@ export default function CategoryTree({ tree, selectedId, onSelect, onMoveCategor
         }
       }
 
-      // Validate 2-level constraint: can't drop a root with children into a child position
-      if (newParentId !== null && activeItem.hasChildren) {
+      // Validate 3-level constraint: targetDepth + subtreeDepth must be <= 2 (max index)
+      const targetDepth = newParentId === null ? 0 : overItem.depth;
+      if (targetDepth + activeSubtreeDepth > 2) {
         return;
       }
 

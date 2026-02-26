@@ -112,13 +112,96 @@ export function useBudget() {
 
       const rows: BudgetYearRow[] = [];
 
+      // Build rows for an intermediate parent (level 1 or 2 with children)
+      function buildLevel2Group(cat: typeof allCategories[0], grandparentId: number): BudgetYearRow[] {
+        const grandchildren = (childrenByParent.get(cat.id) || []).filter((c) => c.is_inputable);
+        if (grandchildren.length === 0 && cat.is_inputable) {
+          // Leaf at depth 2
+          const { months, annual } = buildMonths(cat.id);
+          return [{
+            category_id: cat.id,
+            category_name: cat.name,
+            category_color: cat.color || "#9ca3af",
+            category_type: cat.type,
+            parent_id: grandparentId,
+            is_parent: false,
+            depth: 2,
+            months,
+            annual,
+          }];
+        }
+        if (grandchildren.length === 0 && !cat.is_inputable) {
+          // Also check if it has non-inputable intermediate children with their own children
+          // This shouldn't happen at depth 3 (max 3 levels), but handle gracefully
+          return [];
+        }
+
+        const gcRows: BudgetYearRow[] = [];
+        if (cat.is_inputable) {
+          const { months, annual } = buildMonths(cat.id);
+          gcRows.push({
+            category_id: cat.id,
+            category_name: `${cat.name} (direct)`,
+            category_color: cat.color || "#9ca3af",
+            category_type: cat.type,
+            parent_id: cat.id,
+            is_parent: false,
+            depth: 2,
+            months,
+            annual,
+          });
+        }
+        for (const gc of grandchildren) {
+          const { months, annual } = buildMonths(gc.id);
+          gcRows.push({
+            category_id: gc.id,
+            category_name: gc.name,
+            category_color: gc.color || cat.color || "#9ca3af",
+            category_type: gc.type,
+            parent_id: cat.id,
+            is_parent: false,
+            depth: 2,
+            months,
+            annual,
+          });
+        }
+        if (gcRows.length === 0) return [];
+
+        // Build intermediate subtotal
+        const subMonths = Array(12).fill(0) as number[];
+        let subAnnual = 0;
+        for (const cr of gcRows) {
+          for (let m = 0; m < 12; m++) subMonths[m] += cr.months[m];
+          subAnnual += cr.annual;
+        }
+        const subtotal: BudgetYearRow = {
+          category_id: cat.id,
+          category_name: cat.name,
+          category_color: cat.color || "#9ca3af",
+          category_type: cat.type,
+          parent_id: grandparentId,
+          is_parent: true,
+          depth: 1,
+          months: subMonths,
+          annual: subAnnual,
+        };
+        gcRows.sort((a, b) => {
+          if (a.category_id === cat.id) return -1;
+          if (b.category_id === cat.id) return 1;
+          return a.category_name.localeCompare(b.category_name);
+        });
+        return [subtotal, ...gcRows];
+      }
+
       // Identify top-level parents and standalone leaves
       const topLevel = allCategories.filter((c) => !c.parent_id);
 
       for (const cat of topLevel) {
-        const children = (childrenByParent.get(cat.id) || []).filter((c) => c.is_inputable);
+        const children = childrenByParent.get(cat.id) || [];
+        const inputableChildren = children.filter((c) => c.is_inputable);
+        const intermediateParents = children.filter((c) => !c.is_inputable && (childrenByParent.get(c.id) || []).length > 0);
 
-        if (children.length === 0 && cat.is_inputable) {
+        if (inputableChildren.length === 0 && intermediateParents.length === 0 && cat.is_inputable) {
           // Standalone leaf (no children) — regular editable row
           const { months, annual } = buildMonths(cat.id);
           rows.push({
@@ -128,46 +211,63 @@ export function useBudget() {
             category_type: cat.type,
             parent_id: null,
             is_parent: false,
+            depth: 0,
             months,
             annual,
           });
-        } else if (children.length > 0) {
-          // Parent with children — build child rows first, then parent subtotal
-          const childRows: BudgetYearRow[] = [];
+        } else if (inputableChildren.length > 0 || intermediateParents.length > 0) {
+          const allChildRows: BudgetYearRow[] = [];
 
           // If parent is also inputable, create a "(direct)" fake-child row
           if (cat.is_inputable) {
             const { months, annual } = buildMonths(cat.id);
-            childRows.push({
+            allChildRows.push({
               category_id: cat.id,
               category_name: `${cat.name} (direct)`,
               category_color: cat.color || "#9ca3af",
               category_type: cat.type,
               parent_id: cat.id,
               is_parent: false,
+              depth: 1,
               months,
               annual,
             });
           }
 
-          for (const child of children) {
-            const { months, annual } = buildMonths(child.id);
-            childRows.push({
-              category_id: child.id,
-              category_name: child.name,
-              category_color: child.color || cat.color || "#9ca3af",
-              category_type: child.type,
-              parent_id: cat.id,
-              is_parent: false,
-              months,
-              annual,
-            });
+          for (const child of inputableChildren) {
+            const grandchildren = childrenByParent.get(child.id) || [];
+            if (grandchildren.length === 0) {
+              // Simple leaf at depth 1
+              const { months, annual } = buildMonths(child.id);
+              allChildRows.push({
+                category_id: child.id,
+                category_name: child.name,
+                category_color: child.color || cat.color || "#9ca3af",
+                category_type: child.type,
+                parent_id: cat.id,
+                is_parent: false,
+                depth: 1,
+                months,
+                annual,
+              });
+            } else {
+              // Intermediate parent at depth 1 with grandchildren
+              allChildRows.push(...buildLevel2Group(child, cat.id));
+            }
           }
 
-          // Parent subtotal row: sum of all children (+ direct if inputable)
+          // Non-inputable intermediate parents
+          for (const ip of intermediateParents) {
+            allChildRows.push(...buildLevel2Group(ip, cat.id));
+          }
+
+          if (allChildRows.length === 0) continue;
+
+          // Parent subtotal row: sum of leaf rows only (avoid double-counting)
+          const leafRows = allChildRows.filter((r) => !r.is_parent);
           const parentMonths = Array(12).fill(0) as number[];
           let parentAnnual = 0;
-          for (const cr of childRows) {
+          for (const cr of leafRows) {
             for (let m = 0; m < 12; m++) parentMonths[m] += cr.months[m];
             parentAnnual += cr.annual;
           }
@@ -179,32 +279,43 @@ export function useBudget() {
             category_type: cat.type,
             parent_id: null,
             is_parent: true,
+            depth: 0,
             months: parentMonths,
             annual: parentAnnual,
           });
 
           // Sort children alphabetically, but keep "(direct)" first
-          childRows.sort((a, b) => {
-            if (a.category_id === cat.id) return -1;
-            if (b.category_id === cat.id) return 1;
+          allChildRows.sort((a, b) => {
+            if (a.category_id === cat.id && !a.is_parent) return -1;
+            if (b.category_id === cat.id && !b.is_parent) return 1;
             return a.category_name.localeCompare(b.category_name);
           });
 
-          rows.push(...childRows);
+          rows.push(...allChildRows);
         }
         // else: non-inputable parent with no inputable children — skip
       }
 
-      // Sort by type, then within each type: parent rows first (with children following), then standalone
+      // Sort by type, then within each type: keep hierarchy groups together
+      function getTopGroupId(r: BudgetYearRow): number {
+        if ((r.depth ?? 0) === 0) return r.category_id;
+        if (r.is_parent && r.parent_id === null) return r.category_id;
+        let pid = r.parent_id;
+        while (pid !== null) {
+          const pCat = catById.get(pid);
+          if (!pCat || !pCat.parent_id) return pid;
+          pid = pCat.parent_id;
+        }
+        return r.category_id;
+      }
+
       rows.sort((a, b) => {
         const typeA = TYPE_ORDER[a.category_type] ?? 9;
         const typeB = TYPE_ORDER[b.category_type] ?? 9;
         if (typeA !== typeB) return typeA - typeB;
-        // Within same type, keep parent+children groups together
-        const groupA = a.is_parent ? a.category_id : (a.parent_id ?? a.category_id);
-        const groupB = b.is_parent ? b.category_id : (b.parent_id ?? b.category_id);
+        const groupA = getTopGroupId(a);
+        const groupB = getTopGroupId(b);
         if (groupA !== groupB) {
-          // Find the sort_order of the group's parent category
           const catA = catById.get(groupA);
           const catB = catById.get(groupB);
           const orderA = catA?.sort_order ?? 999;
@@ -212,9 +323,9 @@ export function useBudget() {
           if (orderA !== orderB) return orderA - orderB;
           return (catA?.name ?? "").localeCompare(catB?.name ?? "");
         }
-        // Same group: parent row first, then children
-        if (a.is_parent !== b.is_parent) return a.is_parent ? -1 : 1;
-        // Children: "(direct)" first, then alphabetical
+        // Same group: sort by depth, then parent before children at same depth
+        if (a.is_parent !== b.is_parent && (a.depth ?? 0) === (b.depth ?? 0)) return a.is_parent ? -1 : 1;
+        if ((a.depth ?? 0) !== (b.depth ?? 0)) return (a.depth ?? 0) - (b.depth ?? 0);
         if (a.parent_id && a.category_id === a.parent_id) return -1;
         if (b.parent_id && b.category_id === b.parent_id) return 1;
         return a.category_name.localeCompare(b.category_name);
