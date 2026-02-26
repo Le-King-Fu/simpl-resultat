@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+- Categories: support for 3 levels of hierarchy (e.g., Dépenses récurrentes → Assurances → Assurance-auto)
+- Dynamic Report: new "Category (Level 3)" pivot field
+- Budget: intermediate subtotals and 3-level indentation for nested categories
+- Categories: automatic `is_inputable` management when creating/deleting subcategories
+- Categories: depth validation prevents creating a 4th level
+- Seed data: Assurances split into Assurance-auto, Assurance-habitation, Assurance-vie
+
 ## [0.3.11]
 
 ### Added
