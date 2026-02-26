@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.4.0]
+
 ### Added
 - Categories: support for 3 levels of hierarchy (e.g., Dépenses récurrentes → Assurances → Assurance-auto)
 - Dynamic Report: new "Category (Level 3)" pivot field
