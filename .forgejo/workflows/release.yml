@@ -35,6 +35,7 @@ jobs:
       - name: Build Tauri
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         run: |
           source "$HOME/.cargo/env"
           npx tauri build
