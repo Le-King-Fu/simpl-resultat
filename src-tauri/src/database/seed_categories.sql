@@ -35,7 +35,7 @@ INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (27
 INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (28, 'Transport en commun', 2, 'expense', '#3b82f6', 9);
 INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (29, 'Internet & Télécom', 2, 'expense', '#6366f1', 10);
 INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (30, 'Animaux', 2, 'expense', '#a855f7', 11);
-INSERT INTO categories (id, name, parent_id, type, color, sort_order, is_inputable) VALUES (31, 'Assurances', 2, 'expense', '#14b8a6', 12, 0);
+INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (31, 'Assurances', 2, 'expense', '#14b8a6', 12);
 INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (32, 'Pharmacie', 2, 'expense', '#f43f5e', 13);
 INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (33, 'Taxes municipales', 2, 'expense', '#78716c', 14);
 
@@ -67,13 +67,6 @@ INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (70
 INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (71, 'Paiement CC', 6, 'transfer', '#6b7280', 2);
 INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (72, 'Retrait cash', 6, 'expense', '#57534e', 3);
 INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (73, 'Projets', 6, 'expense', '#0ea5e9', 4);
-
--- ==========================================
--- Grandchild categories (Level 3 — under Assurances)
--- ==========================================
-INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (310, 'Assurance-auto', 31, 'expense', '#14b8a6', 1);
-INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (311, 'Assurance-habitation', 31, 'expense', '#0d9488', 2);
-INSERT INTO categories (id, name, parent_id, type, color, sort_order) VALUES (312, 'Assurance-vie', 31, 'expense', '#0f766e', 3);
 
 -- ==========================================
 -- Keywords
@@ -139,12 +132,10 @@ INSERT INTO keywords (keyword, category_id) VALUES ('ORICOM', 29);
 -- Animaux (30)
 INSERT INTO keywords (keyword, category_id) VALUES ('MONDOU', 30);
 
--- Assurance-auto (310)
-INSERT INTO keywords (keyword, category_id) VALUES ('BELAIR', 310);
--- Assurance-habitation (311)
-INSERT INTO keywords (keyword, category_id) VALUES ('PRYSM', 311);
--- Assurance-vie (312)
-INSERT INTO keywords (keyword, category_id) VALUES ('INS/ASS', 312);
+-- Assurances (31)
+INSERT INTO keywords (keyword, category_id) VALUES ('BELAIR', 31);
+INSERT INTO keywords (keyword, category_id) VALUES ('PRYSM', 31);
+INSERT INTO keywords (keyword, category_id) VALUES ('INS/ASS', 31);
 
 -- Pharmacie (32)
 INSERT INTO keywords (keyword, category_id) VALUES ('JEAN COUTU', 32);

@@ -67,6 +67,18 @@ pub fn run() {
             ALTER TABLE imported_files_new RENAME TO imported_files;",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 7,
+            description: "add level-3 insurance subcategories",
+            sql: "INSERT OR IGNORE INTO categories (id, name, parent_id, type, color, sort_order) VALUES (310, 'Assurance-auto', 31, 'expense', '#14b8a6', 1);
+            INSERT OR IGNORE INTO categories (id, name, parent_id, type, color, sort_order) VALUES (311, 'Assurance-habitation', 31, 'expense', '#0d9488', 2);
+            INSERT OR IGNORE INTO categories (id, name, parent_id, type, color, sort_order) VALUES (312, 'Assurance-vie', 31, 'expense', '#0f766e', 3);
+            UPDATE categories SET is_inputable = 0 WHERE id = 31;
+            UPDATE keywords SET category_id = 310 WHERE keyword = 'BELAIR' AND category_id = 31;
+            UPDATE keywords SET category_id = 311 WHERE keyword = 'PRYSM' AND category_id = 31;
+            UPDATE keywords SET category_id = 312 WHERE keyword = 'INS/ASS' AND category_id = 31;",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

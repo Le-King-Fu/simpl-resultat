@@ -20,7 +20,9 @@ export default function App() {
   useEffect(() => {
     if (activeProfile && !isLoading) {
       setDbReady(false);
-      connectActiveProfile().then(() => setDbReady(true));
+      connectActiveProfile()
+        .then(() => setDbReady(true))
+        .catch((err) => console.error("Failed to connect profile:", err));
     }
   }, [activeProfile, isLoading, connectActiveProfile]);
 
