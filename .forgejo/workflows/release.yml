@@ -142,10 +142,11 @@ jobs:
           # Upload all assets
           for file in release-assets/*; do
             FILENAME=$(basename "$file")
+            ENCODED_FILENAME=$(printf '%s' "$FILENAME" | jq -sRr @uri)
             FILESIZE=$(stat -c%s "$file")
             echo "Uploading: $FILENAME (${FILESIZE} bytes)"
             HTTP_CODE=$(curl -w "%{http_code}" --max-time 300 -X POST \
-              "${API_URL}/repos/${REPO}/releases/${RELEASE_ID}/assets?name=${FILENAME}" \
+              "${API_URL}/repos/${REPO}/releases/${RELEASE_ID}/assets?name=${ENCODED_FILENAME}" \
               -H "Authorization: token ${FORGEJO_TOKEN}" \
               -H "Content-Type: application/octet-stream" \
               --data-binary "@${file}" \
