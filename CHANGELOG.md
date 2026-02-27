@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.4.1]
+
+### Fixed
+- App stuck on infinite spinner after updating from v0.3.x (migration checksum mismatch on seed_categories.sql)
+- DB connection errors now logged to console instead of silently failing
+
 ## [0.4.0]
 
 ### Added
