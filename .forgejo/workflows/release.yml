@@ -142,13 +142,20 @@ jobs:
           # Upload all assets
           for file in release-assets/*; do
             FILENAME=$(basename "$file")
-            echo "Uploading: $FILENAME"
-            curl -s -X POST \
+            FILESIZE=$(stat -c%s "$file")
+            echo "Uploading: $FILENAME (${FILESIZE} bytes)"
+            HTTP_CODE=$(curl -w "%{http_code}" --max-time 300 -X POST \
               "${API_URL}/repos/${REPO}/releases/${RELEASE_ID}/assets?name=${FILENAME}" \
               -H "Authorization: token ${FORGEJO_TOKEN}" \
               -H "Content-Type: application/octet-stream" \
-              --data-binary "@${file}"
-            echo ""
+              --data-binary "@${file}" \
+              -o /tmp/upload_response.json)
+            echo "HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" != "201" ]; then
+              echo "Upload failed:"
+              cat /tmp/upload_response.json
+              echo ""
+            fi
           done
 
           echo "Release created: ${GITHUB_SERVER_URL}/${REPO}/releases/tag/${TAG}"
