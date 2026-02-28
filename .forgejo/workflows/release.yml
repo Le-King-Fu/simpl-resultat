@@ -29,6 +29,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf jq libssl-dev xdg-utils
 
+      - name: Install Windows cross-compile dependencies
+        run: |
+          sudo apt-get install -y lld llvm clang nsis
+          source "$HOME/.cargo/env"
+          rustup target add x86_64-pc-windows-msvc
+          cargo install --locked cargo-xwin
+
       - name: Install frontend dependencies
         run: npm ci
 
@@ -40,6 +47,14 @@ jobs:
           source "$HOME/.cargo/env"
           npx tauri build
 
+      - name: Build Tauri Windows
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          source "$HOME/.cargo/env"
+          npx tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc --bundles nsis
+
       - name: Collect release files
         run: |
           mkdir -p release-assets
@@ -48,6 +63,8 @@ jobs:
           cp src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz release-assets/ 2>/dev/null || true
           cp src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz.sig release-assets/ 2>/dev/null || true
           cp src-tauri/target/release/bundle/rpm/*.rpm release-assets/ 2>/dev/null || true
+          cp src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe release-assets/ 2>/dev/null || true
+          cp src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe.sig release-assets/ 2>/dev/null || true
           ls -la release-assets/
 
       - name: Extract changelog
@@ -73,12 +90,20 @@ jobs:
 
           LINUX_SIG=""
           APPIMAGE_TAR=""
+          WINDOWS_SIG=""
+          WINDOWS_EXE=""
 
           for f in release-assets/*.AppImage.tar.gz.sig; do
             [ -f "$f" ] && LINUX_SIG=$(cat "$f")
           done
           for f in release-assets/*.AppImage.tar.gz; do
             [ -f "$f" ] && APPIMAGE_TAR=$(basename "$f")
+          done
+          for f in release-assets/*-setup.exe.sig; do
+            [ -f "$f" ] && WINDOWS_SIG=$(cat "$f")
+          done
+          for f in release-assets/*-setup.exe; do
+            [ -f "$f" ] && WINDOWS_EXE=$(basename "$f")
           done
 
           PLATFORMS="{}"
@@ -87,6 +112,12 @@ jobs:
               --arg sig "$LINUX_SIG" \
               --arg url "${BASE_URL}/${APPIMAGE_TAR}" \
               '. + {"linux-x86_64": {"signature": $sig, "url": $url}}')
+          fi
+          if [ -n "$WINDOWS_SIG" ] && [ -n "$WINDOWS_EXE" ]; then
+            PLATFORMS=$(echo "$PLATFORMS" | jq \
+              --arg sig "$WINDOWS_SIG" \
+              --arg url "${BASE_URL}/${WINDOWS_EXE}" \
+              '. + {"windows-x86_64": {"signature": $sig, "url": $url}}')
           fi
 
           jq -n \
@@ -115,6 +146,7 @@ jobs:
 
           ## Installation
 
+          **Windows** : Téléchargez le fichier `.exe` ci-dessous.
           **Linux** : Téléchargez le fichier `.deb` ou `.AppImage` ci-dessous.
           BODY_EOF
           )

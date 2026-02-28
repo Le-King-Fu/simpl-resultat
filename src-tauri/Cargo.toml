@@ -1,6 +1,6 @@
 [package]
 name = "simpl-result"
-version = "0.4.1"
+version = "0.4.2"
 description = "Personal finance management app"
 authors = ["you"]
 edition = "2021"
@@ -24,6 +24,7 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
+libsqlite3-sys = { version = "0.30", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"

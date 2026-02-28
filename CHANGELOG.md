@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.4.2]
+
+### Changed
+- Auto-updater now points to self-hosted Forgejo instance
+- Windows builds now cross-compiled via cargo-xwin
+
 ## [0.4.1]
 
 ### Fixed
