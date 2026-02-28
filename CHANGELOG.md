@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.4.3]
+
+### Fixed
+- Auto-updater endpoint now uses Forgejo package registry for stable URL
+- Linux updater signatures (.AppImage.sig) now correctly collected in CI
+- All platform signatures (.deb.sig, .rpm.sig) now included in release assets
+
 ## [0.4.2]
 
 ### Changed

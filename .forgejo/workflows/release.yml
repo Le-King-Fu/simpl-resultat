@@ -59,10 +59,11 @@ jobs:
         run: |
           mkdir -p release-assets
           cp src-tauri/target/release/bundle/deb/*.deb release-assets/ 2>/dev/null || true
+          cp src-tauri/target/release/bundle/deb/*.deb.sig release-assets/ 2>/dev/null || true
           cp src-tauri/target/release/bundle/appimage/*.AppImage release-assets/ 2>/dev/null || true
-          cp src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz release-assets/ 2>/dev/null || true
-          cp src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz.sig release-assets/ 2>/dev/null || true
+          cp src-tauri/target/release/bundle/appimage/*.AppImage.sig release-assets/ 2>/dev/null || true
           cp src-tauri/target/release/bundle/rpm/*.rpm release-assets/ 2>/dev/null || true
+          cp src-tauri/target/release/bundle/rpm/*.rpm.sig release-assets/ 2>/dev/null || true
           cp src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe release-assets/ 2>/dev/null || true
           cp src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe.sig release-assets/ 2>/dev/null || true
           ls -la release-assets/
@@ -89,15 +90,15 @@ jobs:
           BASE_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${TAG}"
 
           LINUX_SIG=""
-          APPIMAGE_TAR=""
+          APPIMAGE_FILE=""
           WINDOWS_SIG=""
           WINDOWS_EXE=""
 
-          for f in release-assets/*.AppImage.tar.gz.sig; do
+          for f in release-assets/*.AppImage.sig; do
             [ -f "$f" ] && LINUX_SIG=$(cat "$f")
           done
-          for f in release-assets/*.AppImage.tar.gz; do
-            [ -f "$f" ] && APPIMAGE_TAR=$(basename "$f")
+          for f in release-assets/*.AppImage; do
+            [ -f "$f" ] && APPIMAGE_FILE=$(basename "$f")
           done
           for f in release-assets/*-setup.exe.sig; do
             [ -f "$f" ] && WINDOWS_SIG=$(cat "$f")
@@ -107,10 +108,10 @@ jobs:
           done
 
           PLATFORMS="{}"
-          if [ -n "$LINUX_SIG" ] && [ -n "$APPIMAGE_TAR" ]; then
+          if [ -n "$LINUX_SIG" ] && [ -n "$APPIMAGE_FILE" ]; then
             PLATFORMS=$(echo "$PLATFORMS" | jq \
               --arg sig "$LINUX_SIG" \
-              --arg url "${BASE_URL}/${APPIMAGE_TAR}" \
+              --arg url "${BASE_URL}/${APPIMAGE_FILE}" \
               '. + {"linux-x86_64": {"signature": $sig, "url": $url}}')
           fi
           if [ -n "$WINDOWS_SIG" ] && [ -n "$WINDOWS_EXE" ]; then
@@ -192,3 +193,34 @@ jobs:
           done
 
           echo "Release created: ${GITHUB_SERVER_URL}/${REPO}/releases/tag/${TAG}"
+
+      - name: Publish latest.json to package registry
+        env:
+          FORGEJO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          API_URL="${GITHUB_SERVER_URL}/api/packages/${GITHUB_REPOSITORY_OWNER}/generic/simpl-resultat/latest"
+          echo "Uploading latest.json to package registry..."
+          HTTP_CODE=$(curl -w "%{http_code}" -X PUT \
+            "${API_URL}/latest.json" \
+            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary "@release-assets/latest.json" \
+            -o /tmp/pkg_response.json)
+          echo "HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" != "201" ] && [ "$HTTP_CODE" != "409" ]; then
+            echo "Upload failed:"
+            cat /tmp/pkg_response.json
+          fi
+          if [ "$HTTP_CODE" = "409" ]; then
+            echo "Package version exists, deleting and re-uploading..."
+            curl -s -X DELETE \
+              "${API_URL}/latest.json" \
+              -H "Authorization: token ${FORGEJO_TOKEN}"
+            HTTP_CODE=$(curl -w "%{http_code}" -X PUT \
+              "${API_URL}/latest.json" \
+              -H "Authorization: token ${FORGEJO_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data-binary "@release-assets/latest.json" \
+              -o /tmp/pkg_response.json)
+            echo "Re-upload HTTP $HTTP_CODE"
+          fi
