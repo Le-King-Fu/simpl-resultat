@@ -9,27 +9,25 @@ jobs:
   build-and-release:
     runs-on: ubuntu
     container: ubuntu:22.04
+    env:
+      PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     steps:
-      - name: Install base tools
+      - name: Install base tools and runtimes
         run: |
           apt-get update
-          apt-get install -y curl wget git sudo ca-certificates
-
-      - name: Checkout
-        uses: https://github.com/actions/checkout@v4
-
-      - name: Setup environment
-        run: |
-          # Install Node.js
+          apt-get install -y curl wget git sudo ca-certificates gnupg
+          # Install Node.js 20
           curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
           apt-get install -y nodejs
           # Install Rust
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source "$HOME/.cargo/env"
           rustc --version
           cargo --version
           node --version
           npm --version
+
+      - name: Checkout
+        uses: https://github.com/actions/checkout@v4
 
       - name: Install Linux dependencies
         run: |
@@ -38,7 +36,6 @@ jobs:
       - name: Install Windows cross-compile dependencies
         run: |
           apt-get install -y lld llvm clang nsis
-          source "$HOME/.cargo/env"
           rustup target add x86_64-pc-windows-msvc
           cargo install --locked cargo-xwin
 
@@ -50,7 +47,6 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
-          source "$HOME/.cargo/env"
           npx tauri build
 
       - name: Build Tauri Windows
@@ -58,7 +54,6 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
-          source "$HOME/.cargo/env"
           npx tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
 
       - name: Collect release files
