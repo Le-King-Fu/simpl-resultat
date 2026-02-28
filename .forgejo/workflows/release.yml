@@ -8,16 +8,23 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu
+    container: ubuntu:22.04
     steps:
+      - name: Install base tools
+        run: |
+          apt-get update
+          apt-get install -y curl wget git sudo ca-certificates
+
       - name: Checkout
         uses: https://github.com/actions/checkout@v4
 
       - name: Setup environment
         run: |
-          # Ensure Rust is available
-          if ! command -v cargo &>/dev/null; then
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          fi
+          # Install Node.js
+          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+          apt-get install -y nodejs
+          # Install Rust
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source "$HOME/.cargo/env"
           rustc --version
           cargo --version
@@ -26,12 +33,11 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf jq libssl-dev xdg-utils
+          apt-get install -y build-essential libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf jq libssl-dev xdg-utils
 
       - name: Install Windows cross-compile dependencies
         run: |
-          sudo apt-get install -y lld llvm clang nsis
+          apt-get install -y lld llvm clang nsis
           source "$HOME/.cargo/env"
           rustup target add x86_64-pc-windows-msvc
           cargo install --locked cargo-xwin

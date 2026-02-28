@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.4.4]
+
+### Fixed
+- Linux binary now compatible with glibc 2.35+ (Ubuntu 22.04 / Pop!_OS) — CI builds in Ubuntu 22.04 container
+
 ## [0.4.3]
 
 ### Fixed
