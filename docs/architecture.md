@@ -36,7 +36,7 @@ simpl-resultat/
 │   │   ├── profile/              # 3 composants (PIN, formulaire, switcher)
 │   │   ├── reports/              # 8 composants (graphiques + rapport dynamique)
 │   │   ├── settings/             # 2 composants
-│   │   ├── shared/               # 4 composants réutilisables
+│   │   ├── shared/               # 6 composants réutilisables
 │   │   └── transactions/         # 5 composants
 │   ├── contexts/                 # ProfileContext (état global profil)
 │   ├── hooks/                    # 12 hooks custom (useReducer)
@@ -175,6 +175,12 @@ Chaque hook encapsule la logique d'état via `useReducer` :
 ## Pages et routing
 
 Le routing est défini dans `App.tsx`. Toutes les pages sont englobées par `AppShell` (sidebar + layout). L'accès est contrôlé par `ProfileContext` (gate).
+
+### Gestion d'erreurs
+
+- **`ErrorBoundary`** (class component) : wrape `<App />` dans `main.tsx`, attrape les crashs React et affiche `ErrorPage` en fallback
+- **`ErrorPage`** : page d'erreur réutilisable avec détails techniques (collapsible), bouton "Actualiser", vérification de mises à jour, et liens de contact/issues
+- **Timeout au démarrage** : `App.tsx` applique un timeout de 10 secondes sur `connectActiveProfile()` — affiche `ErrorPage` au lieu d'un spinner infini si la connexion DB échoue
 
 | Route | Page | Description |
 |-------|------|-------------|

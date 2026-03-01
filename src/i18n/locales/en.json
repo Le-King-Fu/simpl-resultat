@@ -778,6 +778,20 @@
     "manageProfiles": "Manage Profiles",
     "default": "Default"
   },
+  "error": {
+    "title": "An error occurred",
+    "startupTimeout": "Database connection timed out",
+    "unexpectedError": "An unexpected error occurred",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details",
+    "refresh": "Refresh",
+    "checkUpdate": "Check for updates",
+    "updateAvailable": "Update available: v{{version}}",
+    "upToDate": "The application is up to date",
+    "contactUs": "Contact us",
+    "contactEmail": "Send an email to",
+    "reportIssue": "Report an issue"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

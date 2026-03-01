@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+- Error boundary catches React crashes and displays an error page instead of a white screen
+- Startup timeout (10s) on database connection — shows error page instead of infinite spinner
+- Error page with "Refresh", "Check for updates", and contact/issue links
+
 ## [0.4.4]
 
 ### Fixed

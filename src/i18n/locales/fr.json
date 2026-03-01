@@ -778,6 +778,20 @@
     "manageProfiles": "Gérer les profils",
     "default": "Par défaut"
   },
+  "error": {
+    "title": "Une erreur est survenue",
+    "startupTimeout": "La connexion à la base de données a expiré",
+    "unexpectedError": "Une erreur inattendue s'est produite",
+    "showDetails": "Afficher les détails",
+    "hideDetails": "Masquer les détails",
+    "refresh": "Actualiser",
+    "checkUpdate": "Vérifier les mises à jour",
+    "updateAvailable": "Mise à jour disponible : v{{version}}",
+    "upToDate": "L'application est à jour",
+    "contactUs": "Nous contacter",
+    "contactEmail": "Envoyez un email à",
+    "reportIssue": "Signaler un problème"
+  },
   "common": {
     "save": "Enregistrer",
     "cancel": "Annuler",

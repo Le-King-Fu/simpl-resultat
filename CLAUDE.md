@@ -9,7 +9,7 @@
 **Stockage :** SQLite local (tauri-plugin-sql)
 **Langues supportées :** Français (FR) et Anglais (EN)
 **Plateformes :** Windows, Linux
-**Version actuelle :** 0.3.11
+**Version actuelle :** 0.4.4
 
 ---
 
@@ -35,7 +35,7 @@
 
 ```
 src/
-├── components/          # 49 composants React organisés par domaine
+├── components/          # 53 composants React organisés par domaine
 │   ├── adjustments/     # Ajustements
 │   ├── budget/          # Budget
 │   ├── categories/      # Catégories hiérarchiques
@@ -67,7 +67,7 @@ src-tauri/
 │   │   ├── schema.sql               # Schéma initial (v1)
 │   │   ├── seed_categories.sql      # Seed catégories (v2)
 │   │   └── consolidated_schema.sql  # Schéma complet (nouveaux profils)
-│   ├── lib.rs           # Point d'entrée, 6 migrations inline, plugins
+│   ├── lib.rs           # Point d'entrée, 7 migrations inline, plugins
 │   └── main.rs
 └── Cargo.toml
 ```
@@ -114,8 +114,8 @@ src-tauri/
 
 ## Base de données
 
-- **13 tables** SQLite, **9 index** (voir `docs/architecture.md` pour le détail)
-- **6 migrations inline** dans `lib.rs` (via `tauri_plugin_sql::Migration`)
+- **13 tables** SQLite, **15 index** (voir `docs/architecture.md` pour le détail)
+- **7 migrations inline** dans `lib.rs` (via `tauri_plugin_sql::Migration`)
 - **Schéma consolidé** (`consolidated_schema.sql`) pour l'initialisation des nouveaux profils
 - Les migrations appliquées sont protégées par checksum — ne jamais modifier une migration existante, toujours en créer une nouvelle
 
@@ -153,7 +153,7 @@ Pour maintenir l'éligibilité aux crédits d'impôt R&D (RS&DE fédéral + CRIC
 ## CI/CD
 
 - GitHub Actions (`release.yml`) déclenché par tags `v*`
-- Build Windows (NSIS `.exe`) + Linux (`.deb`, `.AppImage`)
+- Build Windows (NSIS `.exe`) + Linux (`.deb`, `.rpm`)
 - Signature des binaires + JSON d'updater pour mises à jour automatiques
 
 ---
